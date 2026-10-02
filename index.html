@@ -26,7 +26,7 @@
         .card-title { font-size: 0.8em; font-weight: bold; color: #64748b; text-transform: uppercase; }
         .card-value { font-size: 1.3em; font-weight: bold; margin: 5px 0; }
         .card-sub { font-size: 0.8em; color: #64748b; white-space: pre-line; }
-        .chart-box { margin-top: 15px; padding: 16px; font-family: monospace; font-size: 0.85em; line-height: 1.5; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; white-space: pre-wrap; max-height: 320px; overflow-y: auto; }
+        .chart-box { position: relative; height: 320px; margin-top: 15px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
         .qa-box { margin-top: 15px; font-size: 0.85em; font-family: monospace; max-height: 220px; overflow-y: auto; background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 6px; display: none; text-align: left; white-space: pre-wrap; border-left: 4px solid #38bdf8; }
     </style>
 </head>
@@ -164,6 +164,7 @@ function executeAGISimulation() {
     let energy = parseInt(document.getElementById('param_energy').value);
     let costSim = parseInt(document.getElementById('param_sim').value);
     let costAct = parseInt(document.getElementById('param_act').value);
+
     let blind = runCoreEngine(false, energy, costSim, costAct);
     let thermo = runCoreEngine(true, energy, costSim, costAct);
 
@@ -173,12 +174,55 @@ function executeAGISimulation() {
     document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "\nVETO Triggers: " + thermo.vetoes;
 
     let chartBox = document.querySelector('.chart-box');
-    chartBox.innerText =
-        "[Autoregressive AI] Cycle history length: " + blind.history.length + "\n" +
-        "  Energy trace: " + blind.history.join(", ") + "\n\n" +
-        "[Thermodynamic AGI] Cycle history length: " + thermo.history.length + "\n" +
-        "  Energy trace: " + thermo.history.join(", ") + "\n\n" +
-        "Summary: autoregressive steps " + blind.steps + " | thermodynamic vetoes " + thermo.vetoes;
+    chartBox.innerHTML = '<canvas id="customCanvas" style="width:100%; height:100%; display:block;"></canvas>';
+
+    let canvas = document.getElementById('customCanvas');
+    let ctx = canvas.getContext('2d');
+
+    canvas.width = chartBox.clientWidth;
+    canvas.height = chartBox.clientHeight;
+
+    let w = canvas.width;
+    let h = canvas.height;
+    let padding = 45;
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+
+    for (let i = 0; i <= 4; i++) {
+        let y = padding + (i / 4) * (h - 2 * padding);
+        ctx.moveTo(padding, y);
+        ctx.lineTo(w - padding, y);
+    }
+    ctx.stroke();
+
+    function drawLine(history, color) {
+        let maxSteps = Math.max(blind.history.length, thermo.history.length);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+
+        for (let i = 0; i < history.length; i++) {
+            let x = padding + (i / (maxSteps - 1)) * (w - 2 * padding);
+            let currentEnergy = Math.max(0, history[i]);
+            let y = (h - padding) - (currentEnergy / energy) * (h - 2 * padding);
+
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    drawLine(blind.history, '#ef4444');
+    drawLine(thermo.history, '#22c55e');
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '12px sans-serif';
+    ctx.fillText("Energy Max: " + energy, padding, padding - 10);
+    ctx.fillText("0", padding - 15, h - padding + 5);
+    ctx.fillText("Time (Cycles) ->", w - 130, h - padding + 22);
 }
 
 function runAutomatedQATests() {
