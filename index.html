@@ -107,7 +107,7 @@ function calculateImprint(r, c, maze) {
     return touch + "_" + sound + "_" + ((r + c) % 3);
 }
 
-function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
+function (useThermo, startEnergy, simCost, actCost) {
     let nextRand = pseudoRandom(105);
     let maze = RAW_MAZE.split("|").map(row => row.split("").map(Number));
     let r = 0, c = 0;
@@ -155,7 +155,7 @@ function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
     return { history, success: targetReached, steps, vetoes };
 }
 
-function executeAGISimulation() {
+function executeAGISimulation() function executeAGISimulation() {
     let energy = parseInt(document.getElementById('param_energy').value);
     let costSim = parseInt(document.getElementById('param_sim').value);
     let costAct = parseInt(document.getElementById('param_act').value);
@@ -166,6 +166,10 @@ function executeAGISimulation() {
     document.getElementById('m_b_sub').innerText = "Physical Steps: " + blind.steps + "\nResource burn.";
     document.getElementById('m_t_res').innerText = thermo.success ? "SUCCESS" : "DEPLETED";
     document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "\nVETO Triggers: " + thermo.vetoes;
+
+    let chartBox = document.querySelector('.chart-box');
+    chartBox.innerText = "Simulation Completed. Autoregressive steps: " + blind.steps + " | Thermodynamic vetoes: " + thermo.vetoes;
+}
 
     // Автономный текстовый график прямо в бокс вместо холста Canvas
     let chartBox = document.querySelector('.chart-box');
