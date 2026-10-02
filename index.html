@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thermodynamic AGI Simulator & QA</title>
-    <!-- Исправленный и стабильный CDN для Chart.js -->
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 950px; margin: 0 auto; padding: 20px; background: #f8fafc; color: #0f172a; }
         h1, h3 { margin: 0 0 5px 0; color: #1e293b; }
@@ -27,7 +26,7 @@
         .card-title { font-size: 0.8em; font-weight: bold; color: #64748b; text-transform: uppercase; }
         .card-value { font-size: 1.3em; font-weight: bold; margin: 5px 0; }
         .card-sub { font-size: 0.8em; color: #64748b; white-space: pre-line; }
-        .chart-box { position: relative; height: 320px; margin-top: 15px; }
+        .chart-box { margin-top: 15px; padding: 16px; font-family: monospace; font-size: 0.85em; line-height: 1.5; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; white-space: pre-wrap; max-height: 320px; overflow-y: auto; }
         .qa-box { margin-top: 15px; font-size: 0.85em; font-family: monospace; max-height: 220px; overflow-y: auto; background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 6px; display: none; text-align: left; white-space: pre-wrap; border-left: 4px solid #38bdf8; }
     </style>
 </head>
@@ -71,9 +70,7 @@
                     <div class="card-sub" id="m_t_sub"></div>
                 </div>
             </div>
-            <div class="chart-box">
-                <canvas id="canvasChart"></canvas>
-            </div>
+            <div class="chart-box"></div>
         </div>
     </div>
 
@@ -81,7 +78,6 @@
 const RAW_MAZE = "00100|00101|10000|01110|00010";
 const DIR_ROWS = [-1, 1, 0, 0];
 const DIR_COLS = [0, 0, -1, 1];
-let chartInstance = null;
 
 function pseudoRandom(s) {
     let mask = 4294967295;
@@ -90,7 +86,7 @@ function pseudoRandom(s) {
     return function() {
         z = (36969 * (z & 65535) + (z >> 16)) & mask;
         w = (18000 * (w & 65535) + (w >> 16)) & mask;
-        return (((z << 16) + w) >> 16) + 32768 / 65536;
+        return ((((z << 16) + w) >> 16) + 32768) / 65536;
     }
 }
 
@@ -121,8 +117,7 @@ function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
             if(r === 4 && c === 4) targetReached = true;
             break;
         }
-        let strIndices = "0123";
-        let dirIndices = strIndices.split("").map(Number);
+        let dirIndices = [0, 1, 2, 3];
         for (let j = 3; j > 0; j--) {
             let k = Math.floor(nextRand() * (j + 1));
             let temp = dirIndices[j];
@@ -155,7 +150,7 @@ function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
     return { history, success: targetReached, steps, vetoes };
 }
 
-function executeAGISimulation() function executeAGISimulation() {
+function executeAGISimulation() {
     let energy = parseInt(document.getElementById('param_energy').value);
     let costSim = parseInt(document.getElementById('param_sim').value);
     let costAct = parseInt(document.getElementById('param_act').value);
@@ -168,36 +163,12 @@ function executeAGISimulation() function executeAGISimulation() {
     document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "\nVETO Triggers: " + thermo.vetoes;
 
     let chartBox = document.querySelector('.chart-box');
-    chartBox.innerText = "Simulation Completed. Autoregressive steps: " + blind.steps + " | Thermodynamic vetoes: " + thermo.vetoes;
-}
-
-    // Автономный текстовый график прямо в бокс вместо холста Canvas
-    let chartBox = document.querySelector('.chart-box');
-    chartBox.innerHTML = `
-        <div style="padding: 20px; font-family: monospace; font-size: 0.9em; line-height: 1.6;">
-            <b style="color: #ef4444;">[Autoregressive AI]</b> Длина истории циклов: ${blind.history.length}<br>
-            <b style="color: #22c55e;">[Thermodynamic AGI]</b> Длина истории циклов: ${thermo.history.length}<br><br>
-            <i>Архитектурный аудит: Обычный ИИ бездумно тратит шаги. Ваш агент успешно применил торможение (VETO) ${thermo.vetoes} раз, сохранив стабильность!</i>
-        </div>
-    `;
-}
-
-h, thermo.history.length);
-    let xLabels = []; for(let idx = 0; idx < maxLen; idx++) { xLabels.push(idx.toString()); }
-    if(chartInstance) chartInstance.destroy();
-    let canvasCtx = document.getElementById('canvasChart').getContext('2d');
-
-    chartInstance = new Chart(canvasCtx, {
-        type: 'line',
-        data: {
-            labels: xLabels,
-            datasets: [
-                { label: 'Autoregressive AI (No Veto)', data: blind.history, borderColor: '#ef4444', borderWidth: 2, fill: false, lineTension: 0.1 },
-                { label: 'Thermodynamic AGI (Sensory VETO)', data: thermo.history, borderColor: '#22c55e', borderWidth: 2, fill: false, lineTension: 0.1 }
-            ]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
+    chartBox.innerText =
+        "[Autoregressive AI] Cycle history length: " + blind.history.length + "\n" +
+        "  Energy trace: " + blind.history.join(", ") + "\n\n" +
+        "[Thermodynamic AGI] Cycle history length: " + thermo.history.length + "\n" +
+        "  Energy trace: " + thermo.history.join(", ") + "\n\n" +
+        "Summary: autoregressive steps " + blind.steps + " | thermodynamic vetoes " + thermo.vetoes;
 }
 
 function runAutomatedQATests() {
