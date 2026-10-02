@@ -126,7 +126,9 @@ function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
         let dirIndices = strIndices.split("").map(Number);
         for (let j = 3; j > 0; j--) {
             let k = Math.floor(nextRand() * (j + 1));
-            let temp = dirIndices[j]; dirIndices[j] = dirIndices[k]; dirIndices[k] = temp;
+            let temp = dirIndices[j];
+            dirIndices[j] = dirIndices[k];
+            dirIndices[k] = temp;
         }
 
         if(useThermo) {
