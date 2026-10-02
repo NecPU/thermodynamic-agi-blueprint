@@ -225,6 +225,31 @@ function executeAGISimulation() {
     ctx.fillText("Energy Max: " + energy, padding, padding - 10);
     ctx.fillText("0", padding - 15, h - padding + 5);
     ctx.fillText("Time (Cycles) ->", w - 130, h - padding + 22);
+
+    // --- ОТРИСОВКА ЛЕГЕНДЫ ГРАФИКА ---
+    let legendX = w - padding - 180;
+    let legendY = padding - 10;
+
+    // Легенда для Autoregressive AI (Красная линия)
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(legendX, legendY); ctx.lineTo(legendX + 20, legendY);
+    ctx.stroke();
+
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px sans-serif';
+    ctx.fillText("Autoregressive AI", legendX + 25, legendY + 4);
+
+    // Легенда для Thermodynamic AGI (Зеленая линия)
+    ctx.strokeStyle = '#22c55e';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(legendX, legendY + 15); ctx.lineTo(legendX + 20, legendY + 15);
+    ctx.stroke();
+
+    ctx.fillStyle = '#64748b';
+    ctx.fillText("Thermodynamic AGI", legendX + 25, legendY + 19);
 }
 
 function runAutomatedQATests() {
