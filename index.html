@@ -1,8 +1,88 @@
-const RAW_MAZE = "00100|00101|10000|01110|00010";
-const DIR_ROWS = Array.of(-1, 1, 0, 0);
-const DIR_COLS = Array.of(0, 0, -1, 1);
-let chartInstance = null;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thermodynamic AGI Simulator & QA</title>
+    <!-- ИСПРАВЛЕНО: Сверхстабильное зеркало Яндекса для гарантированной загрузки Chart.js без таймаутов -->
+    <script src="https://yastatic.net"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 950px; margin: 0 auto; padding: 20px; background: #f8fafc; color: #0f172a; }
+        h1, h3 { margin: 0 0 5px 0; color: #1e293b; }
+        .author { font-size: 0.9em; color: #64748b; margin-bottom: 20px; }
+        .flex-container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .sidebar { flex: 1; min-width: 290px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: fit-content; }
+        .main-content { flex: 2; min-width: 400px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.85em; font-weight: 600; margin-bottom: 5px; color: #475569; }
+        input[type="range"] { width: 100%; }
+        .val-display { float: right; color: #64748b; font-weight: normal; }
+        button { width: 100%; padding: 12px; border: none; background: #2563eb; color: white; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95em; margin-bottom: 10px; }
+        button:hover { background: #1d4ed8; }
+        .btn-qa { background: #475569; font-size: 0.85em; padding: 8px; margin-top: 10px; }
+        .btn-qa:hover { background: #334155; }
+        .metrics { display: flex; gap: 15px; margin-bottom: 20px; }
+        .card { flex: 1; padding: 15px; border-radius: 8px; background: #f8fafc; border-left: 4px solid #cbd5e1; }
+        .card.red { border-left-color: #ef4444; }
+        .card.green { border-left-color: #22c55e; }
+        .card-title { font-size: 0.8em; font-weight: bold; color: #64748b; text-transform: uppercase; }
+        .card-value { font-size: 1.3em; font-weight: bold; margin: 5px 0; }
+        .card-sub { font-size: 0.8em; color: #64748b; white-space: pre-line; }
+        .chart-box { position: relative; height: 320px; margin-top: 15px; }
+        .qa-box { margin-top: 15px; font-size: 0.85em; font-family: monospace; max-height: 220px; overflow-y: auto; background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 6px; display: none; text-align: left; white-space: pre-wrap; border-left: 4px solid #38bdf8; }
+    </style>
+</head>
+<body>
+    <h1>Thermodynamic Optimization Architecture</h1>
+    <h3>Demonstration & Diagnostic Prototype</h3>
+    <div class="author">Author: Vakhtang Doundoua | Contact: doundoua@gmail.com</div>
+    
+    <div class="flex-container">
+        <div class="sidebar">
+            <div class="form-group">
+                <label>Energy Potential <span class="val-display" id="e_lbl">150</span></label>
+                <input type="range" id="param_energy" min="50" max="250" value="150" oninput="document.getElementById('e_lbl').innerText=this.value">
+            </div>
+            <div class="form-group">
+                <label>Virtualization Cost (&Psi;<sub>sim</sub>) <span class="val-display" id="v_lbl">1</span></label>
+                <input type="range" id="param_sim" min="1" max="5" value="1" oninput="document.getElementById('v_lbl').innerText=this.value">
+            </div>
+            <div class="form-group">
+                <label>Actuator Step Cost <span class="val-display" id="a_lbl">10</span></label>
+                <input type="range" id="param_act" min="5" max="20" value="10" oninput="document.getElementById('a_lbl').innerText=this.value">
+            </div>
+            <button onclick="executeAGISimulation()">Run Simulation</button>
+            
+            <div style="margin-top: 20px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+                <button onclick="runAutomatedQAEngine()" class="btn-qa">Run Automated QA Tests</button>
+                <div id="qa_report_box" class="qa-box"></div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="metrics">
+                <div class="card red">
+                    <div class="card-title">🔴 Autoregressive AI</div>
+                    <div class="card-value" id="m_b_res">-</div>
+                    <div class="card-sub" id="m_b_sub"></div>
+                </div>
+                <div class="card green">
+                    <div class="card-title">🟢 Thermodynamic AGI</div>
+                    <div class="card-value" id="m_t_res">-</div>
+                    <div class="card-sub" id="m_t_sub"></div>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="canvasChart"></canvas>
+            </div>
+        </div>
+    </div>
 
+    <script>
+    const RAW_MAZE = "00100|00101|10000|01110|00010";
+    const DIR_ROWS = Array.of(-1, 1, 0, 0);
+    const DIR_COLS = Array.of(0, 0, -1, 1);
+    let chartInstance = null;
 function pseudoRandom(s) {
     let mask = 4294967295;
     let w = (123456789 + s) & mask;
@@ -136,6 +216,7 @@ function executeAGISimulation() {
         }
     });
 }
+
 function runAutomatedQAEngine() {
     let reportBox = document.getElementById('qa_report_box');
     reportBox.style.display = 'block';
@@ -145,7 +226,7 @@ function runAutomatedQAEngine() {
 
     try {
         let res = runCoreEngine(true, 0, 1, 10);
-        if(res.history.length === 1 && res.history === 0 && !res.success) {
+        if(res.history.length === 1 && res.history[0] === 0 && !res.success) {
             logs.push("[PASS] Test 1: Zero Energy Boundary Condition handled successfully.");
             passedTests++;
         } else {
