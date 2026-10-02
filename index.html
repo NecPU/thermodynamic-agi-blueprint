@@ -107,7 +107,7 @@ function calculateImprint(r, c, maze) {
     return touch + "_" + sound + "_" + ((r + c) % 3);
 }
 
-function (useThermo, startEnergy, simCost, actCost) {
+function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
     let nextRand = pseudoRandom(105);
     let maze = RAW_MAZE.split("|").map(row => row.split("").map(Number));
     let r = 0, c = 0;
