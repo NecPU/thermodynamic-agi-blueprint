@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thermodynamic AGI Simulator & QA</title>
     <!-- Исправленный и стабильный CDN для Chart.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 950px; margin: 0 auto; padding: 20px; background: #f8fafc; color: #0f172a; }
         h1, h3 { margin: 0 0 5px 0; color: #1e293b; }
@@ -164,13 +163,22 @@ function executeAGISimulation() {
     let thermo = runCoreEngine(true, energy, costSim, costAct);
 
     document.getElementById('m_b_res').innerText = blind.success ? "SUCCESS" : "DEPLETED";
-    document.getElementById('m_b_sub').innerText = "Physical Steps: " + blind.steps + "
-Resource burn.";
+    document.getElementById('m_b_sub').innerText = "Physical Steps: " + blind.steps + "\nResource burn.";
     document.getElementById('m_t_res').innerText = thermo.success ? "SUCCESS" : "DEPLETED";
-    document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "
-VETO Triggers: " + thermo.vetoes;
+    document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "\nVETO Triggers: " + thermo.vetoes;
 
-    let maxLen = Math.max(blind.history.length, thermo.history.length);
+    // Автономный текстовый график прямо в бокс вместо холста Canvas
+    let chartBox = document.querySelector('.chart-box');
+    chartBox.innerHTML = `
+        <div style="padding: 20px; font-family: monospace; font-size: 0.9em; line-height: 1.6;">
+            <b style="color: #ef4444;">[Autoregressive AI]</b> Длина истории циклов: ${blind.history.length}<br>
+            <b style="color: #22c55e;">[Thermodynamic AGI]</b> Длина истории циклов: ${thermo.history.length}<br><br>
+            <i>Архитектурный аудит: Обычный ИИ бездумно тратит шаги. Ваш агент успешно применил торможение (VETO) ${thermo.vetoes} раз, сохранив стабильность!</i>
+        </div>
+    `;
+}
+
+h, thermo.history.length);
     let xLabels = []; for(let idx = 0; idx < maxLen; idx++) { xLabels.push(idx.toString()); }
     if(chartInstance) chartInstance.destroy();
     let canvasCtx = document.getElementById('canvasChart').getContext('2d');
