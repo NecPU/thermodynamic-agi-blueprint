@@ -195,7 +195,7 @@ function executeAGISimulation() {
     document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "\nVETO Triggers: " + thermo.vetoes;
 
     let maxLen = Math.max(blind.history.length, thermo.history.length);
-    let xLabels = [];
+    let xLabels = Array.of();
     for(let idx = 0; idx < maxLen; idx++) { xLabels.push(idx.toString()); }
 
     if(chartInstance) chartInstance.destroy();
@@ -205,16 +205,16 @@ function executeAGISimulation() {
         type: 'line',
         data: {
             labels: xLabels,
-            datasets: [
+            datasets: Array.of(
                 { label: 'Autoregressive AI', data: blind.history, borderColor: '#ef4444', borderWidth: 2, fill: false, lineTension: 0.1 },
                 { label: 'Thermodynamic AGI', data: thermo.history, borderColor: '#22c55e', borderWidth: 2, fill: false, lineTension: 0.1 }
-            ]
+            )
         },
         options: { 
             responsive: true, 
             maintainAspectRatio: false, 
             scales: { 
-                yAxes: [{ ticks: { beginAtZero: false } }] 
+                yAxes: Array.of({ ticks: { beginAtZero: false } }) 
             } 
         }
     });
@@ -223,7 +223,7 @@ function executeAGISimulation() {
 function runAutomatedQAEngine() {
     let reportBox = document.getElementById('qa_report_box');
     reportBox.style.display = 'block';
-    let logs = ["=== STARTING THERMODYNAMIC ENGINE QA DIAGNOSTICS ==="];
+    let logs = Array.of("=== STARTING THERMODYNAMIC ENGINE QA DIAGNOSTICS ===");
     let passedTests = 0;
 
     // ТЕСТ 1: Граничное состояние нулевой энергии
@@ -285,3 +285,4 @@ window.onload = executeAGISimulation;
 </script>
 </body>
 </html>
+
