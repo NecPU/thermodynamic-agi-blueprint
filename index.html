@@ -88,17 +88,21 @@
             }
         }
 
-        function calculateImprint(r, c, maze) {
-            let touch = 0;
-            for(let i = 0; i < 4; i++) {
-                let nr = r + DIR_ROWS[i];
-                let nc = c + DIR_COLS[i];
-                if (!(nr >= 0 && nr < 5 && nc >= 0 && nc < 5) || (maze[nr] && maze[nr][nc] === 1)) touch++;
+        function calculateImprint ( r , c , maze ) {
+            let touch = 0 ;
+            for ( let i = 0 ; i < 4 ; i ++ ) {
+            let nr = r + DIR_ROWS [ i ] ;
+            let nc = c + DIR_COLS [ i ] ;
+            if ( ! ( nr >= 0 && nr < 5 && nc >= 0 && nc < 5 ) ) {
+                touch ++ ;
+            } else if ( maze [ nr ] && maze [ nr ] [ nc ] === 1 ) {
+                touch ++ ;
             }
-            let dist = Math.sqrt(Math.pow(r - 4, 2) + Math.pow(c - 4, 2));
-            let sound = Math.round((dist / (dist + 1)) * 10) / 10;
-            return touch + "_" + sound + "_" + ((r + c) % 3);
         }
+    let dist = Math . sqrt ( Math . pow ( r - 4 , 2 ) + Math . pow ( c - 4 , 2 ) ) ;
+    let sound = Math . round ( ( dist / ( dist + 1 ) ) * 10 ) / 10 ;
+    return touch + "_" + sound + "_" + ( ( r + c ) % 3 ) ;
+}
 
         function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
             let nextRand = pseudoRandom(105);
