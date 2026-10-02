@@ -179,8 +179,10 @@ function executeAGISimulation() {
     let canvas = document.getElementById('customCanvas');
     let ctx = canvas.getContext('2d');
 
-    canvas.width = chartBox.clientWidth;
-    canvas.height = chartBox.clientHeight;
+    // Явно задаем холсту физические размеры контейнера, чтобы он не сжимался в 0
+    let rect = chartBox.getBoundingClientRect();
+    canvas.width = rect.width || 500;
+    canvas.height = 320; // Фиксированная базовая высота под макет `.chart-box`
 
     let w = canvas.width;
     let h = canvas.height;
