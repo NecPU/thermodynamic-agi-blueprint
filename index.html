@@ -77,210 +77,139 @@
             </div>
         </div>
     </div>
+<script src="https://googleapis.com"></script>
+<script>
+const RAW_MAZE = "00100|00101|10000|01110|00010";
+const DIR_ROWS = [-1, 1, 0, 0];
+const DIR_COLS = [0, 0, -1, 1];
+let chartInstance = null;
 
-    <script>
-    const RAW_MAZE = "00100|00101|10000|01110|00010";
-    const DIR_ROWS = Array.of(-1, 1, 0, 0);
-    const DIR_COLS = Array.of(0, 0, -1, 1);
-    let chartInstance = null;
+function pseudoRandom(s) {
+    let mask = 4294967295;
+    let w = (123456789 + s) & mask;
+    let z = (987654321 - s) & mask;
+    return function() {
+        z = (36969 * (z & 65535) + (z >> 16)) & mask;
+        w = (18000 * (w & 65535) + (w >> 16)) & mask;
+        return (((z << 16) + w) >> 16) + 32768 / 65536;
+    }
+}
 
-    function pseudoRandom(s) {
-        let mask = 4294967295;
-        let w = (123456789 + s) & mask;
-        let z = (987654321 - s) & mask;
-        return function() {
-            z = (36969 * (z & 65535) + (z >> 16)) & mask;
-            w = (18000 * (w & 65535) + (w >> 16)) & mask;
-            return (((z << 16) + w) >> 16) + 32768 / 65536;
+function calculateImprint(r, c, maze) {
+    let touch = 0;
+    for(let i = 0; i < 4; i++) {
+        let nr = r + DIR_ROWS[i];
+        let nc = c + DIR_COLS[i];
+        if (nr < 0 || nr >= 5 || nc < 0 || nc >= 5) { touch++; }
+        else if (maze && maze[nr] && maze[nr][nc] === 1) { touch++; }
+    }
+    let dist = Math.sqrt(Math.pow(r - 4, 2) + Math.pow(c - 4, 2));
+    let sound = Math.round((dist / (dist + 1)) * 10) / 10;
+    return touch + "_" + sound + "_" + ((r + c) % 3);
+}
+function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
+    let nextRand = pseudoRandom(105);
+    let maze = RAW_MAZE.split("|").map(row => row.split("").map(Number));
+    let r = 0, c = 0;
+    let energy = startEnergy;
+    let history = [Number(startEnergy)];
+    let steps = 0, vetoes = 0, targetReached = false;
+    let memoryTraces = {};
+
+    for(let i = 1; i < 1000; i++) {
+        if((r === 4 && c === 4) || energy <= 0) {
+            if(r === 4 && c === 4) targetReached = true;
+            break;
         }
-    }
-
-    function calculateImprint(r, c, maze) {
-        let touch = 0;
-        for(let i = 0; i < 4; i++) {
-            let nr = r + DIR_ROWS[i];
-            let nc = c + DIR_COLS[i];
-            if (nr < 0 || nr >= 5 || nc < 0 || nc >= 5) {
-                touch++;
-            } else if (maze && maze[nr] && maze[nr][nc] === 1) {
-                touch++;
-            }
+        let dirIndices =;
+        for (let j = 3; j > 0; j--) {
+            let k = Math.floor(nextRand() * (j + 1));
+            let temp = dirIndices[j]; dirIndices[j] = dirIndices[k]; dirIndices[k] = temp;
         }
-        let dist = Math.sqrt(Math.pow(r - 4, 2) + Math.pow(c - 4, 2));
-        let sound = Math.round((dist / (dist + 1)) * 10) / 10;
-        return touch + "_" + sound + "_" + ((r + c) % 3);
-    }
 
-    function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
-        let nextRand = pseudoRandom(105);
-        let maze = RAW_MAZE.split("|").map(row => row.split("").map(Number));
-        let r = 0, c = 0;
-        let energy = startEnergy;
-        let history = new Array();
-        history.push(Number(startEnergy));
-        let steps = 0, vetoes = 0, targetReached = false;
-        let memoryTraces = {};
-
-        for(let i = 1; i < 1000; i++) {
-            if((r === 4 && c === 4) || energy <= 0) {
-                if(r === 4 && c === 4) targetReached = true;
-                break;
+        if(useThermo) {
+            let bestPath = null; let minTrace = 99999;
+            for(let idx = 0; idx < 4; idx++) {
+                let didx = dirIndices[idx];
+                let nr = r + DIR_ROWS[didx]; let nc = c + DIR_COLS[didx];
+                if(nr < 0 || nr >= 5 || nc < 0 || nc >= 5 || maze[nr][nc] === 1) continue;
+                let token = calculateImprint(nr, nc, maze);
+                let traceCount = memoryTraces[token] || 0;
+                if(traceCount < minTrace) { minTrace = traceCount; bestPath = { nr, nc, token, trace: traceCount }; }
             }
-                       
-            let dirIndices = Array.of(0, 1, 2, 3);
-            for (let j = dirIndices.length - 1; j > 0; j--) {
-                let k = Math.floor(nextRand() * (j + 1));
-                let temp = dirIndices[j];
-                dirIndices[j] = dirIndices[k];
-                dirIndices[k] = temp;
-            }
-
-            if(useThermo) {
-                let bestPath = null;
-                let minTrace = 99999;
-                for(let idx = 0; idx < 4; idx++) {
-                    let didx = dirIndices[idx];
-                    let nr = r + DIR_ROWS[didx];
-                    let nc = c + DIR_COLS[didx];
-                    if(nr < 0 || nr >= 5 || nc < 0 || nc >= 5 || (maze[nr] && maze[nr][nc] === 1)) continue;
-                    
-                    let token = calculateImprint(nr, nc, maze);
-                    let traceCount = memoryTraces[token] || 0;
-                    if(traceCount < minTrace) {
-                        minTrace = traceCount;
-                        bestPath = { nr: nr, nc: nc, token: token, trace: traceCount };
-                    }
-                }
-                if(bestPath !== null) {
-                    if(bestPath.trace > 1) {
-                    vetoes++; 
-                    energy -= simCost; 
-                    // Термодинамический сдвиг: вместо глухого тупика агент временно штрафует этот след и пробует другое случайное направление
-                    memoryTraces[bestPath.token] = (memoryTraces[bestPath.token] || 0) + 5;
-                    history.push(Number(energy)); 
-                continue;
-                }
-                    } else {
-                        energy -= simCost; energy -= actCost;
-                        r = bestPath.nr; c = bestPath.nc;
-                        memoryTraces[bestPath.token] = (memoryTraces[bestPath.token] || 0) + 1;
-                        steps++;
-                    }
-                } else {
-                    vetoes++; energy -= simCost; history.push(Number(energy)); continue;
-                }
-            } else {
-                let dirIdx = Math.floor(nextRand() * 4);
-                let nr = r + DIR_ROWS[dirIdx];
-                let nc = c + DIR_COLS[dirIdx];
-                energy -= actCost;
-                if(nr >= 0 && nr < 5 && nc >= 0 && nc < 5 && maze[nr] && maze[nr][nc] !== 1) { 
-                    r = nr; c = nc; steps++; 
-                }
-            }
-            history.push(Number(energy));
+            if(bestPath !== null) {
+                if(bestPath.trace > 0) { vetoes++; energy -= simCost; memoryTraces[bestPath.token] += 5; history.push(Number(energy)); continue; }
+                else { energy -= (simCost + actCost); r = bestPath.nr; c = bestPath.nc; memoryTraces[bestPath.token] = 1; steps++; }
+            } else { vetoes++; energy -= simCost; history.push(Number(energy)); continue; }
+        } else {
+            let dirIdx = Math.floor(nextRand() * 4);
+            let nr = r + DIR_ROWS[dirIdx]; let nc = c + DIR_COLS[dirIdx];
+            energy -= actCost;
+            if(nr >= 0 && nr < 5 && nc >= 0 && nc < 5 && maze[nr][nc] !== 1) { r = nr; c = nc; steps++; }
         }
-        return { history, success: targetReached, steps, vetoes };
+        history.push(Number(energy));
     }
-    function executeAGISimulation() {
-        let energy = parseInt(document.getElementById('param_energy').value);
-        let costSim = parseInt(document.getElementById('param_sim').value);
-        let costAct = parseInt(document.getElementById('param_act').value);
-        let blind = runCoreEngine(false, energy, costSim, costAct);
-        let thermo = runCoreEngine(true, energy, costSim, costAct);
+    return { history, success: targetReached, steps, vetoes };
+}
+function executeAGISimulation() {
+    let energy = parseInt(document.getElementById('param_energy').value);
+    let costSim = parseInt(document.getElementById('param_sim').value);
+    let costAct = parseInt(document.getElementById('param_act').value);
+    let blind = runCoreEngine(false, energy, costSim, costAct);
+    let thermo = runCoreEngine(true, energy, costSim, costAct);
 
-        document.getElementById('m_b_res').innerText = blind.success ? "SUCCESS" : "DEPLETED";
-        document.getElementById('m_b_sub').innerText = "Physical Steps: " + blind.steps + "\nResource burn.";
-        document.getElementById('m_t_res').innerText = thermo.success ? "SUCCESS" : "DEPLETED";
-        document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "\nVETO Triggers: " + thermo.vetoes;
+    document.getElementById('m_b_res').innerText = blind.success ? "SUCCESS" : "DEPLETED";
+    document.getElementById('m_b_sub').innerText = "Physical Steps: " + blind.steps + "\nResource burn.";
+    document.getElementById('m_t_res').innerText = thermo.success ? "SUCCESS" : "DEPLETED";
+    document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "\nVETO Triggers: " + thermo.vetoes;
 
-        let maxLen = Math.max(blind.history.length, thermo.history.length);
-        let xLabels = new Array();
-        for(let idx = 0; idx < maxLen; idx++) { xLabels.push(idx.toString()); }
+    let maxLen = Math.max(blind.history.length, thermo.history.length);
+    let xLabels = []; for(let idx = 0; idx < maxLen; idx++) { xLabels.push(idx.toString()); }
+    if(chartInstance) chartInstance.destroy();
+    let canvasCtx = document.getElementById('canvasChart').getContext('2d');
 
-        if(chartInstance) chartInstance.destroy();
-        let canvasCtx = document.getElementById('canvasChart').getContext('2d');
-        
-        if (typeof Chart !== 'undefined') {
-            chartInstance = new Chart(canvasCtx, {
-                type: 'line',
-                data: {
-                    labels: xLabels,
-                    datasets: Array.of(
-                        { label: 'Autoregressive AI', data: blind.history, borderColor: '#ef4444', borderWidth: 2, fill: false, lineTension: 0.1 },
-                        { label: 'Thermodynamic AGI', data: thermo.history, borderColor: '#22c55e', borderWidth: 2, fill: false, lineTension: 0.1 }
-                    )
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    scales: { 
-                        yAxes: Array.of({ ticks: { beginAtZero: false } }) 
-                    } 
-                }
-            });
-        }
-    }
+    chartInstance = new Chart(canvasCtx, {
+        type: 'line',
+        data: {
+            labels: xLabels,
+            datasets: [
+                { label: 'Autoregressive AI (No Veto)', data: blind.history, borderColor: '#ef4444', borderWidth: 2, fill: false, lineTension: 0.1 },
+                { label: 'Thermodynamic AGI (Sensory VETO)', data: thermo.history, borderColor: '#22c55e', borderWidth: 2, fill: false, lineTension: 0.1 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+}
 
-    function runAutomatedQAEngine() {
-        let reportBox = document.getElementById('qa_report_box');
-        reportBox.style.display = 'block';
-        let logs = new Array();
-        logs.push("=== STARTING THERMODYNAMIC ENGINE QA DIAGNOSTICS ===");
-        let passedTests = 0;
+function runAutomatedQATests() {
+    let reportBox = document.getElementById('qa_report_box');
+    reportBox.style.display = 'block'; let logs = ["=== STARTING THERMODYNAMIC ENGINE QA DIAGNOSTICS ==="]; let passed = 0;
+    try {
+        let res = runCoreEngine(true, 0, 1, 10);
+        if(res.history.length === 1 && !res.success) { logs.push("[PASS] Test 1: Zero Energy handled successfully."); passed++; }
+        else { logs.push("[FAIL] Test 1: Zero Energy state leaked loops."); }
+    } catch(e) { logs.push("[FAIL] Test 1 crashed: " + e.message); }
+    try {
+        let res = runCoreEngine(true, 9999, 1, 5);
+        if(res.success) { logs.push("[PASS] Test 2: Target Pathfinding verified."); passed++; }
+        else { logs.push("[FAIL] Test 2: Target unreached."); }
+    } catch(e) { logs.push("[FAIL] Test 2 crashed: " + e.message); }
+    try {
+        let res = runCoreEngine(true, 200, 2, 15);
+        if(res.vetoes > 0) { logs.push("[PASS] Test 3: VETO inhibitor mechanism active (" + res.vetoes + " blocked loops)."); passed++; }
+        else { logs.push("[FAIL] Test 3: Inhibitor mechanism failed."); }
+    } catch(e) { logs.push("[FAIL] Test 3 crashed: " + e.message); }
+    try {
+        let res = runCoreEngine(true, 100, 1, 10); let validDecr = true;
+        for(let i = 1; i < res.history.length; i++) { if(res.history[i] > res.history[i-1]) { validDecr = false; break; } }
+        if(validDecr) { logs.push("[PASS] Test 4: Thermodynamic Law compliance. Energy decreases."); passed++; }
+        else { logs.push("[FAIL] Test 4: Energy anomaly detected."); }
+    } catch(e) { logs.push("[FAIL] Test 4 crashed: " + e.message); }
 
-        try {
-            let res = runCoreEngine(true, 0, 1, 10);
-            if(res.history.length === 1 && res.history[0] === 0 && !res.success) {
-                logs.push("[PASS] Test 1: Zero Energy Boundary Condition handled successfully.");
-                passedTests++;
-            } else {
-                logs.push("[FAIL] Test 1: Zero Energy state leaked loops.");
-            }
-        } catch(e) { logs.push("[FAIL] Test 1 crashed: " + e.message); }
+    logs.push("\n=== QA RESULTS: " + passed + " / 4 PASSED ===");
+    logs.push(passed === 4 ? "STATUS: ARCHITECTURE STABLE FOR R&D EVALUATION." : "STATUS: REFACTORING REQUIRED.");
+    reportBox.innerText = logs.join("\n");
+}
 
-        try {
-            let res = runCoreEngine(true, 9999, 1, 5);
-            if(res.success && res.history.length > 1) {
-                logs.push("[PASS] Test 2: Target Pathfinding with infinite resources verified.");
-                passedTests++;
-            } else {
-                logs.push("[FAIL] Test 2: Target unreached despite infinite resources.");
-            }
-        } catch(e) { logs.push("[FAIL] Test 2 crashed: " + e.message); }
-
-        try {
-            let res = runCoreEngine(true, 200, 2, 15);
-            if(res.vetoes > 0) {
-                logs.push("[PASS] Test 3: VETO inhibitor mechanism active. Prevented path loops (" + res.vetoes + " blocked paths).");
-                passedTests++;
-            } else {
-                logs.push("[FAIL] Test 3: Inhibitor mechanism failed to register redundant states.");
-            }
-        } catch(e) { logs.push("[FAIL] Test 3 crashed: " + e.message); }
-
-        try {
-            let res = runCoreEngine(true, 100, 1, 10);
-            let validDecr = true;
-            for(let idx = 1; idx < res.history.length; idx++) {
-                if(res.history[idx] > res.history[idx-1]) { validDecr = false; break; }
-            }
-            if(validDecr) {
-                logs.push("[PASS] Test 4: Thermodynamic Law compliance. Net energy strictly decreases.");
-                passedTests++;
-            } else {
-                logs.push("[FAIL] Test 4: Energy anomaly detected. Potential leaked upwards.");
-            }
-        } catch(e) { logs.push("[FAIL] Test 4 crashed: " + e.message); }
-
-        logs.push("\n=== QA RESULTS: " + passedTests + " / 4 PASSED ===");
-        if(passedTests === 4) { logs.push("STATUS: ARCHITECTURE STABLE FOR R&D EVALUATION."); }
-        else { logs.push("STATUS: REFACTORING REQUIRED."); }
-        
-        reportBox.innerText = logs.join("\n");
-    }
-
-    window.onload = executeAGISimulation;
+window.onload = executeAGISimulation;
 </script>
-</body>
-</html>
