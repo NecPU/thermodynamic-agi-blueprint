@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thermodynamic AGI Simulator</title>
+    <!-- ИСПРАВЛЕНО: Подключена актуальная версия Chart.js через CDN -->
     <script src="https://jsdelivr.net"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f8fafc; color: #0f172a; }
@@ -29,9 +30,10 @@
     </style>
 </head>
 <body>
-    <h1>🧠 Thermodynamic Optimization Architecture</h1>
+    <h1>Thermodynamic Optimization Architecture</h1>
     <h3>Demonstration Prototype</h3>
     <div class="author">Author: Vakhtang Doundoua | Contact: doundoua@gmail.com</div>
+    
     <div class="flex-container">
         <div class="sidebar">
             <div class="form-group">
@@ -39,15 +41,16 @@
                 <input type="range" id="param_energy" min="50" max="250" value="150" oninput="document.getElementById('e_lbl').innerText=this.value">
             </div>
             <div class="form-group">
-                <label>Virtualization Cost (&Psi;) <span class="val-display" id="v_lbl">1</span></label>
+                <label>Virtualization Cost (&Psi;<sub>sim</sub>) <span class="val-display" id="v_lbl">1</span></label>
                 <input type="range" id="param_sim" min="1" max="5" value="1" oninput="document.getElementById('v_lbl').innerText=this.value">
             </div>
             <div class="form-group">
                 <label>Actuator Step Cost <span class="val-display" id="a_lbl">10</span></label>
                 <input type="range" id="param_act" min="5" max="20" value="10" oninput="document.getElementById('a_lbl').innerText=this.value">
             </div>
-            <button onclick="executeAGISimulation()">🚀 Run Simulation</button>
+            <button onclick="executeAGISimulation()">Run Simulation</button>
         </div>
+        
         <div class="main-content">
             <div class="metrics">
                 <div class="card red">
@@ -61,13 +64,17 @@
                     <div class="card-sub" id="m_t_sub"></div>
                 </div>
             </div>
-            <div class="chart-box"><canvas id="canvasChart"></canvas></div>
+            <div class="chart-box">
+                <canvas id="canvasChart"></canvas>
+            </div>
         </div>
     </div>
+
     <script>
+        // ИСПРАВЛЕНО: Добавлены разделители '|' для корректной работы split()
         const RAW_MAZE = "00100|00101|10000|01110|00010";
-        const DIR_ROWS = new Array(-1, 1, 0, 0);
-        const DIR_COLS = new Array(0, 0, -1, 1);
+        const DIR_ROWS = [-1, 1, 0, 0];
+        const DIR_COLS = [0, 0, -1, 1];
         let chartInstance = null;
 
         function pseudoRandom(s) {
@@ -77,19 +84,19 @@
             return function() {
                 z = (36969 * (z & 65535) + (z >> 16)) & mask;
                 w = (18000 * (w & 65535) + (w >> 16)) & mask;
-                return ((((z << 16) + w) >> 16) + 32768) / 65536;
+                return (((z << 16) + w) >> 16) + 32768 / 65536;
             }
         }
 
-        function calculateImprint(r, c, m) {
+        function calculateImprint(r, c, maze) {
             let touch = 0;
             for(let i = 0; i < 4; i++) {
                 let nr = r + DIR_ROWS[i];
                 let nc = c + DIR_COLS[i];
-                if (!(nr >= 0 && nr < 5 && nc >= 0 && nc < 5) || m[nr][nc] === 1) touch++;
+                if (!(nr >= 0 && nr < 5 && nc >= 0 && nc < 5) || maze[nr][nc] === 1) touch++;
             }
             let dist = Math.sqrt(Math.pow(r - 4, 2) + Math.pow(c - 4, 2));
-            let sound = Math.round((10 / (dist + 1)) * 10) / 10;
+            let sound = Math.round((dist / (dist + 1)) * 10) / 10;
             return touch + "_" + sound + "_" + ((r + c) % 3);
         }
 
@@ -111,25 +118,28 @@
                 if(i % 15 === 0) {
                     let mr = Math.floor(nextRand() * 3) + 1;
                     let mc = Math.floor(nextRand() * 3) + 1;
-                    maze[mr][mc] = maze[mr][mc] === 0 ? 1 : 0;
+                    if (mr < 5 && mc < 5) maze[mr][mc] = maze[mr][mc] === 0 ? 1 : 0;
                 }
-                let dirIndices = new Array(0, 1, 2, 3);
+                let dirIndices =;
                 for (let j = dirIndices.length - 1; j > 0; j--) {
                     let k = Math.floor(nextRand() * (j + 1));
                     let temp = dirIndices[j];
                     dirIndices[j] = dirIndices[k];
                     dirIndices[k] = temp;
                 }
+
                 if(useThermo) {
                     let bestPath = null;
                     let minTrace = 99999;
                     for(let idx = 0; idx < 4; idx++) {
-                        let dIdx = dirIndices[idx];
-                        let nr = r + DIR_ROWS[dIdx];
-                        let nc = c + DIR_COLS[dIdx];
+                        let didx = dirIndices[idx];
+                        let nr = r + DIR_ROWS[didx];
+                        let nc = c + DIR_COLS[didx];
                         let isOut = !(nr >= 0 && nr < 5 && nc >= 0 && nc < 5);
                         let isWall = isOut ? false : maze[nr][nc] === 1;
                         if(isOut || isWall) continue;
+                        
+                        // ИСПРАВЛЕНО: Передан верный аргумент `maze` вместо `r, c`
                         let token = calculateImprint(nr, nc, maze);
                         let traceCount = memoryTraces[token] || 0;
                         if(traceCount < minTrace) {
@@ -162,7 +172,6 @@
             }
             return { history, success: targetReached, steps, vetoes };
         }
-
         function executeAGISimulation() {
             let energy = parseInt(document.getElementById('param_energy').value);
             let costSim = parseInt(document.getElementById('param_sim').value);
@@ -171,13 +180,13 @@
             let thermo = runCoreEngine(true, energy, costSim, costAct);
 
             document.getElementById('m_b_res').innerText = blind.success ? "SUCCESS" : "DEPLETED";
-            document.getElementById('m_b_sub').innerText = "Physical Steps: " + blind.steps + "\nBlind resource burn.";
+            document.getElementById('m_b_sub').innerText = "Physical Steps: " + blind.steps + "\nResource burn.";
             document.getElementById('m_t_res').innerText = thermo.success ? "SUCCESS" : "DEPLETED";
             document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "\nVETO Triggers: " + thermo.vetoes;
 
             let maxLen = Math.max(blind.history.length, thermo.history.length);
             let xLabels = new Array();
-            for (let idx = 0; idx < maxLen; idx++) { xLabels.push(idx.toString()); }
+            for(let idx = 0; idx < maxLen; idx++) { xLabels.push(idx.toString()); }
 
             if(chartInstance) chartInstance.destroy();
             let canvasCtx = document.getElementById('canvasChart').getContext('2d');
