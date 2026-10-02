@@ -126,12 +126,7 @@
                 if(r === 4 && c === 4) targetReached = true;
                 break;
             }
-            if(i % 15 === 0) {
-                let mr = Math.floor(nextRand() * 3) + 1;
-                let mc = Math.floor(nextRand() * 3) + 1;
-                if (mr < 5 && mc < 5 && maze[mr]) maze[mr][mc] = maze[mr][mc] === 0 ? 1 : 0;
-            }
-            
+                       
             let dirIndices = Array.of(0, 1, 2, 3);
             for (let j = dirIndices.length - 1; j > 0; j--) {
                 let k = Math.floor(nextRand() * (j + 1));
