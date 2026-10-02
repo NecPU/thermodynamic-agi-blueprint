@@ -1,40 +1,42 @@
-<script>
-// Автономная сборка интерфейса через JavaScript (защита от фильтров GitHub)
-document.head.innerHTML += '<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Thermodynamic AGI Simulator & QA</title>';
-
-const styleTag = document.createElement('style');
-styleTag.innerHTML = `
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 950px; margin: 0 auto; padding: 20px; background: #f8fafc; color: #0f172a; }
-    h1, h3 { margin: 0 0 5px 0; color: #1e293b; }
-    .author { font-size: 0.9em; color: #64748b; margin-bottom: 20px; }
-    .flex-container { display: flex; gap: 20px; flex-wrap: wrap; }
-    .sidebar { flex: 1; min-width: 290px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: fit-content; }
-    .main-content { flex: 2; min-width: 400px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; font-size: 0.85em; font-weight: 600; margin-bottom: 5px; color: #475569; }
-    input[type="range"] { width: 100%; }
-    .val-display { float: right; color: #64748b; font-weight: normal; }
-    button { width: 100%; padding: 12px; border: none; background: #2563eb; color: white; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95em; margin-bottom: 10px; }
-    button:hover { background: #1d4ed8; }
-    .btn-qa { background: #475569; font-size: 0.85em; padding: 8px; margin-top: 10px; }
-    .btn-qa:hover { background: #334155; }
-    .metrics { display: flex; gap: 15px; margin-bottom: 20px; }
-    .card { flex: 1; padding: 15px; border-radius: 8px; background: #f8fafc; border-left: 4px solid #cbd5e1; }
-    .card.red { border-left-color: #ef4444; }
-    .card.green { border-left-color: #22c55e; }
-    .card-title { font-size: 0.8em; font-weight: bold; color: #64748b; text-transform: uppercase; }
-    .card-value { font-size: 1.3em; font-weight: bold; margin: 5px 0; }
-    .card-sub { font-size: 0.8em; color: #64748b; white-space: pre-line; }
-    .chart-box { position: relative; height: 320px; margin-top: 15px; }
-    .qa-box { margin-top: 15px; font-size: 0.85em; font-family: monospace; max-height: 220px; overflow-y: auto; background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 6px; display: none; text-align: left; white-space: pre-wrap; border-left: 4px solid #38bdf8; }
-`;
-document.head.appendChild(styleTag);
-
-const appContainer = document.createElement('div');
-appContainer.innerHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thermodynamic AGI Simulator & QA</title>
+    <!-- Сверхстабильное зеркало Яндекса для гарантированной загрузки Chart.js без таймаутов -->
+    <script src="https://yastatic.net"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 950px; margin: 0 auto; padding: 20px; background: #f8fafc; color: #0f172a; }
+        h1, h3 { margin: 0 0 5px 0; color: #1e293b; }
+        .author { font-size: 0.9em; color: #64748b; margin-bottom: 20px; }
+        .flex-container { display: flex; gap: 20px; flex-wrap: wrap; }
+        .sidebar { flex: 1; min-width: 290px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: fit-content; }
+        .main-content { flex: 2; min-width: 400px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.85em; font-weight: 600; margin-bottom: 5px; color: #475569; }
+        input[type="range"] { width: 100%; }
+        .val-display { float: right; color: #64748b; font-weight: normal; }
+        button { width: 100%; padding: 12px; border: none; background: #2563eb; color: white; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.95em; margin-bottom: 10px; }
+        button:hover { background: #1d4ed8; }
+        .btn-qa { background: #475569; font-size: 0.85em; padding: 8px; margin-top: 10px; }
+        .btn-qa:hover { background: #334155; }
+        .metrics { display: flex; gap: 15px; margin-bottom: 20px; }
+        .card { flex: 1; padding: 15px; border-radius: 8px; background: #f8fafc; border-left: 4px solid #cbd5e1; }
+        .card.red { border-left-color: #ef4444; }
+        .card.green { border-left-color: #22c55e; }
+        .card-title { font-size: 0.8em; font-weight: bold; color: #64748b; text-transform: uppercase; }
+        .card-value { font-size: 1.3em; font-weight: bold; margin: 5px 0; }
+        .card-sub { font-size: 0.8em; color: #64748b; white-space: pre-line; }
+        .chart-box { position: relative; height: 320px; margin-top: 15px; }
+        .qa-box { margin-top: 15px; font-size: 0.85em; font-family: monospace; max-height: 220px; overflow-y: auto; background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 6px; display: none; text-align: left; white-space: pre-wrap; border-left: 4px solid #38bdf8; }
+    </style>
+</head>
+<body>
     <h1>Thermodynamic Optimization Architecture</h1>
     <h3>Demonstration & Diagnostic Prototype</h3>
     <div class="author">Author: Vakhtang Doundoua | Contact: doundoua@gmail.com</div>
+    
     <div class="flex-container">
         <div class="sidebar">
             <div class="form-group">
@@ -50,229 +52,234 @@ appContainer.innerHTML = `
                 <input type="range" id="param_act" min="5" max="20" value="10" oninput="document.getElementById('a_lbl').innerText=this.value">
             </div>
             <button onclick="executeAGISimulation()">Run Simulation</button>
+            
             <div style="margin-top: 20px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
                 <button onclick="runAutomatedQAEngine()" class="btn-qa">Run Automated QA Tests</button>
                 <div id="qa_report_box" class="qa-box"></div>
             </div>
         </div>
+        
         <div class="main-content">
             <div class="metrics">
-                <div class="card red"><div class="card-title">🔴 Autoregressive AI</div><div class="card-value" id="m_b_res">-</div><div class="card-sub" id="m_b_sub"></div></div>
-                <div class="card green"><div class="card-title">🟢 Thermodynamic AGI</div><div class="card-value" id="m_t_res">-</div><div class="card-sub" id="m_t_sub"></div></div>
+                <div class="card red">
+                    <div class="card-title">🔴 Autoregressive AI</div>
+                    <div class="card-value" id="m_b_res">-</div>
+                    <div class="card-sub" id="m_b_sub"></div>
+                </div>
+                <div class="card green">
+                    <div class="card-title">🟢 Thermodynamic AGI</div>
+                    <div class="card-value" id="m_t_res">-</div>
+                    <div class="card-sub" id="m_t_sub"></div>
+                </div>
             </div>
-            <div class="chart-box"><canvas id="canvasChart"></canvas></div>
+            <div class="chart-box">
+                <canvas id="canvasChart"></canvas>
+            </div>
         </div>
     </div>
-`;
-document.body.appendChild(appContainer);
 
-// Динамическое подключение движка графиков из стабильного источника Яндекса
-const scriptTag = document.createElement('script');
-scriptTag.src = "https://yastatic.net";
-scriptTag.onload = () => { setTimeout(() => { if(window.executeAGISimulation) window.executeAGISimulation(); }, 800); };
-document.head.appendChild(scriptTag);
-const RAW_MAZE = "00100|00101|10000|01110|00010";
-const DIR_ROWS = Array.of(-1, 1, 0, 0);
-const DIR_COLS = Array.of(0, 0, -1, 1);
-let chartInstance = null;
+    <script>
+    const RAW_MAZE = "00100|00101|10000|01110|00010";
+    const DIR_ROWS = Array.of(-1, 1, 0, 0);
+    const DIR_COLS = Array.of(0, 0, -1, 1);
+    let chartInstance = null;
 
-function pseudoRandom(s) {
-    let mask = 4294967295;
-    let w = (123456789 + s) & mask;
-    let z = (987654321 - s) & mask;
-    return function() {
-        z = (36969 * (z & 65535) + (z >> 16)) & mask;
-        w = (18000 * (w & 65535) + (w >> 16)) & mask;
-        return (((z << 16) + w) >> 16) + 32768 / 65536;
-    }
-}
-
-function calculateImprint(r, c, maze) {
-    let touch = 0;
-    for(let i = 0; i < 4; i++) {
-        let nr = r + DIR_ROWS[i];
-        let nc = c + DIR_COLS[i];
-        if (nr < 0 || nr >= 5 || nc < 0 || nc >= 5) {
-            touch++;
-        } else if (maze && maze[nr] && maze[nr][nc] === 1) {
-            touch++;
+    function pseudoRandom(s) {
+        let mask = 4294967295;
+        let w = (123456789 + s) & mask;
+        let z = (987654321 - s) & mask;
+        return function() {
+            z = (36969 * (z & 65535) + (z >> 16)) & mask;
+            w = (18000 * (w & 65535) + (w >> 16)) & mask;
+            return (((z << 16) + w) >> 16) + 32768 / 65536;
         }
     }
-    let dist = Math.sqrt(Math.pow(r - 4, 2) + Math.pow(c - 4, 2));
-    let sound = Math.round((dist / (dist + 1)) * 10) / 10;
-    return touch + "_" + sound + "_" + ((r + c) % 3);
-}
-function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
-    let nextRand = pseudoRandom(105);
-    let maze = RAW_MAZE.split("|").map(row => row.split("").map(Number));
-    let r = 0, c = 0;
-    let energy = startEnergy;
-    let history = new Array();
-    history.push(Number(startEnergy));
-    let steps = 0, vetoes = 0, targetReached = false;
-    let memoryTraces = {};
 
-    for(let i = 1; i < 1000; i++) {
-        if((r === 4 && c === 4) || energy <= 0) {
-            if(r === 4 && c === 4) targetReached = true;
-            break;
-        }
-        if(i % 15 === 0) {
-            let mr = Math.floor(nextRand() * 3) + 1;
-            let mc = Math.floor(nextRand() * 3) + 1;
-            if (mr < 5 && mc < 5 && maze[mr]) maze[mr][mc] = maze[mr][mc] === 0 ? 1 : 0;
-        }
-        
-        let dirIndices = Array.of(0, 1, 2, 3);
-        for (let j = dirIndices.length - 1; j > 0; j--) {
-            let k = Math.floor(nextRand() * (j + 1));
-            let temp = dirIndices[j];
-            dirIndices[j] = dirIndices[k];
-            dirIndices[k] = temp;
-        }
-
-        if(useThermo) {
-            let bestPath = null;
-            let minTrace = 99999;
-            for(let idx = 0; idx < 4; idx++) {
-                let didx = dirIndices[idx];
-                let nr = r + DIR_ROWS[didx];
-                let nc = c + DIR_COLS[didx];
-                if(nr < 0 || nr >= 5 || nc < 0 || nc >= 5 || (maze[nr] && maze[nr][nc] === 1)) continue;
-                
-                let token = calculateImprint(nr, nc, maze);
-                let traceCount = memoryTraces[token] || 0;
-                if(traceCount < minTrace) {
-                    minTrace = traceCount;
-                    bestPath = { nr: nr, nc: nc, token: token, trace: traceCount };
-                }
+    function calculateImprint(r, c, maze) {
+        let touch = 0;
+        for(let i = 0; i < 4; i++) {
+            let nr = r + DIR_ROWS[i];
+            let nc = c + DIR_COLS[i];
+            if (nr < 0 || nr >= 5 || nc < 0 || nc >= 5) {
+                touch++;
+            } else if (maze && maze[nr] && maze[nr][nc] === 1) {
+                touch++;
             }
-            if(bestPath !== null) {
-                if(bestPath.trace > 1) {
-                    vetoes++; energy -= simCost; history.push(Number(energy)); continue;
+        }
+        let dist = Math.sqrt(Math.pow(r - 4, 2) + Math.pow(c - 4, 2));
+        let sound = Math.round((dist / (dist + 1)) * 10) / 10;
+        return touch + "_" + sound + "_" + ((r + c) % 3);
+    }
+
+    function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
+        let nextRand = pseudoRandom(105);
+        let maze = RAW_MAZE.split("|").map(row => row.split("").map(Number));
+        let r = 0, c = 0;
+        let energy = startEnergy;
+        let history = new Array();
+        history.push(Number(startEnergy));
+        let steps = 0, vetoes = 0, targetReached = false;
+        let memoryTraces = {};
+
+        for(let i = 1; i < 1000; i++) {
+            if((r === 4 && c === 4) || energy <= 0) {
+                if(r === 4 && c === 4) targetReached = true;
+                break;
+            }
+            if(i % 15 === 0) {
+                let mr = Math.floor(nextRand() * 3) + 1;
+                let mc = Math.floor(nextRand() * 3) + 1;
+                if (mr < 5 && mc < 5 && maze[mr]) maze[mr][mc] = maze[mr][mc] === 0 ? 1 : 0;
+            }
+            
+            let dirIndices = Array.of(0, 1, 2, 3);
+            for (let j = dirIndices.length - 1; j > 0; j--) {
+                let k = Math.floor(nextRand() * (j + 1));
+                let temp = dirIndices[j];
+                dirIndices[j] = dirIndices[k];
+                dirIndices[k] = temp;
+            }
+
+            if(useThermo) {
+                let bestPath = null;
+                let minTrace = 99999;
+                for(let idx = 0; idx < 4; idx++) {
+                    let didx = dirIndices[idx];
+                    let nr = r + DIR_ROWS[didx];
+                    let nc = c + DIR_COLS[didx];
+                    if(nr < 0 || nr >= 5 || nc < 0 || nc >= 5 || (maze[nr] && maze[nr][nc] === 1)) continue;
+                    
+                    let token = calculateImprint(nr, nc, maze);
+                    let traceCount = memoryTraces[token] || 0;
+                    if(traceCount < minTrace) {
+                        minTrace = traceCount;
+                        bestPath = { nr: nr, nc: nc, token: token, trace: traceCount };
+                    }
+                }
+                if(bestPath !== null) {
+                    if(bestPath.trace > 1) {
+                        vetoes++; energy -= simCost; history.push(Number(energy)); continue;
+                    } else {
+                        energy -= simCost; energy -= actCost;
+                        r = bestPath.nr; c = bestPath.nc;
+                        memoryTraces[bestPath.token] = (memoryTraces[bestPath.token] || 0) + 1;
+                        steps++;
+                    }
                 } else {
-                    energy -= simCost; energy -= actCost;
-                    r = bestPath.nr; c = bestPath.nc;
-                    memoryTraces[bestPath.token] = (memoryTraces[bestPath.token] || 0) + 1;
-                    steps++;
+                    vetoes++; energy -= simCost; history.push(Number(energy)); continue;
                 }
             } else {
-                vetoes++; energy -= simCost; history.push(Number(energy)); continue;
+                let dirIdx = Math.floor(nextRand() * 4);
+                let nr = r + DIR_ROWS[dirIdx];
+                let nc = c + DIR_COLS[dirIdx];
+                energy -= actCost;
+                if(nr >= 0 && nr < 5 && nc >= 0 && nc < 5 && maze[nr] && maze[nr][nc] !== 1) { 
+                    r = nr; c = nc; steps++; 
+                }
             }
-        } else {
-            let dirIdx = Math.floor(nextRand() * 4);
-            let nr = r + DIR_ROWS[dirIdx];
-            let nc = c + DIR_COLS[dirIdx];
-            energy -= actCost;
-            if(nr >= 0 && nr < 5 && nc >= 0 && nc < 5 && maze[nr] && maze[nr][nc] !== 1) { 
-                r = nr; c = nc; steps++; 
-            }
+            history.push(Number(energy));
         }
-        history.push(Number(energy));
+        return { history, success: targetReached, steps, vetoes };
     }
-    return { history, success: targetReached, steps, vetoes };
-}
-function executeAGISimulation() {
-    let energy = parseInt(document.getElementById('param_energy').value);
-    let costSim = parseInt(document.getElementById('param_sim').value);
-    let costAct = parseInt(document.getElementById('param_act').value);
-    let blind = runCoreEngine(false, energy, costSim, costAct);
-    let thermo = runCoreEngine(true, energy, costSim, costAct);
+    function executeAGISimulation() {
+        let energy = parseInt(document.getElementById('param_energy').value);
+        let costSim = parseInt(document.getElementById('param_sim').value);
+        let costAct = parseInt(document.getElementById('param_act').value);
+        let blind = runCoreEngine(false, energy, costSim, costAct);
+        let thermo = runCoreEngine(true, energy, costSim, costAct);
 
-    document.getElementById('m_b_res').innerText = blind.success ? "SUCCESS" : "DEPLETED";
-    document.getElementById('m_b_sub').innerText = "Physical Steps: " + blind.steps + "\nResource burn.";
-    document.getElementById('m_t_res').innerText = thermo.success ? "SUCCESS" : "DEPLETED";
-    document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "\nVETO Triggers: " + thermo.vetoes;
+        document.getElementById('m_b_res').innerText = blind.success ? "SUCCESS" : "DEPLETED";
+        document.getElementById('m_b_sub').innerText = "Physical Steps: " + blind.steps + "\nResource burn.";
+        document.getElementById('m_t_res').innerText = thermo.success ? "SUCCESS" : "DEPLETED";
+        document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "\nVETO Triggers: " + thermo.vetoes;
 
-    let maxLen = Math.max(blind.history.length, thermo.history.length);
-    let xLabels = new Array();
-    for(let idx = 0; idx < maxLen; idx++) { xLabels.push(idx.toString()); }
+        let maxLen = Math.max(blind.history.length, thermo.history.length);
+        let xLabels = new Array();
+        for(let idx = 0; idx < maxLen; idx++) { xLabels.push(idx.toString()); }
 
-    if(chartInstance) chartInstance.destroy();
-    let canvasCtx = document.getElementById('canvasChart').getContext('2d');
-    
-    if (typeof Chart !== 'undefined') {
-        chartInstance = new Chart(canvasCtx, {
-            type: 'line',
-            data: {
-                labels: xLabels,
-                datasets: Array.of(
-                    { label: 'Autoregressive AI', data: blind.history, borderColor: '#ef4444', borderWidth: 2, fill: false, lineTension: 0.1 },
-                    { label: 'Thermodynamic AGI', data: thermo.history, borderColor: '#22c55e', borderWidth: 2, fill: false, lineTension: 0.1 }
-                )
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                scales: { 
-                    yAxes: Array.of({ ticks: { beginAtZero: false } }) 
-                } 
-            }
-        });
+        if(chartInstance) chartInstance.destroy();
+        let canvasCtx = document.getElementById('canvasChart').getContext('2d');
+        
+        if (typeof Chart !== 'undefined') {
+            chartInstance = new Chart(canvasCtx, {
+                type: 'line',
+                data: {
+                    labels: xLabels,
+                    datasets: Array.of(
+                        { label: 'Autoregressive AI', data: blind.history, borderColor: '#ef4444', borderWidth: 2, fill: false, lineTension: 0.1 },
+                        { label: 'Thermodynamic AGI', data: thermo.history, borderColor: '#22c55e', borderWidth: 2, fill: false, lineTension: 0.1 }
+                    )
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        yAxes: Array.of({ ticks: { beginAtZero: false } }) 
+                    } 
+                }
+            });
+        }
     }
-}
 
-function runAutomatedQAEngine() {
-    let reportBox = document.getElementById('qa_report_box');
-    reportBox.style.display = 'block';
-    let logs = new Array();
-    logs.push("=== STARTING THERMODYNAMIC ENGINE QA DIAGNOSTICS ===");
-    let passedTests = 0;
+    function runAutomatedQAEngine() {
+        let reportBox = document.getElementById('qa_report_box');
+        reportBox.style.display = 'block';
+        let logs = new Array();
+        logs.push("=== STARTING THERMODYNAMIC ENGINE QA DIAGNOSTICS ===");
+        let passedTests = 0;
 
-    try {
-        let res = runCoreEngine(true, 0, 1, 10);
-        if(res.history.length === 1 && res.history[0] === 0 && !res.success) {
-            logs.push("[PASS] Test 1: Zero Energy Boundary Condition handled successfully.");
-            passedTests++;
-        } else {
-            logs.push("[FAIL] Test 1: Zero Energy state leaked loops.");
-        }
-    } catch(e) { logs.push("[FAIL] Test 1 crashed: " + e.message); }
+        try {
+            let res = runCoreEngine(true, 0, 1, 10);
+            if(res.history.length === 1 && res.history[0] === 0 && !res.success) {
+                logs.push("[PASS] Test 1: Zero Energy Boundary Condition handled successfully.");
+                passedTests++;
+            } else {
+                logs.push("[FAIL] Test 1: Zero Energy state leaked loops.");
+            }
+        } catch(e) { logs.push("[FAIL] Test 1 crashed: " + e.message); }
 
-    try {
-        let res = runCoreEngine(true, 9999, 1, 5);
-        if(res.success && res.history.length > 1) {
-            logs.push("[PASS] Test 2: Target Pathfinding with infinite resources verified.");
-            passedTests++;
-        } else {
-            logs.push("[FAIL] Test 2: Target unreached despite infinite resources.");
-        }
-    } catch(e) { logs.push("[FAIL] Test 2 crashed: " + e.message); }
+        try {
+            let res = runCoreEngine(true, 9999, 1, 5);
+            if(res.success && res.history.length > 1) {
+                logs.push("[PASS] Test 2: Target Pathfinding with infinite resources verified.");
+                passedTests++;
+            } else {
+                logs.push("[FAIL] Test 2: Target unreached despite infinite resources.");
+            }
+        } catch(e) { logs.push("[FAIL] Test 2 crashed: " + e.message); }
 
-    try {
-        let res = runCoreEngine(true, 200, 2, 15);
-        if(res.vetoes > 0) {
-            logs.push("[PASS] Test 3: VETO inhibitor mechanism active. Prevented path loops (" + res.vetoes + " blocked paths).");
-            passedTests++;
-        } else {
-            logs.push("[FAIL] Test 3: Inhibitor mechanism failed to register redundant states.");
-        }
-    } catch(e) { logs.push("[FAIL] Test 3 crashed: " + e.message); }
+        try {
+            let res = runCoreEngine(true, 200, 2, 15);
+            if(res.vetoes > 0) {
+                logs.push("[PASS] Test 3: VETO inhibitor mechanism active. Prevented path loops (" + res.vetoes + " blocked paths).");
+                passedTests++;
+            } else {
+                logs.push("[FAIL] Test 3: Inhibitor mechanism failed to register redundant states.");
+            }
+        } catch(e) { logs.push("[FAIL] Test 3 crashed: " + e.message); }
 
-    try {
-        let res = runCoreEngine(true, 100, 1, 10);
-        let validDecr = true;
-        for(let idx = 1; idx < res.history.length; idx++) {
-            if(res.history[idx] > res.history[idx-1]) { validDecr = false; break; }
-        }
-        if(validDecr) {
-            logs.push("[PASS] Test 4: Thermodynamic Law compliance. Net energy strictly decreases.");
-            passedTests++;
-        } else {
-            logs.push("[FAIL] Test 4: Energy anomaly detected. Potential leaked upwards.");
-        }
-    } catch(e) { logs.push("[FAIL] Test 4 crashed: " + e.message); }
+        try {
+            let res = runCoreEngine(true, 100, 1, 10);
+            let validDecr = true;
+            for(let idx = 1; idx < res.history.length; idx++) {
+                if(res.history[idx] > res.history[idx-1]) { validDecr = false; break; }
+            }
+            if(validDecr) {
+                logs.push("[PASS] Test 4: Thermodynamic Law compliance. Net energy strictly decreases.");
+                passedTests++;
+            } else {
+                logs.push("[FAIL] Test 4: Energy anomaly detected. Potential leaked upwards.");
+            }
+        } catch(e) { logs.push("[FAIL] Test 4 crashed: " + e.message); }
 
-    logs.push("\n=== QA RESULTS: " + passedTests + " / 4 PASSED ===");
-    if(passedTests === 4) { logs.push("STATUS: ARCHITECTURE STABLE FOR R&D EVALUATION."); }
-    else { logs.push("STATUS: REFACTORING REQUIRED."); }
-    
-    reportBox.innerText = logs.join("\n");
-}
+        logs.push("\n=== QA RESULTS: " + passedTests + " / 4 PASSED ===");
+        if(passedTests === 4) { logs.push("STATUS: ARCHITECTURE STABLE FOR R&D EVALUATION."); }
+        else { logs.push("STATUS: REFACTORING REQUIRED."); }
+        
+        reportBox.innerText = logs.join("\n");
+    }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { setTimeout(executeAGISimulation, 500); });
-} else {
-    setTimeout(executeAGISimulation, 500);
-}
+    window.onload = executeAGISimulation;
 </script>
+</body>
+</html>
