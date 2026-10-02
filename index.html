@@ -186,19 +186,61 @@ function executeAGISimulation() {
 
     let w = canvas.width;
     let h = canvas.height;
-    let padding = 45;
+    let padding = 50;
 
     ctx.clearRect(0, 0, w, h);
+
+    let maxSteps = Math.max(blind.history.length, thermo.history.length);
+
     ctx.strokeStyle = '#e2e8f0';
     ctx.lineWidth = 1;
-    ctx.beginPath();
+    ctx.fillStyle = '#64748b';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'right';
 
     for (let i = 0; i <= 4; i++) {
-        let y = padding + (i / 4) * (h - 2 * padding);
+        let ratio = i / 4;
+        let y = (h - padding) - ratio * (h - 2 * padding);
+        let valY = Math.round(ratio * energy);
+
+        ctx.beginPath();
         ctx.moveTo(padding, y);
         ctx.lineTo(w - padding, y);
+        ctx.stroke();
+
+        ctx.fillText(valY, padding - 8, y + 4);
     }
+
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= 4; i++) {
+        let ratio = i / 4;
+        let x = padding + ratio * (w - 2 * padding);
+        let valX = Math.round(ratio * (maxSteps - 1));
+
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.beginPath();
+        ctx.moveTo(x, h - padding);
+        ctx.lineTo(x, h - padding + 5);
+        ctx.stroke();
+        ctx.strokeStyle = '#e2e8f0';
+
+        ctx.fillText(valX, x, h - padding + 18);
+    }
+
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, h - padding);
+    ctx.lineTo(w - padding, h - padding);
     ctx.stroke();
+
+    ctx.fillStyle = '#475569';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText("Энергия (Ресурс)", padding - 10, padding - 15);
+    ctx.textAlign = 'right';
+    ctx.fillText("Время (Циклы) ->", w - padding, h - padding + 32);
 
     function drawLine(history, color) {
         let maxSteps = Math.max(blind.history.length, thermo.history.length);
@@ -219,12 +261,6 @@ function executeAGISimulation() {
 
     drawLine(blind.history, '#ef4444');
     drawLine(thermo.history, '#22c55e');
-
-    ctx.fillStyle = '#64748b';
-    ctx.font = '12px sans-serif';
-    ctx.fillText("Energy Max: " + energy, padding, padding - 10);
-    ctx.fillText("0", padding - 15, h - padding + 5);
-    ctx.fillText("Time (Cycles) ->", w - 130, h - padding + 22);
 
     // --- ОТРИСОВКА ЛЕГЕНДЫ ГРАФИКА ---
     let legendX = w - padding - 180;
