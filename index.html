@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thermodynamic AGI Simulator & QA</title>
-    <!-- Сверхстабильное зеркало Яндекса для гарантированной загрузки Chart.js без таймаутов -->
-    <script src="https://cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Исправленный и стабильный CDN для Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 950px; margin: 0 auto; padding: 20px; background: #f8fafc; color: #0f172a; }
         h1, h3 { margin: 0 0 5px 0; color: #1e293b; }
@@ -54,7 +54,7 @@
             <button onclick="executeAGISimulation()">Run Simulation</button>
             
             <div style="margin-top: 20px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
-                <button onclick="runAutomatedQAEngine()" class="btn-qa">Run Automated QA Tests</button>
+                <button onclick="runAutomatedQATests()" class="btn-qa">Run Automated QA Tests</button>
                 <div id="qa_report_box" class="qa-box"></div>
             </div>
         </div>
@@ -77,7 +77,7 @@
             </div>
         </div>
     </div>
-<script src="https://googleapis.com"></script>
+
 <script>
 const RAW_MAZE = "00100|00101|10000|01110|00010";
 const DIR_ROWS = [-1, 1, 0, 0];
@@ -107,6 +107,7 @@ function calculateImprint(r, c, maze) {
     let sound = Math.round((dist / (dist + 1)) * 10) / 10;
     return touch + "_" + sound + "_" + ((r + c) % 3);
 }
+
 function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
     let nextRand = pseudoRandom(105);
     let maze = RAW_MAZE.split("|").map(row => row.split("").map(Number));
@@ -151,6 +152,7 @@ function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
     }
     return { history, success: targetReached, steps, vetoes };
 }
+
 function executeAGISimulation() {
     let energy = parseInt(document.getElementById('param_energy').value);
     let costSim = parseInt(document.getElementById('param_sim').value);
@@ -159,9 +161,11 @@ function executeAGISimulation() {
     let thermo = runCoreEngine(true, energy, costSim, costAct);
 
     document.getElementById('m_b_res').innerText = blind.success ? "SUCCESS" : "DEPLETED";
-    document.getElementById('m_b_sub').innerText = "Physical Steps: " + blind.steps + "\nResource burn.";
+    document.getElementById('m_b_sub').innerText = "Physical Steps: " + blind.steps + "
+Resource burn.";
     document.getElementById('m_t_res').innerText = thermo.success ? "SUCCESS" : "DEPLETED";
-    document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "\nVETO Triggers: " + thermo.vetoes;
+    document.getElementById('m_t_sub').innerText = "Physical Steps: " + thermo.steps + "
+VETO Triggers: " + thermo.vetoes;
 
     let maxLen = Math.max(blind.history.length, thermo.history.length);
     let xLabels = []; for(let idx = 0; idx < maxLen; idx++) { xLabels.push(idx.toString()); }
@@ -206,10 +210,14 @@ function runAutomatedQATests() {
         else { logs.push("[FAIL] Test 4: Energy anomaly detected."); }
     } catch(e) { logs.push("[FAIL] Test 4 crashed: " + e.message); }
 
-    logs.push("\n=== QA RESULTS: " + passed + " / 4 PASSED ===");
+    logs.push("
+=== QA RESULTS: " + passed + " / 4 PASSED ===");
     logs.push(passed === 4 ? "STATUS: ARCHITECTURE STABLE FOR R&D EVALUATION." : "STATUS: REFACTORING REQUIRED.");
-    reportBox.innerText = logs.join("\n");
+    reportBox.innerText = logs.join("
+");
 }
 
 window.onload = executeAGISimulation;
 </script>
+</body>
+</html>
