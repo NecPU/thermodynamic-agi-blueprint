@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thermodynamic AGI Simulator</title>
     <!-- ИСПРАВЛЕНО: Закреплена классическая монолитная версия Chart.js, не требующая импортов -->
-    <script src="https://jsdelivr.net"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f8fafc; color: #0f172a; }
         h1, h3 { margin: 0 0 5px 0; color: #1e293b; }
@@ -122,7 +122,7 @@
                 }
                 
                 // ИСПРАВЛЕНО: Массив корректно инициализирован и заполнен индексами
-                let dirIndices =;
+                let dirIndices = [ 0 , 1 , 2 , 3 ] ;
                 for (let j = dirIndices.length - 1; j > 0; j--) {
                     let k = Math.floor(nextRand() * (j + 1));
                     let temp = dirIndices[j];
