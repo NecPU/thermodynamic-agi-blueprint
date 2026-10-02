@@ -121,7 +121,6 @@
                     if (mr < 5 && mc < 5) maze[mr][mc] = maze[mr][mc] === 0 ? 1 : 0;
                 }
                 
-                // ИСПРАВЛЕНО: Массив корректно инициализирован и заполнен индексами
                 let dirIndices = [ 0 , 1 , 2 , 3 ] ;
                 for (let j = dirIndices.length - 1; j > 0; j--) {
                     let k = Math.floor(nextRand() * (j + 1));
