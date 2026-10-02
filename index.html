@@ -158,7 +158,13 @@
                 }
                 if(bestPath !== null) {
                     if(bestPath.trace > 1) {
-                        vetoes++; energy -= simCost; history.push(Number(energy)); continue;
+                    vetoes++; 
+                    energy -= simCost; 
+                    // Термодинамический сдвиг: вместо глухого тупика агент временно штрафует этот след и пробует другое случайное направление
+                    memoryTraces[bestPath.token] = (memoryTraces[bestPath.token] || 0) + 5;
+                    history.push(Number(energy)); 
+                continue;
+                }
                     } else {
                         energy -= simCost; energy -= actCost;
                         r = bestPath.nr; c = bestPath.nc;
