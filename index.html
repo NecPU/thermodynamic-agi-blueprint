@@ -68,7 +68,7 @@ document.body.appendChild(appContainer);
 // Динамическое подключение движка графиков из стабильного источника Яндекса
 const scriptTag = document.createElement('script');
 scriptTag.src = "https://yastatic.net";
-scriptTag.onload = () => { if(window.executeAGISimulation) window.executeAGISimulation(); };
+scriptTag.onload = () => { setTimeout(() => { if(window.executeAGISimulation) window.executeAGISimulation(); }, 800); };
 document.head.appendChild(scriptTag);
 const RAW_MAZE = "00100|00101|10000|01110|00010";
 const DIR_ROWS = Array.of(-1, 1, 0, 0);
@@ -111,7 +111,7 @@ function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
     let steps = 0, vetoes = 0, targetReached = false;
     let memoryTraces = {};
 
-    for(let i = 1; i < 100; i++) {
+    for(let i = 1; i < 1000; i++) {
         if((r === 4 && c === 4) || energy <= 0) {
             if(r === 4 && c === 4) targetReached = true;
             break;
