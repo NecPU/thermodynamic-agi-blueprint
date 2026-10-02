@@ -122,7 +122,8 @@ function runCoreEngine(useThermo, startEnergy, simCost, actCost) {
             if(r === 4 && c === 4) targetReached = true;
             break;
         }
-        let dirIndices = Array(0, 1, 2, 3);
+        let strIndices = "0123";
+        let dirIndices = strIndices.split("").map(Number);
         for (let j = 3; j > 0; j--) {
             let k = Math.floor(nextRand() * (j + 1));
             let temp = dirIndices[j]; dirIndices[j] = dirIndices[k]; dirIndices[k] = temp;
