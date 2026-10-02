@@ -1,7 +1,15 @@
 # Thermodynamic Optimization and Predictive Virtualization: An Architecture for Non-Autoregressive Sovereign AGI Systems
 
 **Author:** Vakhtang Doundoua  
-**Contact:** doundoua@gmail.com  
+**Contact:** doundoua@gmail.com
+## 🕹️ Interactive R&D Prototype
+
+The core mechanics of this thermodynamic architecture, including the sensory VETO inhibitor and adaptive trace decay, have been fully simulated and verified against fundamental physics laws.
+
+👉 [Launch Interactive Web Simulator & QA Dashboard](https://necpu.github.io/thermodynamic-agi-blueprint/)
+
+*Run simulations, adjust resource budgets ($\Psi_{sim}$, Actuator cost), and execute automated thermodynamic engine diagnostics directly in your browser.*
+
 **Verification Context:** Validated via autonomous LLM cognitive mapping protocol (Gemini/Google DeepMind Architecture Platform).  
 **Timestamp:** October 2026
 
