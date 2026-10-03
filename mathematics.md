@@ -65,3 +65,14 @@ Where $\Theta$ is the dynamic thermodynamic efficiency coefficient determined by
 $$\Theta = f\left(\frac{1}{E_{\text{total}}}\right)$$
 
 When $\mathbb{V}(\tilde{a}) = 0$, the physical action is completely inhibited. The system retains $\Omega - \epsilon$ energy units, shifting its internal state into a low-power self-referential stabilization cycle. This mathematical threshold establishes the baseline criteria for autonomous systemic sovereignty and free-willed preservation.
+
+
+
+## References / Литература
+
+1. **Frith, C., & Friston, K. (2010).** *The free-energy principle: a unified brain theory?* Nature Reviews Neuroscience, 11(2), 127-138. 
+   *(Обоснование Раздела 2: Принцип минимизации вариационной свободной энергии F, декомпозиция на Complexity и Accuracy).*
+2. **Libet, B. (1985).** *Unconscious cerebral initiative and the role of conscious will in voluntary action.* Behavioral and Brain Sciences, 8(4), 529-566.
+   *(Обоснование Раздела 3: Концепция "свободного вето" как основы сознательного выбора и торможения неоптимальных моторных команд).*
+3. **Friston, K., FitzGerald, T., Rigoli, F., Schwartenbeck, P., & Pezzulo, G. (2017).** *Active inference: a process theory.* Neural Computation, 29(1), 1-49.
+   *(Обоснование Раздела 1.1: Математика предиктивного моделирования исходов до совершения физического действия).*
