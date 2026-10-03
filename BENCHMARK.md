@@ -1,108 +1,58 @@
-# Interactive Thermodynamic Benchmark: Active Inference vs. Autoregressive Context Explosion
-
-Original Repository: https://github.com/NecPU/thermodynamic-agi-blueprint
-Author/Developer: Vakhtang Doundoua (GitHub: https://github.com/NecPU), doundoua@gmail.com
-License & Copyright: Custom Sovereign AGI Blueprint License. All Rights Reserved.
-
-================================================================================
-ENGLISH VERSION
-================================================================================
-
-1. Simulation Description
-
-This interactive simulator visually demonstrates the physical and computational dead-end of context-dependent autoregressive architectures (Transformer/LLM models) during long-horizon planning tasks, while validating the efficiency of the Thermodynamic AGI V2 paradigm rooted in Active Inference and Free Energy Minimization.
-
-Architecture & Mathematical Framework:
-Both agents are deployed into an identical discrete environment (a 16 x 16 grid-world maze) with procedurally generated obstacles and guaranteed path solvability. Their objective is to navigate to the goal state while managing a strict budget of starting energy (2000 units). The underlying physics of computation and movement are strictly symmetrical:
-
-1. Unified Perception API: Agents interact with the grid exclusively via the Environment.perceiveDirection() interface, parsing neighboring spatial data. Any asymmetric data access or "hidden global map cheating" is structurally eliminated.
-2. Symmetrical Energy Dynamics (Compute vs. Actuator):
-   * Actuator Cost: Physical execution of motor commands demands a rigid, fixed fee (actuatorCost) and is only deducted upon successful coordinate alteration in the physical space.
-   * Compute / Inference Cost: The primary operational differentiator, capturing the intrinsic computational complexity expended per discrete time step (Tock).
-
-Compared Paradigms:
-
-* Contextual Autoregressive AI (Linear History):
-  Emulates a traditional Autoregressive Transformer. On every cycle, the agent is forced to append its current coordinates and spatial observations into a continuous context window as a sequence of raw data tokens.
-  - Memory Bloat: The context size (Linear Context Memory) scales linearly over time: N_tokens proportional to Tocks.
-  - Inference Explosion: The computational overhead per tick scales directly with historical sequence length: Cost_compute = N_tokens * 0.05, accurately mirroring standard Attention Complexity scaling. Over long rollouts, the mere tax of processing past context becomes astronomically expensive, inducing thermodynamic death and premature energy starvation (DEPLETED).
-
-* Thermodynamic AGI V2 (Active Inference):
-  Constructs a dense, compressed cognitive graph of environmental invariants (World Model). Prior to physical execution, the agent models 4 sensory-motor vectors within its internal virtualization engine.
-  - Perfect Structural Compression: Memory scale is fundamentally bounded by the geometric constraints of the maze grid (N_cells <= 256) and remains completely invariant to time duration.
-  - Fixed Inference Overhead: Computational processing cost remains completely static across all steps: Cost_compute = 4 * PSI_SIM.
-  - The VETO Mechanism: If the internal predictive simulation reveals that all prospective paths yield high Free Energy (Delta F) updates—such as hitting dead-ends or highly redundant states—the internal VETO inhibitor triggers. The agent overrides the physical actuators, paying a flat computation fee for "thought" while preserving the physical move energy entirely.
-
-2. Interface and Controls Legend
-
-Control Panel (Left Sidebar):
-* STARTING ENERGY: The initial energy matrix allocated to both agents at session launch (range: 50 - 3000). It establishes the operational lifespan of the system, determining how deep a rollout the model can sustain before hitting absolute energy starvation (DEPLETED).
-* PSI_SIM (Simulation Cost): The exact computational cost required to predictively model a single spatial vector within the internal virtualization engine of the Thermodynamic AGI. Because the agent pre-scans 4 directions every turn, the flat baseline fee for "thinking" is structurally locked at 4 * PSI_SIM per step.
-* ACTUATOR COST: The physical energy consumed by the robot's physical hardware to execute a single kinetic movement within the maze. It is deducted strictly symmetrically for both agents, and only upon successful coordinate modification. When the internal VETO overrides an action, this energy is completely preserved.
-* GAMMA (Curiosity Weight): A critical thermodynamic driver that scales the agent’s mathematical drive toward unmapped topology. It amplifies Free Energy (Delta F) reduction incentives when encountering states with zero or minimal familiarity values, preventing cyclic dead-ends and optimizing discovery.
-* RANDOM SEED: A unique numerical identifier feeding the pseudoRandom generator. It guarantees identical structural layouts for the 16 x 16 grid. If a seed maps out an impossible layout, the simulator's built-in BFS auto-increments the seed until a verified solvable path is generated.
-
-Action Buttons:
-* Generate Map: Triggers procedural generation of a new maze geometry based on a random or user-defined seed and resets both agents back to the origin state (0,0).
-* Run Simulation / Stop Simulation: Toggles a continuous automated execution loop for both architectures at a fixed interval of 175ms, running until success, depletion, or reaching the hard execution limit of 800 ticks.
-* Step (1 Tock): Manually processes a single discrete computational and kinetic step for both models simultaneously, enabling fine-grained, frame-by-frame structural inspection.
-
-Chart: Energy Dynamics per Tock:
-* X-Axis (Tocks): Discrete simulation time steps.
-* Y-Axis (Energy): The remaining real-time energy reserve of the respective model.
-* Red Line (Contextual AR): Illustrates the accelerated, non-linear collapse of the energy baseline caused by the compounding tax of historical context processing. Visually defines the AR scaling wall.
-* Green Line (Thermodynamic V2): Highlights a highly stable, linear decay curve. The intermittent plateaus and changes in slope visually capture the dynamic activation of the VETO inhibitor, preserving actuator energy.
-
-Benchmark Verdict: Under identical physical environmental constraints, the Autoregressive AI inevitably suffers a catastrophic thermal collapse due to contextual memory accumulation, whereas the Thermodynamic model securely reaches the goal state maintaining strict efficiency and predictable operational overhead.
-
-
-================================================================================
-РУССКАЯ ВЕРСИЯ (RUSSIAN VERSION)
-================================================================================
-
-1. Описание симуляции
-
-Этот интерактивный симулятор наглядно демонстрирует физический и вычислительный тупик контекстно-зависимых авторегрессионных архитектур (Transformer/LLM) в задачах долгосрочного планирования и выявляет фундаментальные преимущества парадигмы Thermodynamic AGI V2, построенной на принципах Активного инференса (Active Inference) и минимизации свободной энергии.
-
-Архитектура и математическая модель:
-Оба агента помещаются в идентичную дискретную среду (лабиринт 16 x 16) со случайной процедурной генерацией препятствий и верифицируемой проходимостью. Их цель — достичь целевой точки, расходуя ограниченный пул стартовой энергии (2000 единиц). Физика вычислений и перемещений строго симметрична:
-
-1. Единое окно восприятия (Unified Perception API): Агенты взаимодействуют со средой исключительно через метод Environment.perceiveDirection(), считывая состояние соседних клеток. Скрытое преимущество в «зрении» или доступе к глобальной карте полностью исключено.
-2. Симметричная физика затрат (Compute vs Actuator):
-   * Стоимость действия (Actuator Cost): Физическое перемещение тела робота стоит фиксированную цену (actuatorCost) и списывается только при успешном изменении координат на поле.
-   * Стоимость мышления (Compute / Inference Cost): Это ключевой дифференциатор сложности вычислений, списываемый на каждом такте времени (Tock).
-
-Сравниваемые парадигмы:
-
-* Contextual Autoregressive AI (Линейная история):
-  Модель имитирует работу стандартного Трансформера. На каждом шаге она вынуждена записывать свои координаты и сенсорные данные соседей в контекстное окно в виде бесконечной ленты токенов.
-  - Раздувание памяти: Размер памяти (Linear Context Memory) линейно растет во времени: N_tokens пропорционально Tocks.
-  - Взрыв инференса: Стоимость вычислений на каждом тике растет линейно от размера накопленной истории: Cost_compute = N_tokens * 0.05. Это идеально симулирует вычислительную сложность механизмов внимания (Attention Complexity). На длинных дистанциях стоимость простого «размышления» становится астрономической, приводя к тепловой смерти и истощению энергии агента (DEPLETED).
-
-* Thermodynamic AGI V2 (Активный инференс):
-  Агент строит компактную вероятностную карту мира (World Model) в виде графа инвариантов. Перед каждым шагом он запускает мысленное моделирование четырех направлений во внутреннем виртуальном контуре.
-  - Идеальное сжатие (Perfect Compression): Память агента ограничена исключительно геометрическим размером лабиринта (N_cells <= 256) и полностью независима от времени блуждания.
-  - Фиксированный инференс: Стоимость мышления строго стабильна на каждом тике: Cost_compute = 4 * PSI_SIM.
-  - Механизм ВЕТО: Если внутренняя симуляция показывает, что все доступные шаги ведут в тупик или пройденные зоны (резкий рост свободной энергии Delta F), активируется ингибиторное ВЕТО. Агент блокирует работу актуаторов, платя фиксированную цену за «мысль», но полностью сберегая физическую энергию движения (actuatorCost).
-
-2. Легенда интерфейса и элементов управления
-
-Панель управления (Сайдбар слева):
-* STARTING ENERGY (Стартовая энергия): Начальный запас энергии, выделяемый обоим агентам при старте сессии (диапазон: 50 - 3000). Определяет «запас прочности» системы. Показывает, насколько далеко модель может продвинуться, прежде чем наступит энергетическое истощение (DEPLETED).
-* PSI_SIM (Simulation Cost / Стоимость мысленной симуляции): Коэффициент вычислительных затрат на обсчет одного направления во внутреннем виртуальном контуре Thermodynamic ИИ. На каждом шаге агент предиктивно сканирует 4 направления, поэтому фиксированный расход энергии за «мыслительный» такт всегда равен 4 * PSI_SIM.
-* ACTUATOR COST (Стоимость действия): Физическая энергия, затрачиваемая телом робота на выполнение одного шага в лабиринте. Списывается строго одинаково для обоих агентов и только в случае успешного физического перемещения (изменения координат). При срабатывании механизма ВЕТО у термодинамического агента эта энергия полностью сберегается.
-* GAMMA (Curiosity Weight / Вес любопытства): Параметр термодинамического агента, определяющий его внутреннее стремление к исследованию неизвестных зон. Математически увеличивает выигрыш в снижении свободной энергии (Delta F) при обнаружении клеток с нулевым или низким уровнем знакомства (familiarity), заставляя агента эффективнее искать выходы и избегать циклов.
-* RANDOM SEED (Случайное зерно генерации): Числовой идентификатор для генератора псевдослучайных чисел (pseudoRandom). Гарантирует воспроизводимость геометрии лабиринта 16 x 16. Если сгенерированный лабиринт не имеет решения, BFS-алгоритм симулятора автоматически скорректирует сид в большую сторону до тех пор, пока не построит гарантированно проходимый маршрут.
-
-Кнопки действий:
-* Generate Map (Сгенерировать карту): Создает новую конфигурацию стен лабиринта на основе случайного или заданного сида и сбрасывает состояние агентов на стартовую позицию (0,0).
-* Run Simulation / Stop Simulation (Запуск / Остановка): Включает непрерывный автоматический цикл шагов («тактов») для обеих моделей с интервалом в 175 мс до тех пор, пока они не дойдут до цели, не истощат энергию или не исчерпают лимит времени (800 тиков).
-* Step (1 Tock) (Один шаг): Принудительно выполняет строго один такт вычислений и движения для обоих агентов одновременно, позволяя детально изучить пошаговый расход ресурсов.
-
-График: Energy Dynamics per Tock (Динамика энергии):
-* Ось X (Tocks): Дискретные такты времени симуляции.
-* Ось Y (Energy): Текущий баланс энергии агентов.
-* Красная линия (Contextual AR): Показывает параболическое или ускоренное падение энергии из-за постоянного роста стоимости инференса внимания. Наглядно демонстрирует системный тупик авторегрессии.
-* Зеленая линия (Thermodynamic V2): Демонстрирует линейный и стабильный расход ресурсов. Изломы и плато на графике визуализируют работу механизмов ВЕТО, где физическая энергия сохраняется.
-
-Вывод бенчмарка: При равной сложности физических условий авторегрессионный ИИ неизбежно погибает от вычислительного перегрева из-за раздувания памяти контекста, в то время как Thermodynamic ИИ достигает цели с минимальными и строго контролируемыми затратами энергии.
+Technical Specification & Interface Legend: Thermodynamic AGI V2 vs. Contextual Autoregressive AI
+Core Build: 2026-03-21 | Interactive Verification Protocol
+⚖️ LEGAL DISCLAIMER & COPYRIGHT NOTICE
+• Original Architecture & Blueprint Framework: © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+• Author Profile: GitHub/NecPU
+• Contact & R&D Communications: doundoua.v@gmail.com
+• Licensing Node: Distributed strictly under the Custom Sovereign AGI Blueprint License. Any utilization, academic replication, or deployment of the VETO inhibitor or dead-end compression graph models must preserve direct attribution to the author.
+🇺🇸 ENGLISH VERSION (SPECIFICATIONS)
+1. Simulation Architecture & Core Enhancements
+This interface provides a real-time validation environment comparing a standard, history-dependent Contextual Autoregressive AI (Transformer/LLM reasoning abstraction) against the Thermodynamic AGI V2 paradigm (rooted in Active Inference and Free Energy Minimization).
+The simulation runs in a discrete 16 × 16 spatial grid topology with an adjustable obstacle density slider. Both systems operate under identical environmental perception rules, interacting exclusively through the unified Environment.perceiveDirection() API.
+Symmetrical Resource Allocation
+• Actuator Cost (\(Actuator_{cost}\)): Executing a mechanical step requires a fixed fee (actuatorCost = 10), deducted strictly upon successful spatial alteration (coordinate modification). If a movement fails (striking a wall) or is preempted, the physical energy remains untouched.
+• Thinking Cost (\(Compute_{cost}\)): The core baseline differentiator, processed per discrete time step (Tock).
+Compared Computational Paradigms
+• Contextual Autoregressive AI (Linear History Window):
+Simulates token-by-token text generation processing. Every positional frame and adjacent vector is appended into an uncompressed history log.
+	• Context Bloat: Memory grows linearly over time: \(N_{tokens} \propto Tocks\).
+	• Inference Explosion: Compute overhead scales directly with context sequence length: \(Cost_{compute} = N_{tokens} \times 0.05\). This simulates standard attention matrix multiplication complexity. In complex spaces, the mere computational overhead of maintaining historical text logs causes premature energy collapse (DEPLETED).
+• Thermodynamic AGI V2 (Active Inference & Bounded Mapping):
+Operates via a predictive virtualization loop. Prior to physical motor activation, the internal state machine \(\Psi _{sim}\) virtualizes 4 sensory-motor vectors, consuming a fixed computing fee (\(4 \times \Psi_{sim}\)).
+	• Perfect Structural Compression: States are organized into an invariant graph of structural features (World Model). Memory footprint is tightly bounded by the environment's total cell volume (\(N_{cells} \le SIZE^2\)) and remains invariant to rollout time.
+	• Dead-End Invariant Mapping (New Feature): If the agent enters an enclosed space where 3 out of 4 directions are impassable (composed of physical walls or previously marked dead-ends), it dynamically extracts a Dead-End Invariant. Before backtracking, the agent permanently flags this coordinate in its internal deadEnds register.
+	• Predictive VETO Inhibitor: When evaluating prospective steps, any cell marked within the deadEnds register returns an absolute Variational Free Energy limit (Δ F = ∞). The top-down VETO inhibitor intercepts the motor execution line. The agent completely preserves its kinetic energy reserve (\(Actuator_{cost} = 0\)), suppresses redundant steps, and redirects its trajectory toward unmapped regions.
+2. Control Panel & Interface Legend
+• STARTING ENERGY: The initial metabolic reservoir allocated to both agents (Range: 50 – 3000). It establishes the operational rollout bounds before absolute energy exhaustion.
+• PSI_SIM (Simulation Cost): Scaling parameter adjusting the internal processing tax for predictive virtualization. Total flat-rate compute fee per Tock is set to \(4 \times \Psi_{sim}\).
+• ACTUATOR COST: The physical force tax for executing a step. Symmetrical for both models; completely preserved when a VETO activates.
+• GAMMA (Curiosity Weight): Scales the mathematical drive toward unknown topography. Amplifies Free Energy (Δ F) reduction incentives when exploring states with zero or low familiarity.
+• OBSTACLE RATIO (Map Density): Dynamically scales maze generation density between 15% and 45%. Increasing density creates deep networks of tight corridors and dead-end traps, accelerating the Autoregressive Context Explosion.
+• RANDOM SEED: Numerical seed feeding the pseudoRandom generator to ensure reproducible map geometries. An automated BFS validation script checks for absolute pathway solvability; impossible maps are structurally rejected at compilation time.
+• Energy Dynamics Chart: Real-time display mapping out energy consumption per Tock. The Red Line (Autoregressive) exhibits an exponential/parabolic decay curve due to scaling attention overhead. The Green Line (Thermodynamic) displays a highly optimized, linear trajectory with clear plateaus visualizing active VETO preservation cycles.
+🇷🇺 РУССКАЯ ВЕРСИЯ (СПЕЦИФИКАЦИИ)
+1. Архитектура симуляции и ключевые механизмы
+Данный интерфейс представляет собой среду верификации в реальном времени, сравнивающую классический, зависимый от истории Контекстный авторегрессионный ИИ (абстракция рассуждений Трансформеров/LLM) и парадигму Thermodynamic AGI V2, построенную на принципах Активного инференса и минимизации свободной энергии.
+Симуляция выполняется в дискретной топологии сетки 16 × 16 с динамически регулируемым ползунком плотности препятствий. Оба агента взаимодействуют со средой на 100% симметрично через унифицированный интерфейс Environment.perceiveDirection().
+Симметричная физика затрат ресурсов
+• Стоимость действия (\(Actuator_{cost}\)): Физический шаг требует фиксированного расхода энергии (actuatorCost = 10), который списывается строго при успешном изменении координат. Если движение заблокировано стеной или отменено внутренним цензором, кинетическая энергия полностью сохраняется.
+• Стоимость мышления (\(Compute_{cost}\)): Главный дифференциатор вычислительной сложности, списываемый на каждом такте времени (Tock).
+Сравниваемые парадигмы мышления
+• Contextual Autoregressive AI (Линейное окно истории):
+Имитирует покомпонентную генерацию текста. Модель вынуждена непрерывно записывать координаты и сенсорные данные соседей в контекст в виде бесконечной ленты токенов.
+	• Раздувание памяти: Объем контекста линейно растет во времени: \(N_{tokens} \propto Tocks\).
+	• Взрыв инференса: Стоимость вычислений на каждом тике увеличивается пропорционально накопленной истории: \(Cost_{compute} = N_{tokens} \times 0.05\), симулируя сложность матричного перемножения механизмов внимания (Attention). На сложных дистанциях налог на обработку прошлых логов приводит к тепловой смерти и истощению энергии (DEPLETED).
+• Thermodynamic AGI V2 (Активный инференс и структурное сжатие):
+Работает через контур предиктивной виртуализации. Перед каждым шагом внутренняя модель \(\Psi _{sim}\) обсчитывает 4 ортогональных направления исходов, расходуя фиксированную вычислительную цену (\(4 \times \Psi_{sim}\)).
+	• Идеальное сжатие: Значения упаковываются в инвариантный граф признаков реальности (World Model). Размер памяти жестко ограничен геометрией лабиринта (\(N_{cells} \le SIZE^2\)) и не зависит от времени блуждания.
+	• Топологическое картирование тупиков (Dead-End Invariant Mapping): Если агент заходит в замкнутую зону, где 3 из 4 направлений заблокированы (физическими стенами или уже выжженными тупиками), система динамически извлекает тупиковый инвариант. Перед тем как сделать шаг назад, координата перманентно заносится в реестр this.deadEnds.
+	• Предиктивный механизм ВЕТО: При оценке шагов ячейка из реестра тупиков возвращает абсолютный предел Вариационной Свободной Энергии (Δ F = ∞). Сквозной оператор — ингибитор ВЕТО — мгновенно блокирует команду на актуаторы. Система полностью сберегает физическую энергию движения (\(Actuator_{cost} = 0\)), окрашивает тупик на карте в тёмно-красный цвет и перенаправляет вектор поиска в неисследованные зоны лабиринта.
+2. Легенда элементов управления дашборда
+• STARTING ENERGY: Стартовый пул метаболической энергии агентов (Диапазон: 50 – 3000). Устанавливает предел жизнеспособности до наступления энергетического голодания.
+• PSI_SIM (Simulation Cost): Коэффициент вычислительных затрат на предиктивную виртуализацию одного направления. Итоговый расход на мышление за один такт зафиксирован на уровне \(4 \times \Psi_{sim}\).
+• ACTUATOR COST: Физическая стоимость движения тела робота. Одинакова для обеих моделей; полностью сохраняется при срабатывании ВЕТО.
+• GAMMA (Curiosity Weight): Вес когнитивного любопытства. Математически увеличивает выигрыш в снижении свободной энергии (Δ F) при обнаружении клеток с низким уровнем знакомства.
+• OBSTACLE RATIO (Map Density): Регулятор плотности лабиринта (от 15% до 45%). Повышение плотности создает разветвленную сеть узких карманов и тупиков, провоцируя лавинообразный контекстный взрыв у авторегрессионного ИИ.
+• RANDOM SEED: Числовой сид для генератора псевдослучайных чисел pseudoRandom. Встроенный BFS-скрипт проверяет карту на гарантированную проходимость; тупиковые конфигурации отсекаются на этапе компиляции.
+• График Energy Dynamics per Tock: Визуализация расхода энергии. Красная линия (Авторегрессия) демонстрирует ускоренное параболическое падение. Зеленая линия (Термодинамика) показывает стабильный линейный график с плато в моменты активации ВЕТО.
+This specification framework evaluates substrate-independent cognitive efficiency and is theoretically grounded in the Variational Free Energy Principle (Karl Friston, 2010) and neurobiological models of inhibitory volition suppression (Benjamin Libet, 1985). / Настоящая спецификация оценивает когнитивную эффективность независимо от аппаратного субстрата и теоретически опирается на принцип минимизации вариационной свободной энергии (Карл Фристон, 2010) и нейробиологические модели ингибиторного подавления волевых актов (Бенджамин Либет, 1985).
