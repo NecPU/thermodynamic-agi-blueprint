@@ -133,17 +133,28 @@
     .metric-wide { grid-column: 1 / -1; border-left-color: #64748b; }
     .agent-panel.thermo .metric-wide { border-left-color: var(--thermo); }
     .agent-panel.blind .metric-wide { border-left-color: var(--blind); }
+    .agent-panel.thermo .metrics { min-height: 212px; }
+    .maze-footer {
+      margin-top: auto;
+      flex-shrink: 0;
+      width: 100%;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
     .maze-wrap {
-      width: 400px;
+      width: 100%;
       height: 400px;
-      max-width: 100%;
+      max-width: 400px;
       margin: 0 auto;
       flex-shrink: 0;
-      margin-top: auto;
       border: 2px solid var(--border);
       border-radius: 8px;
       overflow: hidden;
       box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+    .agent-panel.blind .maze-wrap {
+      margin-top: auto;
     }
     .maze {
       display: grid;
@@ -165,12 +176,21 @@
       background-color: #f59e0b !important;
       transition: background 0.1s;
     }
+    .cell .dead-end-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(239, 68, 68, 0.4);
+      border: 1px dashed rgba(239, 68, 68, 0.6);
+      box-shadow: inset 0 0 8px rgba(239, 68, 68, 0.5);
+      pointer-events: none;
+      z-index: 1;
+    }
     .cell .visit {
       position: absolute;
       inset: 0;
       background: rgba(56, 189, 248, 0.1);
       pointer-events: none;
-      z-index: 1;
+      z-index: 2;
     }
     .cell .agent-dot {
       position: absolute;
@@ -179,7 +199,7 @@
       top: 22%;
       left: 22%;
       border-radius: 50%;
-      z-index: 2;
+      z-index: 3;
       box-shadow: 0 0 8px currentColor;
     }
     .cell .agent-dot.blind { background: var(--blind); color: var(--blind); }
@@ -199,13 +219,44 @@
       height: calc(100% - 28px) !important;
     }
     .seed-note { font-size: 0.7rem; color: var(--muted); margin-top: 4px; }
+    .legend-row {
+      display: flex;
+      gap: 12px 16px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 10px;
+      padding: 0 4px 2px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      line-height: 1.2;
+    }
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid #111827;
+      flex-shrink: 0;
+    }
+    .swatch.vis { background: rgba(56, 189, 248, 0.4); }
+    .swatch.ded {
+      background: rgba(239, 68, 68, 0.4);
+      border: 1px dashed rgba(239, 68, 68, 0.6);
+    }
   </style>
 </head>
 <body>
   <div class="layout">
     <aside class="sidebar">
       <h1>Thermodynamic AGI V2</h1>
-      <p class="subtitle">Active Inference &amp; Context Explosion Benchmark · 16×16</p>
+      <p class="subtitle">Active Inference &amp; Context Explosion Benchmark · 16×16 · build 2026-03-21</p>
 
       <div class="form-group">
         <label>STARTING ENERGY <span id="lbl-energy">2000</span></label>
@@ -222,6 +273,10 @@
       <div class="form-group">
         <label>GAMMA (Curiosity Weight) <span id="lbl-gamma">15</span></label>
         <input type="range" id="param-gamma" min="5" max="30" step="1" value="15">
+      </div>
+      <div class="form-group">
+        <label>OBSTACLE RATIO (Density) <span id="lbl-ratio">25%</span></label>
+        <input type="range" id="param-ratio" min="15" max="45" step="1" value="25">
       </div>
       <div class="form-group">
         <label>RANDOM SEED</label>
@@ -256,9 +311,15 @@
             <div class="metric">Physical Steps<strong id="thermo-steps">0</strong></div>
             <div class="metric">VETO Triggers<strong id="thermo-veto">0</strong></div>
             <div class="metric metric-wide">Current Tock Cost<strong id="thermo-step-cost">—</strong></div>
-            <div class="metric metric-wide">World Model Memory (cells)<strong id="thermo-redundant">0 cells</strong></div>
+            <div class="metric metric-wide">World Model Memory<strong id="thermo-redundant">0 states (Compressed)</strong></div>
           </div>
-          <div class="maze-wrap"><div class="maze" id="maze-thermo"></div></div>
+          <div class="maze-footer">
+            <div class="maze-wrap"><div class="maze" id="maze-thermo"></div></div>
+            <div class="legend-row" aria-label="Thermo maze legend">
+              <div class="legend-item"><div class="swatch vis"></div><span>Visited (World Model)</span></div>
+              <div class="legend-item"><div class="swatch ded"></div><span>Dead-end Invariant</span></div>
+            </div>
+          </div>
         </section>
       </div>
       <div class="chart-box">
@@ -278,7 +339,6 @@
     const START_COL = 0;
     const GOAL_ROW = 15;
     const GOAL_COL = 15;
-    const OBSTACLE_RATIO = 0.25;
     const CELL_FREE = 0;
     const CELL_WALL = 1;
     const MAX_TICKS = 800;
@@ -330,10 +390,19 @@
     }
 
     function mazeIsSolvable(maze) {
+      if (!isValidMazeShape(maze)) return false;
       if (!ensureStartGoalClear(maze)) return false;
 
-      const visited = [];
-      for (let r = 0; r < SIZE; r++) visited[r] = new Array(SIZE).fill(false);
+      if (maze[START_ROW][START_COL] !== CELL_FREE) return false;
+      if (maze[GOAL_ROW][GOAL_COL] !== CELL_FREE) return false;
+
+      const visited = new Array(SIZE);
+      for (let r = 0; r < SIZE; r++) {
+        visited[r] = new Array(SIZE);
+        for (let c = 0; c < SIZE; c++) {
+          visited[r][c] = false;
+        }
+      }
 
       const queueR = [START_ROW];
       const queueC = [START_COL];
@@ -345,22 +414,30 @@
         const col = queueC[head];
         head++;
 
-        if (row === GOAL_ROW && col === GOAL_COL) return true;
+        if (row === GOAL_ROW && col === GOAL_COL) {
+          return true;
+        }
 
         for (let i = 0; i < 4; i++) {
           const nr = row + DIR_ROWS[i];
           const nc = col + DIR_COLS[i];
-          if (!isClearPathCell(maze, nr, nc)) continue;
+          if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+          if (maze[nr][nc] !== CELL_FREE) continue;
           if (visited[nr][nc]) continue;
           visited[nr][nc] = true;
           queueR.push(nr);
           queueC.push(nc);
         }
       }
+
       return false;
     }
 
-    function buildMazeFromSeed(seed) {
+    function buildMazeFromSeed(seed, obstacleRatio) {
+      const density =
+        typeof obstacleRatio === "number" && obstacleRatio > 0
+          ? obstacleRatio
+          : 0.25;
       const rng = pseudoRandom(seed);
       const total = SIZE * SIZE;
       const freeCells = [];
@@ -384,7 +461,7 @@
       const maze = [];
       for (let r = 0; r < SIZE; r++) maze[r] = new Array(SIZE).fill(CELL_FREE);
 
-      const numObstacles = Math.min(Math.round(total * OBSTACLE_RATIO), freeCells.length);
+      const numObstacles = Math.min(Math.round(total * density), freeCells.length);
       for (let i = 0; i < numObstacles; i++) {
         const cell = freeCells[i];
         if (!cell) continue;
@@ -395,10 +472,14 @@
       return maze;
     }
 
-    function generateValidMaze(userSeed) {
+    function generateValidMaze(userSeed, obstacleRatio) {
+      const density =
+        typeof obstacleRatio === "number" && obstacleRatio > 0
+          ? obstacleRatio
+          : 0.25;
       let currentSeed = userSeed | 0;
       for (let attempt = 0; attempt < 10000; attempt++) {
-        const maze = buildMazeFromSeed(currentSeed);
+        const maze = buildMazeFromSeed(currentSeed, density);
         ensureStartGoalClear(maze);
         if (mazeIsSolvable(maze)) {
           return { maze: maze, usedSeed: currentSeed };
@@ -612,9 +693,14 @@
       }
 
       step(env) {
-        const outcome = { hitWall: false, moved: false };
+        if (this.done || this.energy <= 0) {
+          this.done = true;
+          return { moved: false, veto: false, hitWall: false };
+        }
 
-        if (this.done || this.energy <= 0 || env.atGoal(this.row, this.col)) {
+        const outcome = { hitWall: false, moved: false, veto: false };
+
+        if (env.atGoal(this.row, this.col)) {
           this.done = true;
           return outcome;
         }
@@ -672,9 +758,12 @@
 
       reset() {
         this.worldModel = {};
+        this.deadEnds = {}; // Карта гарантированных тупиковых состояний
         this.energy = this.initialEnergy;
         this.row = START_ROW;
         this.col = START_COL;
+        this.prevRow = START_ROW;
+        this.prevCol = START_COL;
         this.physicalSteps = 0;
         this.vetoCount = 0;
         this.ticks = 0;
@@ -689,6 +778,55 @@
         return Object.keys(this.worldModel).length;
       }
 
+      compressedKnowledgeSize() {
+        return (
+          Object.keys(this.worldModel).length + Object.keys(this.deadEnds).length
+        );
+      }
+
+      directionToward(fromRow, fromCol, toRow, toCol) {
+        for (let i = 0; i < 4; i++) {
+          if (fromRow + DIR_ROWS[i] === toRow && fromCol + DIR_COLS[i] === toCol) {
+            return i;
+          }
+        }
+        return -1;
+      }
+
+      isDirectionBlockedForDeadEndMap(env, dirIndex) {
+        const perception = env.perceiveDirection(this.row, this.col, dirIndex);
+        if (perception.isWall) return true;
+        const neighborKey = posKey(perception.neighborRow, perception.neighborCol);
+        return this.deadEnds[neighborKey] === true;
+      }
+
+      /** Dead-End Invariant Mapping: mark corridor entrance before retreat. */
+      detectAndMarkDeadEndEntrance(env) {
+        let blockedCount = 0;
+        let soleFreeDir = -1;
+
+        for (let i = 0; i < 4; i++) {
+          if (this.isDirectionBlockedForDeadEndMap(env, i)) {
+            blockedCount++;
+          } else {
+            soleFreeDir = i;
+          }
+        }
+
+        if (blockedCount !== 3 || soleFreeDir < 0) return;
+
+        const backDir = this.directionToward(
+          this.row,
+          this.col,
+          this.prevRow,
+          this.prevCol
+        );
+        if (backDir < 0) return;
+        if (soleFreeDir !== backDir) return;
+
+        this.deadEnds[posKey(this.row, this.col)] = true;
+      }
+
       calculateDynamicVetoThreshold() {
         if (this.energy <= 0) return Infinity;
         return this.actuatorCost * (1.0 + Math.exp(-this.energy / (this.actuatorCost * 2)));
@@ -696,6 +834,16 @@
 
       _deltaFForFreeCell(nr, nc) {
         const newPosKey = posKey(nr, nc);
+        if (this.deadEnds[newPosKey] === true) {
+          return {
+            deltaF: Number.POSITIVE_INFINITY,
+            blocked: true,
+            row: nr,
+            col: nc,
+            familiarity: this.worldModel[newPosKey] || 0,
+          };
+        }
+
         const familiarity = this.worldModel[newPosKey] || 0;
         let deltaF = this.actuatorCost - (this.gamma * Math.exp(-familiarity));
         if (distToGoal(nr, nc) < distToGoal(this.row, this.col)) {
@@ -756,9 +904,14 @@
       }
 
       step(env) {
-        const outcome = { veto: false, moved: false };
+        if (this.done || this.energy <= 0) {
+          this.done = true;
+          return { moved: false, veto: false, hitWall: false };
+        }
 
-        if (this.done || this.energy <= 0 || env.atGoal(this.row, this.col)) {
+        const outcome = { veto: false, moved: false, hitWall: false };
+
+        if (env.atGoal(this.row, this.col)) {
           this.done = true;
           return outcome;
         }
@@ -767,6 +920,8 @@
         this.lastComputeCost = 4 * psiPerProbe;
         this.lastActuatorCostPaid = 0;
         this.energy -= this.lastComputeCost;
+
+        this.detectAndMarkDeadEndEntrance(env);
 
         const simulations = [];
         for (let i = 0; i < 4; i++) {
@@ -821,6 +976,8 @@
         if (!veto) {
           this.lastActuatorCostPaid = this.actuatorCost;
           this.energy -= this.actuatorCost;
+          this.prevRow = this.row;
+          this.prevCol = this.col;
           this.row = bestWalkable.row;
           this.col = bestWalkable.col;
           this.physicalSteps++;
@@ -865,11 +1022,13 @@
         psi: document.getElementById("param-psi"),
         act: document.getElementById("param-act"),
         gamma: document.getElementById("param-gamma"),
+        ratio: document.getElementById("param-ratio"),
         seed: document.getElementById("param-seed"),
         lblEnergy: document.getElementById("lbl-energy"),
         lblPsi: document.getElementById("lbl-psi"),
         lblAct: document.getElementById("lbl-act"),
         lblGamma: document.getElementById("lbl-gamma"),
+        lblRatio: document.getElementById("lbl-ratio"),
         seedUsed: document.getElementById("seed-used"),
         mazeBlind: document.getElementById("maze-blind"),
         mazeThermo: document.getElementById("maze-thermo"),
@@ -890,11 +1049,14 @@
       };
 
       function readParams() {
+        const ratioInput = document.getElementById("param-ratio");
+        const ratioPct = ratioInput ? Number(ratioInput.value) : 25;
         return {
           energy: Number(els.energy.value),
           psiSim: Number(els.psi.value),
           actuatorCost: Number(els.act.value),
           gamma: Number(els.gamma.value),
+          ratio: ratioPct / 100,
           seed: parseInt(els.seed.value, 10) || 105,
         };
       }
@@ -918,6 +1080,13 @@
         if (els.gamma && els.lblGamma) {
           els.gamma.addEventListener("input", function () {
             els.lblGamma.textContent = els.gamma.value;
+          });
+        }
+        const ratioInput = document.getElementById("param-ratio");
+        const ratioLabel = document.getElementById("lbl-ratio");
+        if (ratioInput && ratioLabel) {
+          ratioInput.addEventListener("input", function () {
+            ratioLabel.textContent = ratioInput.value + "%";
           });
         }
       }
@@ -944,22 +1113,31 @@
             cell.setAttribute("data-r", String(r));
             cell.setAttribute("data-c", String(c));
 
-            const val = env.maze[r][c];
+            const status = env.maze[r][c];
             const key = posKey(r, c);
-            const isWall = val === CELL_WALL;
+            const isWall = status === CELL_WALL;
             const isGoal = r === GOAL_ROW && c === GOAL_COL;
 
             if (isWall) cell.classList.add("wall");
             else if (isGoal) cell.classList.add("goal");
 
-            if (mode === "thermo" && !isWall && !isGoal) {
-              const fam = agent.worldModel[key] || 0;
-              if (fam > 0) {
-                const overlay = document.createElement("div");
-                overlay.className = "visit";
-                const alpha = traceAlphaFromFamiliarity(fam);
-                overlay.style.background = "rgba(56, 189, 248, " + alpha.toFixed(3) + ")";
-                cell.appendChild(overlay);
+            if (mode === "thermo" && status !== CELL_WALL) {
+              if (agent.deadEnds && agent.deadEnds[key]) {
+                const ded = document.createElement("div");
+                ded.className = "dead-end-overlay";
+                ded.title = "Dead-end invariant (compressed)";
+                cell.appendChild(ded);
+              }
+              if (!isGoal) {
+                const fam = agent.worldModel[key] || 0;
+                if (fam > 0) {
+                  const overlay = document.createElement("div");
+                  overlay.className = "visit";
+                  const alpha = traceAlphaFromFamiliarity(fam);
+                  overlay.style.background =
+                    "rgba(56, 189, 248, " + alpha.toFixed(3) + ")";
+                  cell.appendChild(overlay);
+                }
               }
             }
 
@@ -972,6 +1150,13 @@
             container.appendChild(cell);
           }
         }
+      }
+
+      function formatInactiveTockCost(agent, envRef) {
+        if (envRef.atGoal(agent.row, agent.col)) {
+          return "— (DONE)";
+        }
+        return "0.00 energy (INACTIVE)";
       }
 
       function formatTockCostBreakdown(computeCost, actuatorCost, totalCost) {
@@ -1094,11 +1279,15 @@
             String(blindAgent.historyLogSize) + " tokens";
         }
         if (els.blindStepCost) {
-          els.blindStepCost.textContent = formatTockCostBreakdown(
-            blindAgent.lastInferenceCost,
-            blindAgent.lastActuatorCostPaid,
-            blindAgent.lastTickTotalCost
-          );
+          if (blindAgent.done) {
+            els.blindStepCost.textContent = formatInactiveTockCost(blindAgent, env);
+          } else {
+            els.blindStepCost.textContent = formatTockCostBreakdown(
+              blindAgent.lastInferenceCost,
+              blindAgent.lastActuatorCostPaid,
+              blindAgent.lastTickTotalCost
+            );
+          }
         }
 
         els.thermoStatus.textContent = statusText(thermoAgent, env);
@@ -1106,15 +1295,20 @@
         els.thermoSteps.textContent = String(thermoAgent.physicalSteps);
         els.thermoVeto.textContent = String(thermoAgent.vetoCount);
         if (els.thermoStepCost) {
-          els.thermoStepCost.textContent = formatTockCostBreakdown(
-            thermoAgent.lastComputeCost,
-            thermoAgent.lastActuatorCostPaid,
-            thermoAgent.lastTickTotalCost
-          );
+          if (thermoAgent.done) {
+            els.thermoStepCost.textContent = formatInactiveTockCost(thermoAgent, env);
+          } else {
+            els.thermoStepCost.textContent = formatTockCostBreakdown(
+              thermoAgent.lastComputeCost,
+              thermoAgent.lastActuatorCostPaid,
+              thermoAgent.lastTickTotalCost
+            );
+          }
         }
         if (els.thermoRedundant) {
           els.thermoRedundant.textContent =
-            String(thermoAgent.worldModelMemorySize()) + " cells";
+            String(thermoAgent.compressedKnowledgeSize()) +
+            " states (Compressed)";
         }
 
         renderMaze(els.mazeBlind, blindAgent, "blind");
@@ -1182,7 +1376,9 @@
         if (els.blindRedundant) els.blindRedundant.textContent = "0 tokens";
         if (els.blindStepCost) els.blindStepCost.textContent = "—";
         if (els.thermoStepCost) els.thermoStepCost.textContent = "—";
-        if (els.thermoRedundant) els.thermoRedundant.textContent = "0 cells";
+        if (els.thermoRedundant) {
+          els.thermoRedundant.textContent = "0 states (Compressed)";
+        }
       }
 
       function generateMapFromSeed(seedValue) {
@@ -1191,12 +1387,18 @@
         const seed = seedValue | 0;
         if (els.seed) els.seed.value = String(seed);
 
-        const result = generateValidMaze(seed);
+        const p = readParams();
+        const result = generateValidMaze(seed, p.ratio);
         env = new Environment(result.maze);
-        env.psiSim = readParams().psiSim;
+        env.psiSim = p.psiSim;
         mazeUsedSeed = result.usedSeed;
 
-        let seedNote = "Map seed used: " + mazeUsedSeed;
+        let seedNote =
+          "Map seed used: " +
+          mazeUsedSeed +
+          " · density " +
+          Math.round(p.ratio * 100) +
+          "%";
         if (mazeUsedSeed !== seed) seedNote += " (adjusted by BFS)";
         els.seedUsed.textContent = seedNote;
 
@@ -1234,6 +1436,21 @@
 
         env.psiSim = readParams().psiSim;
 
+        if (blindAgent.done && thermoAgent.done) {
+          stopSimulation();
+          return { continueSim: false };
+        }
+
+        if (blindAgent.energy <= 0) blindAgent.done = true;
+        if (thermoAgent.energy <= 0) thermoAgent.done = true;
+        if (env.atGoal(blindAgent.row, blindAgent.col)) blindAgent.done = true;
+        if (env.atGoal(thermoAgent.row, thermoAgent.col)) thermoAgent.done = true;
+
+        if (blindAgent.done && thermoAgent.done) {
+          stopSimulation();
+          return { continueSim: false };
+        }
+
         const blindActive =
           !blindAgent.done &&
           blindAgent.energy > 0 &&
@@ -1243,7 +1460,10 @@
           thermoAgent.energy > 0 &&
           !env.atGoal(thermoAgent.row, thermoAgent.col);
 
-        if (!blindActive && !thermoActive) return { continueSim: false };
+        if (!blindActive && !thermoActive) {
+          stopSimulation();
+          return { continueSim: false };
+        }
 
         if (blindActive) {
           const b = blindAgent.step(env);
@@ -1261,6 +1481,10 @@
         const stillRunning =
           (!blindAgent.done && blindAgent.energy > 0 && !env.atGoal(blindAgent.row, blindAgent.col)) ||
           (!thermoAgent.done && thermoAgent.energy > 0 && !env.atGoal(thermoAgent.row, thermoAgent.col));
+
+        if (!stillRunning || (blindAgent.done && thermoAgent.done)) {
+          stopSimulation();
+        }
 
         return { continueSim: stillRunning && simTick < MAX_TICKS };
       }
@@ -1306,9 +1530,18 @@
         if (els.btnStep) els.btnStep.onclick = stepOnce;
       }
 
-      if (!els.mazeBlind || !els.mazeThermo || !els.energy) {
-        console.error("Simulator DOM nodes missing");
-        if (els.seedUsed) els.seedUsed.textContent = "Error: UI elements not found";
+      const ratioInput = document.getElementById("param-ratio");
+      if (
+        !els.mazeBlind ||
+        !els.mazeThermo ||
+        !els.energy ||
+        !ratioInput
+      ) {
+        console.error("Simulator DOM nodes missing (check index_v2.html build)");
+        if (els.seedUsed) {
+          els.seedUsed.textContent =
+            "Error: UI incomplete — open index_v2.html (not index (1).html)";
+        }
         return;
       }
 
