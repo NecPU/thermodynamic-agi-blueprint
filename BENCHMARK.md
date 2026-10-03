@@ -7,9 +7,9 @@ Core Build: 2026-03-21 | Interactive Verification Protocol & Substrate Analysis
 LEGAL DISCLAIMER & COPYRIGHT NOTICE
 --------------------------------------------------------------------------------
 * Original Architecture & Blueprint Framework: (C) 2026 Vakhtang Doundoua (NecPU)
-* Author Profile: Vakhtang Doundoua
-* Author GitHub Profile: https://github.com
-* Contact & R&D Communications: doundoua.v@gmail.com
+* Author: Vakhtang Doundoua
+* Author GitHub Profile: https://github.com/NecPU
+* Contact & R&D Communications: doundoua@gmail.com
 * Licensing Node: Distributed strictly under the "Custom Sovereign AGI Blueprint License".
   Any utilization, academic replication, or deployment of the VETO inhibitor or 
   dead-end compression graph models must preserve direct attribution to the author.
