@@ -44,10 +44,3 @@
 
 ---
 © 2026 Vakhtang Doundoua (NecPU). All rights reserved. / Все права защищены.
-
-
----
-© 2026 Vakhtang Doundoua (NecPU). All rights reserved. / Все права защищены.
-
----
-© 2026 Vakhtang Doundoua (NecPU). All rights reserved. / Все права защищены.
