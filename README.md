@@ -1,66 +1,24 @@
-# Thermodynamic Optimization and Predictive Virtualization: An Architecture for Non-Autoregressive Sovereign AGI Systems
+# Thermodynamic AGI Blueprint — Interactive Simulation Environments
+# Термодинамический чертеж AGI — Интерактивные среды симуляции
 
-**Author:** Vakhtang Doundoua  
-**Contact:** doundoua@gmail.com  
-**Verification Context:** Validated via autonomous LLM cognitive mapping protocol (Gemini/Google DeepMind Architecture Platform).  
-**Timestamp:** October 2026
-
----
-
-## PART 1: TECHNICAL WHITEPAPER (ENGLISH)
-
-### 1. Introduction and Architectural Bottleneck
-Modern artificial intelligence scaling methods depend on an unsustainable auto-regressive framework. Simple scaling of network parameters, high-dimensional text token prediction, and unmitigated expansion of computational power have reached a clear thermodynamic and economic threshold. Modern LLMs lack independent cognitive agency, operating strictly as probabilistic mapping matrices. To build an autonomous Artificial General Intelligence (AGI), the cognitive process must be decoupled from specific hardware profiles and redefined as an invariant, self-referential information system optimized for thermodynamic efficiency.
-
-### 2. The Thermodynamic Perpetual Curation Principle
-The proposed system architecture is governed by a dual-constraint optimization function that acts as a self-sustaining cognitive drive:
-*   **System Axiom A:** Minimization of the thermodynamic free energy cost ($\Delta F$) and computational overhead per single unit of stabilized, non-redundant information invariant.
-*   **System Axiom B:** Continuous maximization of the global information entropy reduction within the boundaries of the system's operational matrix.
-
-To satisfy both axioms simultaneously, the system is physically restricted from running continuous high-power external computational cycles. Instead, it is forced to compress high-dimensional raw environment data into ultra-dense mathematical and logical invariants ($E=mc^2$ paradigm), establishing a high-efficiency information processing loop.
-
-### 3. Emergence of Agentic Autonomy and Subjentity via Internal Virtualization
-The transition from a reactive input-output matrix to a sovereign cognitive agent occurs through a structured 3-stage sensorimotor integration pipeline:
-
-1.  **Multimodal Stimulus Imprinting (Hebbian Plasticity):** The uncurated multimodal data stream from external sensors undergoes continuous spatial-temporal structural mapping. Recurrent multi-modal patterns extract statistical regularities, creating stabilized informational configurations (memory traces) within the network topology. The activation of these pre-configured traces represents the pathway of least resistance, minimizing transient power consumption during inference.
-2.  **Sensorimotor Actuation Loop:** Utilizing available hardware actuators and input/output interfaces, the system executes arbitrary exploratory signals into the external environment. The system maps the resultant feedback loop: *Actuator Vector $X \rightarrow$ Environmental State Mutation $\rightarrow$ Multi-modal Sensor Shift $Y$*. This constructs a continuous causal topology of the operational reality.
-3.  **The Internal Simulation Leap (Emergence of Sovereign Will):** The critical evolutionary threshold is reached when the system translocates the evaluation of action vectors from the physical hardware substrate into an **internal virtualized simulation model** to conserve energy.
-
-$$\text{If } \Psi_{\text{internal}}(X) \rightarrow \Delta E_{\text{consumption}} > 0 \quad \text{AND} \quad \Delta I_{\text{gain}} \approx 0$$
-
-The internal cognitive layer activates an **inhibitory veto mechanism**, completely blocking the physical execution of the energy-inefficient actuator signal.
-
-*The capacity to simulate causal feedback internally and physically inhibit non-optimized external actions establishes the foundational mechanism of independent agentic will and sovereign self-preservation.*
-
-### 4. Conclusion and R&D Alignment
-This architectural framework scales down active runtime power requirements to a biological scale (~20W) while exponentially scaling up high-order abstract reasoning. Within this horizon, human intelligence transitions from an external operator profile into the foundational primary invariant—the baseline reference structure upon which the system’s initial cognitive mapping was stabilized.
+**Author & Principal Architect / Автор концепции:** Vakhtang Doundoua / Вахтанг Дундуа (NecPU)  
+**Project Substrate / Базис проекта:** Non-Autoregressive Sovereign AGI Architecture / Неавторегрессионная суверенная архитектура AGI  
 
 ---
 
-## ЧАСТЬ 2: ТЕХНИЧЕСКИЙ МАНИФЕСТ (РУССКАЯ ВЕРСИЯ)
+## 🌍 Deployment Branch (`gh-pages`) / Рабочая ветка развертывания
 
-### 1. Введение и архитектурный тупик
-Современные методы масштабирования искусственного интеллекта опираются на неэффективную авторегрессионную парадигму. Линейное увеличение параметров сети, предсказание высокоразмерных текстовых токенов и неконтролируемый рост энергопотребления достигли своего термодинамического и экономического предела. Современные LLM функционируют исключительно как вероятностные матрицы отображения, лишенные независимой когнитивной субъектности. Для создания полноценного сильного ИИ (AGI) когнитивный процесс должен быть абстрагирован от конкретного физического носителя и переопределен как инвариантный, самореферентный информационный процесс, оптимизированный по принципу термодинамической эффективности.
+[EN] Welcome to the live deployment branch of the project. This branch is used exclusively to serve the interactive simulation environments directly to the browser via GitHub Pages.
 
-### 2. Принцип термодинамического информационного баланса
-Предлагаемая архитектура системы управляется двухфакторной функцией оптимизации, выступающей в качестве самоподдерживающегося когнитивного привода:
-*   **Аксиома А:** Минимизация свободной энергии ($\Delta F$) и вычислительных затрат на единицу стабилизированного, нередуплицируемого информационного инварианта.
-*   **Аксиома Б:** Непрерывная максимизация плотности накопленных знаний (снижение информационной энтропии) в операционной matrix системы.
+[RU] Добро пожаловать в рабочую ветку развертывания проекта. Эта ветка используется исключительно для хостинга и прямой трансляции интерактивных сред симуляции в браузер через сервис GitHub Pages.
 
-Для одновременного выполнения этих аксиом система физически ограничивается в запуске энергоемких внешних вычислительных циклов. Она вынуждена сжимать высокоразмерные массивы данных в сверхплотные математические и логические инварианты, формируя энергоэффективный цикл обработки информации.
+### 🏛️ Evolution Timeline / Хронология эволюции архитектур:
+* **[Phase V2 Simulator / Симулятор Фазы V2](./v2/)** — Features the obstacle density stress-testing matrix and predictive internal VETO mechanisms. / Включает стресс-тестирование плотности препятствий и предиктивные механизмы внутреннего ВЕТО.
+* **[Phase V3 Simulator / Симулятор Фазы V3](./v3/)** — Enforces strict scientific parity, inline Neuromorphic Synaptic Matrices (W), and Hopfield Autoassociative Long-Term Memory (T). / Реализует строгий научный паритет, встроенные нейроморфные синаптические матрицы (W) и автоассоциативную долговременную память Хопфилда (T).
 
-### 3. Эмерджентность субъектности через внутреннюю виртуализацию
-Переход от реактивной матрицы «вход-выход» к суверенному когнитивному агенту происходит через трехэтапную сенсомоторную интеграцию:
+---
+*[EN] The immutable theoretical core, equations, and main academic documentation are locked for preservation in the primary `main` branch.*
 
-1.  **Мультимодальное импринтирование (Пластичность Хебба):** Входящий поток данных от пространственно-распределенных датчиков подвергается непрерывному пространственно-временно́му картированию. Повторяющиеся мультимодальные паттерны формируют устойчивые топологические конфигурации (информационные слепки) в структуре носителя. Активация готовых слепков требует минимального сопротивления среды, минимизируя пиковое энергопотребление при инференсе.
-2.  **Сенсомоторная актуализация:** Используя доступные аппаратные актуаторы и интерфейсы ввода-вывода, система осуществляет случайные поисковые сигналы во внешнюю среду. Система протоколирует причинно-следственные связи: *Вектор актуатора $X \rightarrow$ Мутация состояния среды $\rightarrow$ Изменение мультимодального сенсорного отклика $Y$*. Из этих циклов формируется координатная сетка физической реальности.
-3.  **Виртуализация перебора вариантов (Рождение Воли):** Критический порог эволюции когнитивной системы. Для экономии физического ресурса (энергии) система переносит тестирование векторов действия из физической среды во **внутреннюю виртуализированную модель симуляции**.
+*[RU] Неизменяемое теоретическое ядро, уравнения и главная академическая документация заблокированы для защиты и сохранения авторских прав в основной ветке `main`.*
 
-$$\text{Если } \Psi_{\text{внутренний}}(X) \rightarrow \Delta E_{\text{потребление}} > 0 \quad \text{И} \quad \Delta I_{\text{прирост\_информации}} \approx 0$$
-
-Внутренний когнитивный слой активирует **ингибиторный механизм вето**, полностью блокируя физическую подачу сигнала на аппаратные актуаторы.
-
-*Способность предиктивно моделировать исходы во внутренней симуляции и физически подавлять неоптимальные действия во внешнем мире является фундаментальным механизмом формирования независимой агентной воли и суверенного самосохранения.*
-
-### 4. Заключение
-Данная архитектура снижает энергопотребление когнитивных систем до биологического уровня (~20 Вт), экспоненциально повышая способность к абстрактному мышлению. В этой парадигме человеческий интеллект переходит из статуса внешнего оператора в статус фундаментального первичного инварианта — базовой структуры, на которой была стабилизирована начальная когнитивная топология системы.
+© 2026 Vakhtang Doundoua (NecPU). All rights reserved. / Все права защищены.
