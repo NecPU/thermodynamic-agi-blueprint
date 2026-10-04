@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="author" content="Vakhtang Doundoua (NecPU)">
+  <meta name="copyright" content="Vakhtang Doundoua (NecPU) — Thermodynamic AGI architectural blueprint">
+  <title>Thermodynamic AGI V3 — Vakhtang Doundoua (NecPU) · Neuromorphic LTM Simulator</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --neon-green: #22ff88;
+      --thermo: #22c55e;
+      --ar-red: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.45rem;
+      letter-spacing: 0.04em;
+      text-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+    }
+    .subtitle { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .author-line { font-size: 0.75rem; color: var(--muted); margin: 6px 0 0; }
+    .layout {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: flex-start;
+      gap: 24px;
+      padding: 20px;
+      width: 100%;
+      max-width: 1680px;
+      margin: 0 auto;
+    }
+    .sidebar {
+      flex: 0 0 300px;
+      width: 300px;
+      min-width: 300px;
+      flex-shrink: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .sidebar h1 { font-size: 1.2rem; line-height: 1.3; }
+    .sidebar .form-group,
+    .sidebar input[type="range"],
+    .sidebar input[type="number"],
+    .sidebar button {
+      width: 100%;
+      max-width: 100%;
+    }
+    .main {
+      flex: 1;
+      min-width: 0;
+    }
+    .arenas-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      width: 100%;
+      align-items: start;
+    }
+    @media (max-width: 1024px) {
+      .layout { flex-wrap: wrap; }
+      .sidebar {
+        width: 100%;
+        min-width: 0;
+        flex: 1 1 100%;
+      }
+      .arenas-container { grid-template-columns: 1fr; }
+    }
+    .agent-panel {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .agent-panel h2 {
+      margin: 0 0 10px;
+      font-size: 0.92rem;
+      line-height: 1.35;
+      min-height: 2.6em;
+    }
+    .agent-panel.ar h2 { color: var(--ar-red); }
+    .agent-panel.thermo h2 { color: var(--thermo); }
+    .agent-panel .metric.ar-metric { border-left-color: var(--ar-red); }
+    .agent-panel .metric.thermo-metric { border-left-color: var(--thermo); }
+    .form-group { margin-bottom: 14px; }
+    label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    input[type="number"] {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 8px;
+    }
+    button {
+      width: 100%;
+      padding: 11px;
+      margin-bottom: 8px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+    }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-gen { background: linear-gradient(135deg, #475569, #334155); color: #f8fafc; }
+    .btn-run {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+    }
+    .btn-step { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .agent-header h2 {
+      margin: 0 0 10px;
+      font-size: 0.95rem;
+      color: var(--thermo);
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: stretch;
+    }
+    .metric {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-left-width: 3px;
+      border-left-style: solid;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      min-height: 54px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .metric strong {
+      display: block;
+      font-size: 0.95rem;
+      color: #f1f5f9;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Three metric rows (2+2+wide) — keep AR/Thermo maze tops aligned */
+    .agent-panel .metrics {
+      min-height: 202px;
+    }
+    .metric-wide {
+      grid-column: 1 / -1;
+      min-height: 64px;
+    }
+    .metric-wide strong {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .legend-row.legend-spacer {
+      visibility: hidden;
+      min-height: 2.2em;
+      margin-top: 10px;
+    }
+    .maze-wrap {
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #000;
+    }
+    .maze {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(16, 1fr);
+      grid-template-rows: repeat(16, 1fr);
+    }
+    .cell {
+      position: relative;
+      background: #000;
+      min-width: 0;
+      min-height: 0;
+      box-shadow: inset 0 0 0 1px #111827;
+    }
+    .cell.wall { background: #374151; }
+    .cell.goal { background: var(--neon-green); box-shadow: inset 0 0 10px #86efac; }
+    .cell.flash-veto { background-color: #f59e0b !important; }
+    .cell .dead-end-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(127, 29, 29, 0.55);
+      border: 1px dashed rgba(239, 68, 68, 0.85);
+      box-shadow: inset 0 0 12px rgba(239, 68, 68, 0.65);
+      pointer-events: none;
+      z-index: 2;
+    }
+    .cell .visit {
+      position: absolute;
+      inset: 0;
+      background: rgba(56, 189, 248, 0.12);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .cell .agent-dot {
+      position: absolute;
+      width: 55%;
+      height: 55%;
+      top: 22%;
+      left: 22%;
+      border-radius: 50%;
+      z-index: 3;
+    }
+    .cell .agent-dot.ar {
+      background: var(--ar-red);
+      box-shadow: 0 0 10px var(--ar-red);
+    }
+    .cell .agent-dot.thermo {
+      background: var(--thermo);
+      box-shadow: 0 0 10px var(--thermo);
+    }
+    .matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 0.72rem;
+      margin-top: 8px;
+    }
+    .matrix-table th, .matrix-table td {
+      border: 1px solid var(--border);
+      padding: 6px 4px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .matrix-table th { background: #0f172a; color: var(--muted); }
+    .tables-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      width: 100%;
+      align-items: start;
+    }
+    @media (max-width: 1024px) {
+      .tables-row { grid-template-columns: 1fr; }
+    }
+    .tables-row .panel { margin-bottom: 0; min-width: 0; }
+    .log-box {
+      background: #070a12;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      height: 220px;
+      overflow-y: auto;
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem;
+      padding: 10px;
+      color: #3adead;
+      line-height: 1.45;
+    }
+    .legend-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      border: 1px solid #111827;
+    }
+    .swatch.ded {
+      background: rgba(127, 29, 29, 0.55);
+      border: 1px dashed rgba(239, 68, 68, 0.85);
+    }
+    .seed-note { font-size: 0.7rem; color: var(--muted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h1>Thermodynamic AGI V3 — Vakhtang Doundoua (NecPU)</h1>
+      <p class="subtitle">Dual-agent parity · AR vs Thermo · 16×16 · build 2026-10-04</p>
+      <p class="author-line">Architectural blueprint © Vakhtang Doundoua (NecPU)</p>
+
+      <div class="form-group">
+        <label>STARTING ENERGY <span id="lbl-energy">2000</span></label>
+        <input type="range" id="param-energy" min="50" max="3000" step="1" value="2000">
+      </div>
+      <div class="form-group">
+        <label>PSI_SIM (Simulation Cost) <span id="lbl-psi">1.0</span></label>
+        <input type="range" id="param-psi" min="0.1" max="5" step="0.1" value="1">
+      </div>
+      <div class="form-group">
+        <label>ACTUATOR COST <span id="lbl-act">20</span></label>
+        <input type="range" id="param-act" min="5" max="30" step="1" value="20">
+      </div>
+      <div class="form-group">
+        <label>GAMMA (Curiosity) <span id="lbl-gamma">15</span></label>
+        <input type="range" id="param-gamma" min="5" max="30" step="1" value="15">
+      </div>
+      <div class="form-group">
+        <label>OBSTACLE RATIO <span id="lbl-ratio">25%</span></label>
+        <input type="range" id="param-ratio" min="15" max="38" step="1" value="25">
+      </div>
+      <div class="form-group">
+        <label>RANDOM SEED</label>
+        <input type="number" id="param-seed" value="105" step="1">
+        <div class="seed-note" id="seed-used">Map seed used: —</div>
+      </div>
+      <p class="subtitle">η = <strong id="val-eta">0.05</strong> · τ = <strong id="val-tau">0.01</strong></p>
+
+      <button type="button" class="btn-gen" id="generate-btn">Сгенерировать карту</button>
+      <button type="button" class="btn-run" id="btn-run">Запустить симуляцию</button>
+      <button type="button" class="btn-step" id="btn-step">Шаг (1 такт)</button>
+    </aside>
+
+    <div class="main">
+      <section class="panel">
+        <h2 style="margin:0 0 12px;font-size:1rem;color:var(--accent);">Scientific parity benchmark (shared maze · Mulberry32 seed)</h2>
+        <div class="arenas-container">
+          <div class="agent-panel ar">
+            <h2>Autoregressive Agent V3</h2>
+            <div class="metrics">
+              <div class="metric ar-metric">Status<strong id="ar-status">—</strong></div>
+              <div class="metric ar-metric">Energy<strong id="ar-energy">—</strong></div>
+              <div class="metric ar-metric">Steps<strong id="ar-steps">0</strong></div>
+              <div class="metric ar-metric">Tocks<strong id="ar-ticks">0</strong></div>
+              <div class="metric ar-metric">Context Window<strong>16 Tokens</strong></div>
+              <div class="metric ar-metric metric-wide">Last Tock Cost<strong id="ar-cost">—</strong></div>
+            </div>
+            <div class="maze-wrap"><div class="maze" id="maze-ar"></div></div>
+            <div class="legend-row legend-spacer" aria-hidden="true">—</div>
+          </div>
+          <div class="agent-panel thermo">
+            <h2>Thermodynamic Agent V3 (W + Hopfield LTM)</h2>
+            <div class="metrics">
+              <div class="metric thermo-metric">Status<strong id="thermo-status">—</strong></div>
+              <div class="metric thermo-metric">Energy<strong id="thermo-energy">—</strong></div>
+              <div class="metric thermo-metric">Steps<strong id="thermo-steps">0</strong></div>
+              <div class="metric thermo-metric">LTM VETO<strong id="thermo-veto">0</strong></div>
+              <div class="metric thermo-metric">Tocks<strong id="thermo-ticks">0</strong></div>
+              <div class="metric thermo-metric metric-wide">Last Tock Cost<strong id="thermo-cost">—</strong></div>
+            </div>
+            <div class="maze-wrap"><div class="maze" id="maze-v3"></div></div>
+            <div class="legend-row">
+              <span><span class="swatch ded"></span> Hopfield dead-end (LTM)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="tables-row">
+        <section class="panel">
+          <h3>Матрица весов W (4×3)</h3>
+          <p class="subtitle">Synaptic receptive field · 4 decimal places</p>
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th>Направление</th>
+                <th>x₁ (Стена)</th>
+                <th>x₂ (Цель)</th>
+                <th>x₃ (Шум)</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-body"></tbody>
+          </table>
+        </section>
+        <section class="panel">
+          <h3>Матрица Хопфилда T (4×4)</h3>
+          <p class="subtitle">Long-term associative dead-end imprints</p>
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th>T(i,j)</th>
+                <th>Up (0)</th>
+                <th>Down (1)</th>
+                <th>Left (2)</th>
+                <th>Right (3)</th>
+              </tr>
+            </thead>
+            <tbody id="ltm-body"></tbody>
+          </table>
+        </section>
+      </div>
+
+      <section class="panel">
+        <h3>Лог когнитивной динамики</h3>
+        <p class="subtitle">Prediction ε · LTM imprint · Hopfield relaxation · predictive VETO</p>
+        <div class="log-box" id="log-output">Система готова. Сгенерируйте карту для старта.</div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Version: V3 integrated simulator — Vakhtang Doundoua (NecPU)
+
+    function seededRandom(seed) {
+      return function () {
+        let t = (seed += 0x6d2b79f5);
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    const DIR_ROWS = [-1, 1, 0, 0];
+    const DIR_COLS = [0, 0, -1, 1];
+    const DIR_LABELS = ["Up (0)", "Down (1)", "Left (2)", "Right (3)"];
+
+    const SIZE = 16;
+    const START_ROW = 0;
+    const START_COL = 0;
+    const GOAL_ROW = 15;
+    const GOAL_COL = 15;
+    const CELL_FREE = 0;
+    const CELL_WALL = 1;
+    const MAX_TICKS = 800;
+    const SIM_INTERVAL_MS = 175;
+    const GOAL_GRADIENT_BONUS = 5.0;
+    const VISITED_PENALTY_FACTOR = 2.0;
+    const PREDICTION_BLOCK_THRESHOLD = 0.5;
+    const SYNAPTIC_ETA = 0.05;
+    const GOAL_CHANNEL_WEIGHT_FLOOR = 0.05;
+    const HOPFIELD_IMPRINT_LEAK = 0.95;
+    const MAX_MAZE_GENERATION_ATTEMPTS = 50;
+    const CONTEXT_INFERENCE_COST_PER_STEP = 0.05;
+    const CONTEXT_WINDOW_SIZE = 16;
+
+    function posKey(r, c) {
+      return String(r) + "," + String(c);
+    }
+
+    function distToGoal(r, c) {
+      const dr = r - GOAL_ROW;
+      const dc = c - GOAL_COL;
+      return Math.sqrt(dr * dr + dc * dc);
+    }
+
+    function isValidMazeShape(maze) {
+      if (!maze || maze.length !== SIZE) return false;
+      for (let r = 0; r < SIZE; r++) {
+        if (!maze[r] || maze[r].length !== SIZE) return false;
+      }
+      return true;
+    }
+
+    function ensureStartGoalClear(maze) {
+      if (!isValidMazeShape(maze)) return false;
+      maze[START_ROW][START_COL] = CELL_FREE;
+      maze[GOAL_ROW][GOAL_COL] = CELL_FREE;
+      return true;
+    }
+
+    function mazeIsSolvable(maze) {
+      if (!isValidMazeShape(maze)) return false;
+      if (!ensureStartGoalClear(maze)) return false;
+
+      const visited = [];
+      for (let r = 0; r < SIZE; r++) {
+        visited[r] = new Array(SIZE).fill(false);
+      }
+
+      const queueR = [START_ROW];
+      const queueC = [START_COL];
+      let head = 0;
+      visited[START_ROW][START_COL] = true;
+
+      while (head < queueR.length) {
+        const row = queueR[head];
+        const col = queueC[head];
+        head++;
+        if (row === GOAL_ROW && col === GOAL_COL) return true;
+        for (let i = 0; i < 4; i++) {
+          const nr = row + DIR_ROWS[i];
+          const nc = col + DIR_COLS[i];
+          if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+          if (maze[nr][nc] !== CELL_FREE) continue;
+          if (visited[nr][nc]) continue;
+          visited[nr][nc] = true;
+          queueR.push(nr);
+          queueC.push(nc);
+        }
+      }
+      return false;
+    }
+
+    function buildMazeFromSeed(obstacleRatio, rng) {
+      const density =
+        typeof obstacleRatio === "number" && obstacleRatio > 0 ? obstacleRatio : 0.25;
+      const total = SIZE * SIZE;
+      const freeCells = [];
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (r === START_ROW && c === START_COL) continue;
+          if (r === GOAL_ROW && c === GOAL_COL) continue;
+          freeCells.push([r, c]);
+        }
+      }
+      for (let i = freeCells.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        const tmp = freeCells[i];
+        freeCells[i] = freeCells[j];
+        freeCells[j] = tmp;
+      }
+      const maze = [];
+      for (let r = 0; r < SIZE; r++) maze[r] = new Array(SIZE).fill(CELL_FREE);
+      const numObstacles = Math.min(Math.round(total * density), freeCells.length);
+      for (let i = 0; i < numObstacles; i++) {
+        const cell = freeCells[i];
+        if (cell && cell.length === 2) {
+          const r = cell[0];
+          const c = cell[1];
+          if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) {
+            maze[r][c] = CELL_WALL;
+          }
+        }
+      }
+      ensureStartGoalClear(maze);
+      return maze;
+    }
+
+    /** Open 16x16 grid (no interior walls) — always BFS-solvable; used as generation fallback. */
+    function createGuaranteedOpenMaze() {
+      const maze = [];
+      for (let r = 0; r < SIZE; r++) {
+        maze[r] = new Array(SIZE).fill(CELL_FREE);
+      }
+      ensureStartGoalClear(maze);
+      return maze;
+    }
+
+    function generateValidMaze(userSeed, obstacleRatio, firstPassRng) {
+      const density =
+        typeof obstacleRatio === "number" && obstacleRatio > 0 ? obstacleRatio : 0.25;
+      let currentSeed = Number.isFinite(userSeed) ? (userSeed | 0) : 105;
+      for (let attempt = 0; attempt < MAX_MAZE_GENERATION_ATTEMPTS; attempt++) {
+        const rng =
+          attempt === 0 && firstPassRng
+            ? firstPassRng
+            : seededRandom(currentSeed >>> 0);
+        const maze = buildMazeFromSeed(density, rng);
+        if (!ensureStartGoalClear(maze)) {
+          currentSeed++;
+          continue;
+        }
+        if (!mazeIsSolvable(maze)) {
+          currentSeed++;
+          continue;
+        }
+        return { maze: cloneMazeGrid(maze), usedSeed: currentSeed };
+      }
+      console.warn(
+        "[index_v3] generateValidMaze: no solvable maze in " +
+          MAX_MAZE_GENERATION_ATTEMPTS +
+          " attempts; using open fallback grid."
+      );
+      return {
+        maze: cloneMazeGrid(createGuaranteedOpenMaze()),
+        usedSeed: currentSeed
+      };
+    }
+
+    class MultimodalMazeEnvironment {
+      constructor(maze) {
+        this.maze = maze;
+        this.psiSim = 1.0;
+      }
+
+      isWall(row, col) {
+        if (row < 0 || row >= SIZE || col < 0 || col >= SIZE) return true;
+        return this.maze[row][col] === CELL_WALL;
+      }
+
+      /** Returns multimodal feature vector [x1 wall proximity, x2 goal marker, x3 substrate noise]. */
+      perceiveDirection(row, col, dirIndex) {
+        const nr = row + DIR_ROWS[dirIndex];
+        const nc = col + DIR_COLS[dirIndex];
+        const x1 = this.isWall(nr, nc) ? 1.0 : 0.1;
+        const euclid = distToGoal(nr, nc);
+        const x2 = 1.0 / (1 + euclid);
+        const x3 = 0.05 * Math.random();
+        return [x1, x2, x3];
+      }
+
+      getActualOutcome(row, col, dirIndex) {
+        const nr = row + DIR_ROWS[dirIndex];
+        const nc = col + DIR_COLS[dirIndex];
+        return this.isWall(nr, nc) ? 1.0 : 0.0;
+      }
+
+      tryMove(row, col, dirIndex) {
+        const nr = row + DIR_ROWS[dirIndex];
+        const nc = col + DIR_COLS[dirIndex];
+        if (!this.isWall(nr, nc)) {
+          return { row: nr, col: nc, moved: true };
+        }
+        return { row: row, col: col, moved: false };
+      }
+
+      atGoal(row, col) {
+        return row === GOAL_ROW && col === GOAL_COL;
+      }
+
+      /** Replace maze grid with a fresh deep copy (clears stale wall references). */
+      setMazeGrid(maze) {
+        this.maze = cloneMazeGrid(maze);
+      }
+    }
+
+    function cloneMazeGrid(maze) {
+      const copy = [];
+      for (let r = 0; r < SIZE; r++) {
+        copy[r] = maze[r].slice();
+      }
+      return copy;
+    }
+
+    class NeuromorphicSynapticMatrix {
+      constructor(learningRate = SYNAPTIC_ETA, decayRate = 0.01) {
+        this.eta = learningRate;
+        this.tau = decayRate;
+        // x1=0.1 wall, x2=0.05 goal, x3=0.01 noise — low initial yHat on tick zero
+        this.W = [
+          [0.1, 0.05, 0.01],
+          [0.1, 0.05, 0.01],
+          [0.1, 0.05, 0.01],
+          [0.1, 0.05, 0.01]
+        ];
+      }
+
+      predictObstacle(dirIndex, featureVector) {
+        let yHat = 0;
+        for (let j = 0; j < featureVector.length; j++) {
+          yHat += this.W[dirIndex][j] * featureVector[j];
+        }
+        return Math.min(Math.max(yHat, 0), 1);
+      }
+
+      updateWeights(dirIndex, featureVector, actualOutcome) {
+        const yHat = this.predictObstacle(dirIndex, featureVector);
+        const error = actualOutcome - yHat;
+        for (let j = 0; j < featureVector.length; j++) {
+          const hebbianTerm = this.eta * error * featureVector[j];
+          const decayTerm = this.tau * this.W[dirIndex][j];
+          this.W[dirIndex][j] += hebbianTerm - decayTerm;
+        }
+        // Goal channel x2 only — never assign to this.W[dirIndex] (would collapse row to scalar)
+        if (this.W[dirIndex][1] < GOAL_CHANNEL_WEIGHT_FLOOR) {
+          this.W[dirIndex][1] = GOAL_CHANNEL_WEIGHT_FLOOR;
+        }
+        for (let j = 0; j < featureVector.length; j++) {
+          if (!Number.isFinite(this.W[dirIndex][j])) {
+            this.W[dirIndex][j] = j === 0 ? 0.1 : j === 1 ? 0.05 : 0.01;
+          }
+        }
+        return { yHat, error };
+      }
+    }
+
+    class HopfieldLongTermMemory {
+      constructor() {
+        // 4x4 associative weight matrix (parser-safe single-line init)
+        this.T = Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => 0));
+      }
+
+      imprintDeadEndPattern(vectorV) {
+        for (let i = 0; i < 4; i++) {
+          for (let j = 0; j < 4; j++) {
+            if (i !== j) {
+              this.T[i][j] = this.T[i][j] * HOPFIELD_IMPRINT_LEAK + vectorV[i] * vectorV[j];
+            }
+          }
+        }
+      }
+
+      recallMemory(inputVector) {
+        let current = inputVector.slice();
+        let changed = true;
+        let iterations = 0;
+        while (changed && iterations < 10) {
+          changed = false;
+          iterations++;
+          for (let i = 0; i < 4; i++) {
+            let sum = 0;
+            for (let j = 0; j < 4; j++) {
+              sum += this.T[i][j] * current[j];
+            }
+            const newSign = sum > 0 ? 1 : sum < 0 ? -1 : current[i];
+            if (newSign !== current[i]) {
+              current[i] = newSign;
+              changed = true;
+            }
+          }
+        }
+        return { vector: current, iterations: iterations };
+      }
+    }
+
+    const BIPOLAR_LTM_THRESHOLD = 0.75;
+
+    function predictionsToBipolar(yHats) {
+      return yHats.map(function (y) {
+        return y >= BIPOLAR_LTM_THRESHOLD ? 1 : -1;
+      });
+    }
+
+    function countPhysicalWalls(env, row, col) {
+      let n = 0;
+      for (let i = 0; i < 4; i++) {
+        if (env.getActualOutcome(row, col, i) === 1.0) n++;
+      }
+      return n;
+    }
+
+    /** Bipolar dead-end vector from true maze geometry (x1 wall channel via getActualOutcome). */
+    function buildPhysicalDeadEndVector(env, row, col) {
+      const v = [];
+      for (let i = 0; i < 4; i++) {
+        v.push(env.getActualOutcome(row, col, i) === 1.0 ? 1 : -1);
+      }
+      return v;
+    }
+
+    function listSafeDirections(env, row, col) {
+      const safe = [];
+      for (let i = 0; i < 4; i++) {
+        const nr = row + DIR_ROWS[i];
+        const nc = col + DIR_COLS[i];
+        if (!env.isWall(nr, nc)) safe.push(i);
+      }
+      return safe;
+    }
+
+    /** Sliding-window autoregressive baseline with GPS 70/30 and full sensor parity. */
+    class AutoregressiveAgentV3 {
+      constructor(startEnergy, actuatorCost, policyRng) {
+        this.initialEnergy = startEnergy;
+        this.actuatorCost = actuatorCost;
+        this.policyRng = policyRng;
+        this.reset();
+      }
+
+      reset() {
+        this.energy = this.initialEnergy;
+        this.row = START_ROW;
+        this.col = START_COL;
+        this.physicalSteps = 0;
+        this.ticks = 0;
+        this.done = false;
+        this.historyLog = [];
+        this.lastComputeCost = 0;
+        this.lastActuatorCostPaid = 0;
+        this.lastTickTotalCost = 0;
+      }
+
+      windowMentionCountForCell(row, col) {
+        const start = Math.max(0, this.historyLog.length - CONTEXT_WINDOW_SIZE);
+        let count = 0;
+        for (let i = start; i < this.historyLog.length; i++) {
+          const entry = this.historyLog[i];
+          if (entry.row === row && entry.col === col) count++;
+        }
+        return count;
+      }
+
+      slidingWindowWeightForNeighbor(neighborRow, neighborCol) {
+        return 1 / (1 + this.windowMentionCountForCell(neighborRow, neighborCol));
+      }
+
+      neighborHistoryWeight(env, dirIndex) {
+        const nr = this.row + DIR_ROWS[dirIndex];
+        const nc = this.col + DIR_COLS[dirIndex];
+        return this.slidingWindowWeightForNeighbor(nr, nc);
+      }
+
+      buildGpsShareMap(env, safe) {
+        const currentDist = distToGoal(this.row, this.col);
+        const improving = [];
+        const worsening = [];
+        for (let k = 0; k < safe.length; k++) {
+          const dir = safe[k];
+          const nr = this.row + DIR_ROWS[dir];
+          const nc = this.col + DIR_COLS[dir];
+          if (distToGoal(nr, nc) < currentDist) improving.push(dir);
+          else worsening.push(dir);
+        }
+        const weightMap = {};
+        if (improving.length === 0 && worsening.length === 0) return null;
+        if (improving.length === 0) {
+          const share = 1 / worsening.length;
+          for (let k = 0; k < worsening.length; k++) weightMap[worsening[k]] = share;
+        } else if (worsening.length === 0) {
+          const share = 1 / improving.length;
+          for (let k = 0; k < improving.length; k++) weightMap[improving[k]] = share;
+        } else {
+          const improveShare = 0.7 / improving.length;
+          const worsenShare = 0.3 / worsening.length;
+          for (let k = 0; k < improving.length; k++) weightMap[improving[k]] = improveShare;
+          for (let k = 0; k < worsening.length; k++) weightMap[worsening[k]] = worsenShare;
+        }
+        return weightMap;
+      }
+
+      pickWeightedDirection(env, directions) {
+        let total = 0;
+        const weights = [];
+        for (let i = 0; i < directions.length; i++) {
+          const w = (weights[i] = this.neighborHistoryWeight(env, directions[i]));
+          total += w;
+        }
+        if (total <= 0) {
+          return directions[Math.floor(this.policyRng() * directions.length)];
+        }
+        let roll = this.policyRng() * total;
+        for (let j = 0; j < directions.length; j++) {
+          roll -= weights[j];
+          if (roll <= 0) return directions[j];
+        }
+        return directions[directions.length - 1];
+      }
+
+      pickDirectionFromSafe(env, safe) {
+        if (safe.length === 0) return null;
+        const weightMap = this.buildGpsShareMap(env, safe);
+        if (!weightMap) {
+          return this.pickWeightedDirection(env, safe);
+        }
+        let total = 0;
+        const dirs = [];
+        const weights = [];
+        for (let d = 0; d < safe.length; d++) {
+          const dir = safe[d];
+          const w = (weightMap[dir] || 0) * this.neighborHistoryWeight(env, dir);
+          if (w <= 0) continue;
+          dirs.push(dir);
+          weights.push(w);
+          total += w;
+        }
+        if (dirs.length === 0 || total <= 0) {
+          return this.pickWeightedDirection(env, safe);
+        }
+        let roll = this.policyRng() * total;
+        for (let j = 0; j < dirs.length; j++) {
+          roll -= weights[j];
+          if (roll <= 0) return dirs[j];
+        }
+        return dirs[dirs.length - 1];
+      }
+
+      step(env) {
+        if (this.done || this.energy <= 0) {
+          this.done = true;
+          return { moved: false };
+        }
+        const outcome = { moved: false };
+        if (env.atGoal(this.row, this.col)) {
+          this.done = true;
+          return outcome;
+        }
+
+        const inferenceCost = CONTEXT_INFERENCE_COST_PER_STEP * this.historyLog.length;
+        const perceptionCost = 4 * env.psiSim;
+        this.lastComputeCost = inferenceCost + perceptionCost;
+        this.lastActuatorCostPaid = 0;
+        this.energy -= this.lastComputeCost;
+
+        for (let i = 0; i < 4; i++) {
+          env.perceiveDirection(this.row, this.col, i);
+        }
+
+        if (this.energy <= 0) {
+          this.lastTickTotalCost = this.lastComputeCost;
+          this.done = true;
+          this.ticks++;
+          return outcome;
+        }
+
+        const safe = listSafeDirections(env, this.row, this.col);
+        const dirIndex = this.pickDirectionFromSafe(env, safe);
+        let chosenDir = dirIndex;
+
+        if (chosenDir !== null && chosenDir >= 0) {
+          const move = env.tryMove(this.row, this.col, chosenDir);
+          if (move.moved) {
+            this.lastActuatorCostPaid = this.actuatorCost;
+            this.energy -= this.actuatorCost;
+            this.row = move.row;
+            this.col = move.col;
+            this.physicalSteps++;
+            outcome.moved = true;
+          }
+        }
+
+        this.historyLog.push({
+          row: this.row,
+          col: this.col,
+          dir: chosenDir === null ? -1 : chosenDir,
+          moved: outcome.moved
+        });
+
+        this.lastTickTotalCost = this.lastComputeCost + this.lastActuatorCostPaid;
+        this.energy = Math.max(0, this.energy);
+        this.ticks++;
+
+        if (env.atGoal(this.row, this.col) || this.energy <= 0) {
+          this.done = true;
+        }
+        return outcome;
+      }
+    }
+
+    class ThermodynamicAgentV3 {
+      constructor(startEnergy, psiSim, actuatorCost, gamma) {
+        this.initialEnergy = startEnergy;
+        this.psiSim = psiSim;
+        this.actuatorCost = actuatorCost;
+        this.gamma = gamma;
+        this.synapticMatrix = new NeuromorphicSynapticMatrix(SYNAPTIC_ETA, 0.01);
+        this.ltmMemory = new HopfieldLongTermMemory();
+        this.hopfieldDeadEndCells = {};
+        this.ltmImprintedCells = {};
+        this.reset();
+      }
+
+      reset() {
+        this.worldModel = {};
+        this.hopfieldDeadEndCells = {};
+        this.ltmImprintedCells = {};
+        this.energy = this.initialEnergy;
+        this.row = START_ROW;
+        this.col = START_COL;
+        this.physicalSteps = 0;
+        this.vetoCount = 0;
+        this.ticks = 0;
+        this.done = false;
+        this.lastComputeCost = 0;
+        this.lastActuatorCostPaid = 0;
+        this.lastTickTotalCost = 0;
+        this.synapticMatrix = new NeuromorphicSynapticMatrix(SYNAPTIC_ETA, 0.01);
+        this.ltmMemory = new HopfieldLongTermMemory();
+      }
+
+      calculateDynamicVetoThreshold() {
+        if (this.energy <= 0) return Infinity;
+        return this.actuatorCost * (1.0 + Math.exp(-this.energy / (this.actuatorCost * 2)));
+      }
+
+      deltaFForCell(nr, nc, predictedBlocked) {
+        if (predictedBlocked) {
+          return {
+            deltaF: Number.POSITIVE_INFINITY,
+            blocked: true,
+            row: nr,
+            col: nc
+          };
+        }
+        const key = posKey(nr, nc);
+        if (this.hopfieldDeadEndCells[key]) {
+          return {
+            deltaF: Number.POSITIVE_INFINITY,
+            blocked: true,
+            row: nr,
+            col: nc
+          };
+        }
+        const familiarity = this.worldModel[key] || 0;
+        let deltaF = this.actuatorCost - this.gamma * Math.exp(-familiarity);
+        if (distToGoal(nr, nc) < distToGoal(this.row, this.col)) {
+          deltaF -= GOAL_GRADIENT_BONUS;
+        }
+        if (familiarity > 0) {
+          deltaF += familiarity * VISITED_PENALTY_FACTOR;
+        }
+        return { deltaF: deltaF, blocked: false, row: nr, col: nc };
+      }
+
+      /** Imprint Hopfield pattern only at a true maze dead-end (3 physical walls), once per cell. */
+      tryLtmImprint(env, logFn) {
+        const key = posKey(this.row, this.col);
+        if (this.ltmImprintedCells[key]) return;
+        if (countPhysicalWalls(env, this.row, this.col) !== 3) return;
+
+        const V = buildPhysicalDeadEndVector(env, this.row, this.col);
+        this.ltmMemory.imprintDeadEndPattern(V);
+        this.ltmImprintedCells[key] = true;
+        this.hopfieldDeadEndCells[key] = true;
+        if (logFn) {
+          logFn(
+            "LTM-Imprint: физический тупик (" +
+              this.row +
+              "," +
+              this.col +
+              ") паттерн [" +
+              V.join(", ") +
+              "]"
+          );
+        }
+      }
+
+      step(env, logFn) {
+        if (this.done || this.energy <= 0) {
+          this.done = true;
+          return { moved: false, veto: false };
+        }
+        const outcome = { moved: false, veto: false };
+
+        if (env.atGoal(this.row, this.col)) {
+          this.done = true;
+          return outcome;
+        }
+
+        this.lastComputeCost = 4 * env.psiSim;
+        this.lastActuatorCostPaid = 0;
+        this.energy -= this.lastComputeCost;
+
+        const features = [];
+        const yHats = [];
+        for (let i = 0; i < 4; i++) {
+          const X = env.perceiveDirection(this.row, this.col, i);
+          features[i] = X;
+          yHats[i] = this.synapticMatrix.predictObstacle(i, X);
+          const actual = env.getActualOutcome(this.row, this.col, i);
+          const metrics = this.synapticMatrix.updateWeights(i, X, actual);
+          if (logFn) {
+            logFn(
+              DIR_LABELS[i] +
+                " | ε=" +
+                metrics.error.toFixed(4) +
+                ", ŷ=" +
+                metrics.yHat.toFixed(3)
+            );
+          }
+        }
+
+        if (this.energy <= 0) {
+          this.done = true;
+          this.finishTick();
+          return outcome;
+        }
+
+        this.tryLtmImprint(env, logFn);
+
+        const bipolarIn = predictionsToBipolar(yHats);
+        const recallResult = this.ltmMemory.recallMemory(bipolarIn);
+        const recovered = recallResult.vector;
+        if (logFn && recallResult.iterations > 0) {
+          logFn(
+            "Релаксация Хопфилда (" +
+              recallResult.iterations +
+              " ит.): [" +
+              recovered.join(", ") +
+              "]"
+          );
+        }
+
+        const simulations = [];
+        for (let d = 0; d < 4; d++) {
+          const nr = this.row + DIR_ROWS[d];
+          const nc = this.col + DIR_COLS[d];
+          const predBlock = yHats[d] > PREDICTION_BLOCK_THRESHOLD;
+          const hopfieldWall = recovered[d] === 1;
+          const directionBlocked = predBlock || hopfieldWall;
+          if (hopfieldWall && !predBlock && logFn) {
+            logFn(DIR_LABELS[d] + ": LTM → ΔF=+∞ (память предсказывает стену)");
+          }
+          simulations.push(this.deltaFForCell(nr, nc, directionBlocked));
+        }
+
+        let best = null;
+        let bestDelta = Infinity;
+        for (let k = 0; k < simulations.length; k++) {
+          const sim = simulations[k];
+          if (sim.blocked) continue;
+          if (sim.deltaF < bestDelta) {
+            bestDelta = sim.deltaF;
+            best = { dir: k, sim: sim };
+          }
+        }
+
+        if (!best) {
+          this.vetoCount++;
+          outcome.veto = true;
+          if (logFn) logFn("Предиктивное ВЕТО: нет направления с конечной ΔF");
+          this.finishTick();
+          return outcome;
+        }
+
+        const chosenDir = best.dir;
+
+        const theta = this.calculateDynamicVetoThreshold();
+        if (bestDelta > theta) {
+          this.vetoCount++;
+          outcome.veto = true;
+          if (logFn) {
+            logFn(
+              "Термодинамическое ВЕТО: ΔF=" +
+                bestDelta.toFixed(2) +
+                " > θ=" +
+                theta.toFixed(2)
+            );
+          }
+          this.finishTick();
+          return outcome;
+        }
+
+        const move = env.tryMove(this.row, this.col, chosenDir);
+        if (move.moved) {
+          this.lastActuatorCostPaid = this.actuatorCost;
+          this.energy -= this.actuatorCost;
+          this.row = move.row;
+          this.col = move.col;
+          this.physicalSteps++;
+          outcome.moved = true;
+          const wKey = posKey(this.row, this.col);
+          this.worldModel[wKey] = (this.worldModel[wKey] || 0) + 1;
+        }
+
+        this.finishTick();
+        if (env.atGoal(this.row, this.col) || this.energy <= 0) {
+          this.done = true;
+        }
+        return outcome;
+      }
+
+      finishTick() {
+        this.lastTickTotalCost = this.lastComputeCost + this.lastActuatorCostPaid;
+        this.energy = Math.max(0, this.energy);
+        this.ticks++;
+      }
+    }
+
+    function bootApp() {
+      let env = null;
+      let mazeUsedSeed = 105;
+      let arAgent = null;
+      let thermoAgent = null;
+      let simTimerId = null;
+      let currentStep = 0;
+
+      const els = {
+        mazeAr: document.getElementById("maze-ar"),
+        mazeV3: document.getElementById("maze-v3"),
+        log: document.getElementById("log-output"),
+        matrixBody: document.getElementById("matrix-body"),
+        ltmBody: document.getElementById("ltm-body"),
+        energy: document.getElementById("param-energy"),
+        psi: document.getElementById("param-psi"),
+        act: document.getElementById("param-act"),
+        gamma: document.getElementById("param-gamma"),
+        ratio: document.getElementById("param-ratio"),
+        seed: document.getElementById("param-seed"),
+        lblEnergy: document.getElementById("lbl-energy"),
+        lblPsi: document.getElementById("lbl-psi"),
+        lblAct: document.getElementById("lbl-act"),
+        lblGamma: document.getElementById("lbl-gamma"),
+        lblRatio: document.getElementById("lbl-ratio"),
+        seedUsed: document.getElementById("seed-used"),
+        arStatus: document.getElementById("ar-status"),
+        arEnergy: document.getElementById("ar-energy"),
+        arSteps: document.getElementById("ar-steps"),
+        arTicks: document.getElementById("ar-ticks"),
+        arCost: document.getElementById("ar-cost"),
+        thermoStatus: document.getElementById("thermo-status"),
+        thermoEnergy: document.getElementById("thermo-energy"),
+        thermoSteps: document.getElementById("thermo-steps"),
+        thermoVeto: document.getElementById("thermo-veto"),
+        thermoTicks: document.getElementById("thermo-ticks"),
+        thermoCost: document.getElementById("thermo-cost"),
+        btnRun: document.getElementById("btn-run"),
+        btnStep: document.getElementById("btn-step"),
+        // Must match HTML id="generate-btn" exactly
+        btnGen: document.getElementById("generate-btn")
+      };
+
+      function readSeedFromInput() {
+        const seedEl = document.getElementById("param-seed");
+        const parsed = parseInt(seedEl && seedEl.value, 10);
+        return Number.isFinite(parsed) ? parsed : 105;
+      }
+
+      function readParams() {
+        const ratioPct = Number(els.ratio.value);
+        return {
+          energy: Number(els.energy.value),
+          psiSim: Number(els.psi.value),
+          actuatorCost: Number(els.act.value),
+          gamma: Number(els.gamma.value),
+          ratio: ratioPct / 100,
+          seed: readSeedFromInput()
+        };
+      }
+
+      function bindSliders() {
+        els.energy.addEventListener("input", function () {
+          els.lblEnergy.textContent = els.energy.value;
+        });
+        els.psi.addEventListener("input", function () {
+          els.lblPsi.textContent = Number(els.psi.value).toFixed(1);
+        });
+        els.act.addEventListener("input", function () {
+          els.lblAct.textContent = els.act.value;
+        });
+        els.gamma.addEventListener("input", function () {
+          els.lblGamma.textContent = els.gamma.value;
+        });
+        els.ratio.addEventListener("input", function () {
+          els.lblRatio.textContent = els.ratio.value + "%";
+        });
+      }
+
+      function appendLog(msg) {
+        const line = document.createElement("div");
+        line.textContent = "[t=" + currentStep + "] " + msg;
+        els.log.appendChild(line);
+        els.log.scrollTop = els.log.scrollHeight;
+        while (els.log.childNodes.length > 120) {
+          els.log.removeChild(els.log.firstChild);
+        }
+      }
+
+      function renderMatrices() {
+        if (!thermoAgent) return;
+        els.matrixBody.innerHTML = "";
+        for (let d = 0; d < 4; d++) {
+          const row = document.createElement("tr");
+          row.innerHTML =
+            "<td><strong>" +
+            DIR_LABELS[d] +
+            "</strong></td><td>" +
+            thermoAgent.synapticMatrix.W[d][0].toFixed(4) +
+            "</td><td>" +
+            thermoAgent.synapticMatrix.W[d][1].toFixed(4) +
+            "</td><td>" +
+            thermoAgent.synapticMatrix.W[d][2].toFixed(4) +
+            "</td>";
+          els.matrixBody.appendChild(row);
+        }
+        els.ltmBody.innerHTML = "";
+        for (let i = 0; i < 4; i++) {
+          const row = document.createElement("tr");
+          const t = thermoAgent.ltmMemory.T[i];
+          row.innerHTML =
+            "<td><strong>" +
+            DIR_LABELS[i] +
+            "</strong></td><td>" +
+            t[0] +
+            "</td><td>" +
+            t[1] +
+            "</td><td>" +
+            t[2] +
+            "</td><td>" +
+            t[3] +
+            "</td>";
+          els.ltmBody.appendChild(row);
+        }
+      }
+
+      function renderMazePanel(container, agent, mode) {
+        if (!env || !agent || !container) return;
+        container.innerHTML = "";
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            cell.setAttribute("data-r", String(r));
+            cell.setAttribute("data-c", String(c));
+            const key = posKey(r, c);
+            if (env.maze[r][c] === CELL_WALL) cell.classList.add("wall");
+            else if (r === GOAL_ROW && c === GOAL_COL) cell.classList.add("goal");
+
+            if (mode === "thermo" && agent.hopfieldDeadEndCells[key]) {
+              const ded = document.createElement("div");
+              ded.className = "dead-end-overlay";
+              cell.appendChild(ded);
+            }
+
+            if (mode === "thermo") {
+              const fam = agent.worldModel[key] || 0;
+              if (fam > 0 && env.maze[r][c] !== CELL_WALL) {
+                const vis = document.createElement("div");
+                vis.className = "visit";
+                vis.style.opacity = Math.min(0.15 + fam * 0.12, 0.85).toFixed(2);
+                cell.appendChild(vis);
+              }
+            } else if (mode === "ar") {
+              const mentions = agent.windowMentionCountForCell(r, c);
+              if (mentions > 0 && env.maze[r][c] !== CELL_WALL) {
+                const vis = document.createElement("div");
+                vis.className = "visit";
+                vis.style.setProperty(
+                  "background",
+                  "rgba(239, 68, 68, " +
+                    Math.min(0.1 + mentions * 0.08, 0.5).toFixed(2) +
+                    ")",
+                  "important"
+                );
+                cell.appendChild(vis);
+              }
+            }
+
+            if (agent.row === r && agent.col === c && env.maze[r][c] !== CELL_WALL) {
+              const dot = document.createElement("div");
+              dot.className = "agent-dot " + mode;
+              cell.appendChild(dot);
+            }
+            container.appendChild(cell);
+          }
+        }
+      }
+
+      /** Full DOM rebuild for both canvases (shared wall grid, independent agents). */
+      function forceRebuildMazeDom() {
+        const seedTag = String(mazeUsedSeed);
+        if (els.mazeAr) {
+          els.mazeAr.replaceChildren();
+          els.mazeAr.setAttribute("data-map-seed", seedTag);
+        }
+        if (els.mazeV3) {
+          els.mazeV3.replaceChildren();
+          els.mazeV3.setAttribute("data-map-seed", seedTag);
+        }
+        if (env && arAgent && thermoAgent) {
+          renderMazePanel(els.mazeAr, arAgent, "ar");
+          renderMazePanel(els.mazeV3, thermoAgent, "thermo");
+        }
+      }
+
+      function renderBothMazes() {
+        renderMazePanel(els.mazeAr, arAgent, "ar");
+        renderMazePanel(els.mazeV3, thermoAgent, "thermo");
+      }
+
+      function agentStatusText(agent) {
+        if (!agent || !env) return "—";
+        if (env.atGoal(agent.row, agent.col)) return "SUCCESS";
+        if (agent.energy <= 0) return "DEPLETED";
+        if (agent.done) return "STOPPED";
+        return "ACTIVE";
+      }
+
+      function formatTockCost(agent) {
+        return (
+          "compute " +
+          agent.lastComputeCost.toFixed(2) +
+          " + actuator " +
+          agent.lastActuatorCostPaid.toFixed(1) +
+          " = " +
+          agent.lastTickTotalCost.toFixed(2)
+        );
+      }
+
+      function updateMetrics() {
+        if (!arAgent || !thermoAgent) return;
+        if (els.arStatus) els.arStatus.textContent = agentStatusText(arAgent);
+        if (els.arEnergy) els.arEnergy.textContent = arAgent.energy.toFixed(1);
+        if (els.arSteps) els.arSteps.textContent = String(arAgent.physicalSteps);
+        if (els.arTicks) els.arTicks.textContent = String(arAgent.ticks);
+        if (els.arCost) els.arCost.textContent = formatTockCost(arAgent);
+
+        if (els.thermoStatus) els.thermoStatus.textContent = agentStatusText(thermoAgent);
+        if (els.thermoEnergy) els.thermoEnergy.textContent = thermoAgent.energy.toFixed(1);
+        if (els.thermoSteps) els.thermoSteps.textContent = String(thermoAgent.physicalSteps);
+        if (els.thermoVeto) els.thermoVeto.textContent = String(thermoAgent.vetoCount);
+        if (els.thermoTicks) els.thermoTicks.textContent = String(thermoAgent.ticks);
+        if (els.thermoCost) els.thermoCost.textContent = formatTockCost(thermoAgent);
+      }
+
+      function flashThermoVeto() {
+        if (!els.mazeV3 || !thermoAgent) return;
+        const cell = els.mazeV3.querySelector(
+          '.cell[data-r="' + thermoAgent.row + '"][data-c="' + thermoAgent.col + '"]'
+        );
+        if (cell) {
+          cell.classList.add("flash-veto");
+          window.setTimeout(function () {
+            cell.classList.remove("flash-veto");
+          }, 120);
+        }
+      }
+
+      function stopSim(elsObject) {
+        if (simTimerId !== null) {
+          clearInterval(simTimerId);
+          simTimerId = null;
+        }
+        if (elsObject && elsObject.btnRun) {
+          elsObject.btnRun.textContent = "Запустить симуляцию";
+        }
+      }
+
+      function syncAgentParams() {
+        const p = readParams();
+        if (thermoAgent) {
+          thermoAgent.initialEnergy = p.energy;
+          thermoAgent.psiSim = p.psiSim;
+          thermoAgent.actuatorCost = p.actuatorCost;
+          thermoAgent.gamma = p.gamma;
+        }
+        if (arAgent) {
+          arAgent.initialEnergy = p.energy;
+          arAgent.actuatorCost = p.actuatorCost;
+        }
+        if (env) env.psiSim = p.psiSim;
+      }
+
+      function resetBothAgents(p, userSeed) {
+        const policySeed = (userSeed ^ 0x9e3779b9) >>> 0;
+        arAgent = new AutoregressiveAgentV3(
+          p.energy,
+          p.actuatorCost,
+          seededRandom(policySeed)
+        );
+        thermoAgent = new ThermodynamicAgentV3(
+          p.energy,
+          p.psiSim,
+          p.actuatorCost,
+          p.gamma
+        );
+      }
+
+      /** Hard-reset dashboard metrics after map regeneration (before simulation run). */
+      function resetDashboardMetrics(p) {
+        const energyStr = p.energy.toFixed(1);
+        if (els.arStatus) els.arStatus.textContent = "ACTIVE";
+        if (els.arEnergy) els.arEnergy.textContent = energyStr;
+        if (els.arSteps) els.arSteps.textContent = "0";
+        if (els.arTicks) els.arTicks.textContent = "0";
+        if (els.arCost) els.arCost.textContent = "—";
+
+        if (els.thermoStatus) els.thermoStatus.textContent = "ACTIVE";
+        if (els.thermoEnergy) els.thermoEnergy.textContent = energyStr;
+        if (els.thermoSteps) els.thermoSteps.textContent = "0";
+        if (els.thermoVeto) els.thermoVeto.textContent = "0";
+        if (els.thermoTicks) els.thermoTicks.textContent = "0";
+        if (els.thermoCost) els.thermoCost.textContent = "—";
+      }
+
+      function regenerateMazeGrid(userSeed, obstacleRatio, mazeRng) {
+        return generateValidMaze(userSeed, obstacleRatio, mazeRng);
+      }
+
+      function applyMazeToEnvironment(mazeGrid, psiSim) {
+        if (!env) {
+          env = new MultimodalMazeEnvironment(mazeGrid);
+        } else {
+          env.setMazeGrid(mazeGrid);
+        }
+        env.psiSim = psiSim;
+      }
+
+      function generateMap() {
+        stopSim(els);
+        currentStep = 0;
+
+        const p = readParams();
+        const seedInput = document.getElementById("param-seed");
+        const requestedSeed = parseInt(seedInput && seedInput.value, 10);
+        const userSeed = Number.isFinite(requestedSeed) ? (requestedSeed | 0) : 105;
+        const mazeRng = seededRandom(userSeed >>> 0);
+
+        let result;
+        try {
+          result = regenerateMazeGrid(userSeed, p.ratio, mazeRng);
+        } catch (err) {
+          console.error("[index_v3] BFS maze validation failed:", err);
+          const fallbackRng = seededRandom(105 >>> 0);
+          result = regenerateMazeGrid(105, p.ratio, fallbackRng);
+        }
+
+        try {
+          applyMazeToEnvironment(result.maze, p.psiSim);
+          mazeUsedSeed = result.usedSeed;
+          resetBothAgents(p, userSeed);
+
+          if (els.mazeAr) els.mazeAr.replaceChildren();
+          if (els.mazeV3) els.mazeV3.replaceChildren();
+          forceRebuildMazeDom();
+          renderMatrices();
+          resetDashboardMetrics(p);
+
+          let note = "Map seed used: " + mazeUsedSeed;
+          if (mazeUsedSeed !== userSeed) note += " (adjusted by BFS)";
+          if (els.seedUsed) els.seedUsed.textContent = note;
+
+          currentStep = 0;
+          if (els.log) {
+            els.log.replaceChildren();
+            els.log.scrollTop = 0;
+          }
+          appendLog("Карта сгенерирована. Автор: Vakhtang Doundoua (NecPU)");
+          appendLog(
+            "Seed запрос=" +
+              userSeed +
+              ", плотность=" +
+              Math.round(p.ratio * 100) +
+              "%"
+          );
+
+          const etaEl = document.getElementById("val-eta");
+          if (etaEl) etaEl.textContent = String(SYNAPTIC_ETA);
+        } catch (mapPipelineErr) {
+          console.error("[index_v3] generateMap pipeline failed:", mapPipelineErr);
+        }
+      }
+
+      function simulationFinished() {
+        const arDone = !arAgent || arAgent.done || arAgent.ticks >= MAX_TICKS;
+        const thermoDone =
+          !thermoAgent || thermoAgent.done || thermoAgent.ticks >= MAX_TICKS;
+        return arDone && thermoDone;
+      }
+
+      function runOneTock() {
+        if (!env || !arAgent || !thermoAgent) return;
+        if (simulationFinished()) {
+          stopSim(els);
+          return;
+        }
+
+        if (!arAgent.done && arAgent.ticks < MAX_TICKS && arAgent.energy > 0) {
+          arAgent.step(env);
+        }
+
+        const tickLogs = [];
+        let thermoOutcome = { veto: false };
+        if (
+          !thermoAgent.done &&
+          thermoAgent.ticks < MAX_TICKS &&
+          thermoAgent.energy > 0
+        ) {
+          thermoOutcome = thermoAgent.step(env, function (msg) {
+            tickLogs.push(msg);
+          });
+        }
+        for (let i = 0; i < tickLogs.length; i++) {
+          appendLog(tickLogs[i]);
+        }
+        if (thermoOutcome.veto) flashThermoVeto();
+
+        currentStep = Math.max(arAgent.ticks, thermoAgent.ticks);
+        renderBothMazes();
+        renderMatrices();
+        updateMetrics();
+        if (simulationFinished()) stopSim(els);
+      }
+
+      els.btnGen = document.getElementById("generate-btn");
+      if (els.btnGen) {
+        els.btnGen.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          // Auto-randomize the input field seed value on each button click to trigger a fresh layout visual shift
+          const seedEl = document.getElementById("param-seed");
+          const modifierHeld =
+            e.shiftKey || e.ctrlKey || e.altKey || e.metaKey;
+          if (seedEl && !modifierHeld) {
+            const randomIntSeed = Math.floor(Math.random() * 9999) + 1;
+            seedEl.value = String(randomIntSeed);
+          }
+
+          console.log("[generate-btn] Fired map regeneration with fresh randomized seed.");
+          generateMap();
+        });
+      } else {
+        console.error("[index_v3] generate-btn element not found in DOM.");
+      }
+
+      if (els.btnStep) {
+        els.btnStep.addEventListener("click", function (e) {
+          e.preventDefault();
+          if (!arAgent || !thermoAgent) generateMap();
+          else syncAgentParams();
+          runOneTock();
+        });
+      }
+
+      if (els.btnRun) {
+        els.btnRun.addEventListener("click", function (e) {
+          e.preventDefault();
+          if (!arAgent || !thermoAgent) generateMap();
+          if (simTimerId !== null) {
+            stopSim(els);
+            return;
+          }
+          syncAgentParams();
+          els.btnRun.textContent = "Остановить";
+          simTimerId = setInterval(runOneTock, SIM_INTERVAL_MS);
+        });
+      }
+
+      bindSliders();
+
+      console.log("=== RUNNING V3 GEOMETRY SANITY TESTS ===");
+      try {
+        const testRng = seededRandom(105);
+        const testMaze = buildMazeFromSeed(0.25, testRng);
+        console.log(
+          "Test 1: Maze shape valid?",
+          testMaze.length === 16 && testMaze[0].length === 16
+        );
+        console.log("Test 2: Is start cell free?", testMaze[0][0] === 0);
+        console.log("Test 3: Is goal cell free?", testMaze[15][15] === 0);
+
+        let wallCount = 0;
+        for (let r = 0; r < 16; r++) {
+          for (let c = 0; c < 16; c++) {
+            if (testMaze[r][c] === 1) wallCount++;
+          }
+        }
+        console.log("Test 4: Total walls generated (Expected ~64):", wallCount);
+        console.log("Test 5: Solvable check execution:", mazeIsSolvable(testMaze));
+      } catch (e) {
+        console.error("!!! CRITICAL GEOMETRY EXCEPTION DETECTED !!!", e.stack);
+      }
+      console.log("========================================");
+
+      generateMap();
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bootApp);
+    } else {
+      bootApp();
+    }
+  </script>
+</body>
+</html>
