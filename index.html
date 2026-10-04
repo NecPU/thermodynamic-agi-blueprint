@@ -341,9 +341,6 @@
         <h3 style="margin:0 0 8px;font-size:0.95rem;">Cognitive Dynamics &amp; Relaxation Log</h3>
         <div class="log-box" id="log-output">Ready. Click Generate Map.</div>
       </section>
-      <footer style="margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border); text-align: center; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.05em;">
-        Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
-      </footer>
     </main>
   </div>
 
@@ -1576,7 +1573,7 @@
 
         els.log.innerHTML = "";
         appendLog(
-          "16×16 map generated (Mulberry32, BFS OK). Seed=" +
+          "16x16 perfect maze grid generated via Mulberry32. BFS solver verified. Seed=" +
             mazeUsedSeed
         );
         renderMazePanel(els.mazeAr, arAgent, "ar");
@@ -1638,5 +1635,8 @@
       bootApp();
     }
   </script>
+  <footer style="margin-top: 40px; margin-bottom: 20px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; width: 100%; clear: both; display: block;">
+    Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+  </footer>
 </body>
 </html>
