@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="author" content="Vakhtang Doundoua (NecPU)">
-  <meta name="copyright" content="Vakhtang Doundoua (NecPU) — Thermodynamic AGI architectural blueprint">
-  <title>Thermodynamic AGI V3 — Vakhtang Doundoua (NecPU) · Neuromorphic LTM Simulator</title>
+  <meta name="copyright" content="Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thermodynamic AGI V3 — Vakhtang Doundoua (NecPU)</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -26,20 +26,24 @@
       color: var(--text);
       min-height: 100vh;
     }
-    h1 {
+    .page-header {
+      padding: 16px 20px 0;
+      max-width: 1680px;
+      margin: 0 auto;
+    }
+    .page-header h1 {
       margin: 0;
-      font-size: 1.45rem;
+      font-size: 1.35rem;
       letter-spacing: 0.04em;
       text-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
     }
-    .subtitle { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
-    .author-line { font-size: 0.75rem; color: var(--muted); margin: 6px 0 0; }
+    .subtitle { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
     .layout {
       display: flex;
       flex-wrap: nowrap;
       align-items: flex-start;
       gap: 24px;
-      padding: 20px;
+      padding: 16px 20px 24px;
       width: 100%;
       max-width: 1680px;
       margin: 0 auto;
@@ -54,7 +58,6 @@
       border-radius: 12px;
       padding: 20px;
     }
-    .sidebar h1 { font-size: 1.2rem; line-height: 1.3; }
     .sidebar .form-group,
     .sidebar input[type="range"],
     .sidebar input[type="number"],
@@ -318,11 +321,15 @@
   </style>
 </head>
 <body>
+  <header class="page-header">
+    <h1>Thermodynamic AGI V3 — Vakhtang Doundoua (NecPU)</h1>
+    <p class="subtitle">Dual-agent parity · AR vs Thermo · W + Hopfield LTM · 16×16 · build 2026-10-04</p>
+    <p class="subtitle">Contact: doundoua@gmail.com</p>
+  </header>
+
   <div class="layout">
     <aside class="sidebar">
-      <h1>Thermodynamic AGI V3 — Vakhtang Doundoua (NecPU)</h1>
-      <p class="subtitle">Dual-agent parity · AR vs Thermo · 16×16 · build 2026-10-04</p>
-      <p class="author-line">Architectural blueprint © Vakhtang Doundoua (NecPU)</p>
+      <p class="subtitle" style="margin-top:0;">Simulation parameters</p>
 
       <div class="form-group">
         <label>STARTING ENERGY <span id="lbl-energy">2000</span></label>
@@ -351,9 +358,9 @@
       </div>
       <p class="subtitle">η = <strong id="val-eta">0.05</strong> · τ = <strong id="val-tau">0.01</strong></p>
 
-      <button type="button" class="btn-gen" id="generate-btn">Сгенерировать карту</button>
-      <button type="button" class="btn-run" id="btn-run">Запустить симуляцию</button>
-      <button type="button" class="btn-step" id="btn-step">Шаг (1 такт)</button>
+      <button type="button" class="btn-gen" id="generate-btn">Generate Map</button>
+      <button type="button" class="btn-run" id="btn-run">Run Simulation</button>
+      <button type="button" class="btn-step" id="btn-step">Step (1 Tock)</button>
     </aside>
 
     <div class="main">
@@ -393,22 +400,22 @@
 
       <div class="tables-row">
         <section class="panel">
-          <h3>Матрица весов W (4×3)</h3>
+          <h3>Synaptic Weight Matrix W (4×3)</h3>
           <p class="subtitle">Synaptic receptive field · 4 decimal places</p>
           <table class="matrix-table">
             <thead>
               <tr>
-                <th>Направление</th>
-                <th>x₁ (Стена)</th>
-                <th>x₂ (Цель)</th>
-                <th>x₃ (Шум)</th>
+                <th>Direction</th>
+                <th>x₁ (Wall)</th>
+                <th>x₂ (Goal)</th>
+                <th>x₃ (Noise)</th>
               </tr>
             </thead>
             <tbody id="matrix-body"></tbody>
           </table>
         </section>
         <section class="panel">
-          <h3>Матрица Хопфилда T (4×4)</h3>
+          <h3>Hopfield Matrix T (4×4)</h3>
           <p class="subtitle">Long-term associative dead-end imprints</p>
           <table class="matrix-table">
             <thead>
@@ -426,15 +433,19 @@
       </div>
 
       <section class="panel">
-        <h3>Лог когнитивной динамики</h3>
+        <h3>Cognitive Dynamics Log</h3>
         <p class="subtitle">Prediction ε · LTM imprint · Hopfield relaxation · predictive VETO</p>
-        <div class="log-box" id="log-output">Система готова. Сгенерируйте карту для старта.</div>
+        <div class="log-box" id="log-output">Ready. Click Generate Map.</div>
       </section>
+      <footer style="margin-top: 25px; padding-top: 15px; border-top: 1px solid var(--border); text-align: center; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.05em;">
+        Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+      </footer>
     </div>
   </div>
 
   <script>
-    // Version: V3 integrated simulator — Vakhtang Doundoua (NecPU)
+    // V3 integrated dual-agent simulator — W + Hopfield LTM
+    // Copyright © Vakhtang Doundoua (NecPU) · doundoua@gmail.com
 
     function seededRandom(seed) {
       return function () {
@@ -1028,11 +1039,11 @@
         this.hopfieldDeadEndCells[key] = true;
         if (logFn) {
           logFn(
-            "LTM-Imprint: физический тупик (" +
+            "LTM-Imprint: physical dead-end (" +
               this.row +
               "," +
               this.col +
-              ") паттерн [" +
+              ") pattern [" +
               V.join(", ") +
               "]"
           );
@@ -1087,9 +1098,9 @@
         const recovered = recallResult.vector;
         if (logFn && recallResult.iterations > 0) {
           logFn(
-            "Релаксация Хопфилда (" +
+            "Hopfield relaxation (" +
               recallResult.iterations +
-              " ит.): [" +
+              " iter.): [" +
               recovered.join(", ") +
               "]"
           );
@@ -1103,7 +1114,7 @@
           const hopfieldWall = recovered[d] === 1;
           const directionBlocked = predBlock || hopfieldWall;
           if (hopfieldWall && !predBlock && logFn) {
-            logFn(DIR_LABELS[d] + ": LTM → ΔF=+∞ (память предсказывает стену)");
+            logFn(DIR_LABELS[d] + ": LTM → ΔF=+∞ (memory predicts wall)");
           }
           simulations.push(this.deltaFForCell(nr, nc, directionBlocked));
         }
@@ -1122,7 +1133,7 @@
         if (!best) {
           this.vetoCount++;
           outcome.veto = true;
-          if (logFn) logFn("Предиктивное ВЕТО: нет направления с конечной ΔF");
+          if (logFn) logFn("Predictive VETO: no direction with finite ΔF");
           this.finishTick();
           return outcome;
         }
@@ -1135,7 +1146,7 @@
           outcome.veto = true;
           if (logFn) {
             logFn(
-              "Термодинамическое ВЕТО: ΔF=" +
+              "Thermodynamic VETO: ΔF=" +
                 bestDelta.toFixed(2) +
                 " > θ=" +
                 theta.toFixed(2)
@@ -1426,7 +1437,7 @@
           simTimerId = null;
         }
         if (elsObject && elsObject.btnRun) {
-          elsObject.btnRun.textContent = "Запустить симуляцию";
+          elsObject.btnRun.textContent = "Run Simulation";
         }
       }
 
@@ -1529,11 +1540,11 @@
             els.log.replaceChildren();
             els.log.scrollTop = 0;
           }
-          appendLog("Карта сгенерирована. Автор: Vakhtang Doundoua (NecPU)");
+          appendLog("Map generated. Author: Vakhtang Doundoua (NecPU)");
           appendLog(
-            "Seed запрос=" +
+            "Seed request=" +
               userSeed +
-              ", плотность=" +
+              ", density=" +
               Math.round(p.ratio * 100) +
               "%"
           );
@@ -1626,7 +1637,7 @@
             return;
           }
           syncAgentParams();
-          els.btnRun.textContent = "Остановить";
+          els.btnRun.textContent = "Stop Simulation";
           simTimerId = setInterval(runOneTock, SIM_INTERVAL_MS);
         });
       }
