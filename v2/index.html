@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thermodynamic AGI V2 -- Active Inference &amp; Context Explosion Benchmark</title>
+  <meta name="author" content="Vakhtang Doundoua (NecPU)">
+  <meta name="copyright" content="Vakhtang Doundoua (NecPU) — Thermodynamic AGI architectural blueprint">
+  <title>Thermodynamic AGI V2 — Vakhtang Doundoua (NecPU)</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -24,18 +26,23 @@
       color: var(--text);
       min-height: 100vh;
     }
-    h1 {
+    .page-header {
+      padding: 16px 20px 0;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .page-header h1 {
       margin: 0;
-      font-size: 1.45rem;
+      font-size: 1.35rem;
       letter-spacing: 0.04em;
       text-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
     }
-    .subtitle { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    .subtitle { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
     .layout {
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
-      padding: 20px;
+      padding: 16px 20px 24px;
       max-width: 1400px;
       margin: 0 auto;
     }
@@ -253,10 +260,15 @@
   </style>
 </head>
 <body>
+  <header class="page-header">
+    <h1>Thermodynamic AGI V2 — Vakhtang Doundoua (NecPU)</h1>
+    <p class="subtitle">Active Inference &amp; Context Explosion Benchmark · 16×16 · build 2026-03-21</p>
+    <p class="subtitle">Contact: doundoua@gmail.com</p>
+  </header>
+
   <div class="layout">
     <aside class="sidebar">
-      <h1>Thermodynamic AGI V2</h1>
-      <p class="subtitle">Active Inference &amp; Context Explosion Benchmark · 16×16 · build 2026-03-21</p>
+      <p class="subtitle" style="margin-top:0;">Simulation parameters</p>
 
       <div class="form-group">
         <label>STARTING ENERGY <span id="lbl-energy">2000</span></label>
@@ -331,6 +343,9 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <script>
+    // Thermodynamic AGI V2 dual-agent benchmark
+    // Copyright © Vakhtang Doundoua (NecPU) · doundoua@gmail.com
+
     const DIR_ROWS = [-1, 1, 0, 0];
     const DIR_COLS = [0, 0, -1, 1];
 
@@ -758,7 +773,7 @@
 
       reset() {
         this.worldModel = {};
-        this.deadEnds = {}; // Карта гарантированных тупиковых состояний
+        this.deadEnds = {}; // Map of corridor states marked as dead-end invariants
         this.energy = this.initialEnergy;
         this.row = START_ROW;
         this.col = START_COL;
