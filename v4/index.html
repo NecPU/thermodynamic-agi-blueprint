@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="author" content="Vakhtang Doundoua (NecPU)">
-  <meta name="copyright" content="Vakhtang Doundoua (NecPU) — Thermodynamic AGI architectural blueprint">
+  <meta name="copyright" content="Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Thermodynamic AGI V4 — Vakhtang Doundoua (NecPU)</title>
   <style>
     :root {
@@ -250,6 +250,7 @@
   <header class="page-header">
     <h1>Thermodynamic AGI V4 — Vakhtang Doundoua (NecPU)</h1>
     <p class="subtitle">Dual-agent parity · Grid Cells · Place Cells · Tolman graph M · 16×16</p>
+    <p class="subtitle">Contact: doundoua@gmail.com</p>
   </header>
 
   <div class="layout">
@@ -345,7 +346,7 @@
 
   <script>
     // V4 dual-maze laboratory — hippocampal core + Tolman graph routing
-    // Copyright © Vakhtang Doundoua (NecPU)
+    // Copyright © Vakhtang Doundoua (NecPU) · doundoua@gmail.com
 
     function seededRandom(seed) {
       return function () {
@@ -358,7 +359,7 @@
 
     const DIR_ROWS = [-1, 1, 0, 0];
     const DIR_COLS = [0, 0, -1, 1];
-    const DIR_LABELS = ["Вверх (0)", "Вниз (1)", "Влево (2)", "Вправо (3)"];
+    const DIR_LABELS = ["Up (0)", "Down (1)", "Left (2)", "Right (3)"];
 
     const SIZE = 16;
     const START_ROW = 0;
@@ -1057,13 +1058,13 @@
         this.deadEndPlaceKeys[key] = true;
         if (logFn) {
           logFn(
-            "Hopfield LTM: тупик (" +
+            "Hopfield LTM: dead-end (" +
               this.row +
               "," +
               this.col +
-              ") → place №" +
+              ") → place #" +
               this.activePlaceCellId +
-              " (ΔF=+∞ вперёд)"
+              " (ΔF=+∞ forward)"
           );
         }
       }
@@ -1104,11 +1105,11 @@
           );
           if (logFn) {
             logFn(
-              "Толлан M: " +
+              "Tolman M: " +
                 previousPlaceId +
                 " → " +
                 outcome.placeCellId +
-                " (вес " +
+                " (weight " +
                 this.hippocampus.M[
                   previousPlaceId + "->" + outcome.placeCellId
                 ] +
@@ -1119,9 +1120,9 @@
 
         if (outcome.created && logFn) {
           logFn(
-            "Place Cell №" +
+            "Place Cell #" +
               outcome.placeCellId +
-              " открыта (" +
+              " opened at (" +
               this.row +
               "," +
               this.col +
@@ -1136,9 +1137,9 @@
             estAfter.y
           );
           logFn(
-            "Калибровка place №" +
+            "Place #" +
               outcome.placeCellId +
-              ": дрейф " +
+              " calibration: drift " +
               driftBefore.toFixed(4) +
               " → " +
               driftAfter.toFixed(4)
@@ -1155,7 +1156,7 @@
           const nc = this.col + DIR_COLS[dir];
           if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) {
             if (logFn) {
-              logFn(DIR_LABELS[dir] + ": вне сетки 16×16 → пропуск");
+              logFn(DIR_LABELS[dir] + ": outside 16×16 grid → skip");
             }
             continue;
           }
@@ -1200,8 +1201,8 @@
                 goalSignal.toFixed(4) +
                 ")" +
                 (targetPlaceId != null
-                  ? " → place №" + targetPlaceId
-                  : " → неизвестная зона")
+                  ? " → place #" + targetPlaceId
+                  : " → unknown zone")
             );
           }
 
@@ -1257,11 +1258,11 @@
         this.tryMarkHopfieldDeadEnd(env, logFn);
 
         const safe = listSafeDirections(env, this.row, this.col);
-        if (logFn) logFn("Релаксация ΔF по графу M:");
+        if (logFn) logFn("ΔF relaxation on Tolman graph M:");
         const choice = this.pickDirectionByTolmanFreeEnergy(env, safe, logFn);
 
         if (choice.dir == null) {
-          if (logFn) logFn("Нет направления с конечной ΔF — такт пропущен");
+          if (logFn) logFn("No direction with finite ΔF — tick skipped");
           this.finishTick();
           return { moved: false, veto: false };
         }
@@ -1271,7 +1272,7 @@
           this.vetoCount++;
           if (logFn) {
             logFn(
-              "Термодинамическое ВЕТО: ΔF=" +
+              "Thermodynamic VETO: ΔF=" +
                 choice.deltaF.toFixed(2) +
                 " > θ=" +
                 theta.toFixed(2)
@@ -1441,7 +1442,7 @@
                 const place = document.createElement("div");
                 place.className = "place-overlay";
                 place.title =
-                  "Place №" + thermoAgent.placeCellByCoord[key];
+                  "Place #" + thermoAgent.placeCellByCoord[key];
                 cell.appendChild(place);
               }
               if (thermoAgent.deadEndPlaceKeys[key]) {
@@ -1572,7 +1573,7 @@
 
         els.log.innerHTML = "";
         appendLog(
-          "Карта 16×16 сгенерирована (Mulberry32, BFS OK). Сид=" +
+          "16x16 perfect maze grid generated via Mulberry32. BFS solver verified. Seed=" +
             mazeUsedSeed
         );
         renderMazePanel(els.mazeAr, arAgent, "ar");
@@ -1597,7 +1598,7 @@
           return;
         }
         currentStep++;
-        appendLog("—— такт " + currentStep + " ——");
+        appendLog("— tick " + currentStep + " —");
         arAgent.step(env);
         thermoAgent.step(env, appendLog);
         renderMazePanel(els.mazeAr, arAgent, "ar");
@@ -1606,7 +1607,7 @@
         updateMetrics();
         if (simulationDone()) {
           stopSim();
-          appendLog("Симуляция завершена.");
+          appendLog("Simulation complete.");
         }
       }
 
@@ -1634,5 +1635,8 @@
       bootApp();
     }
   </script>
+  <footer style="margin-top: 40px; margin-bottom: 20px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; width: 100%; clear: both; display: block;">
+    Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+  </footer>
 </body>
 </html>
