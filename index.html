@@ -1,69 +1,389 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="author" content="Vakhtang Doundoua (NecPU)">
-  <title>Thermodynamic AGI Blueprint — Evolution Portal</title>
-  <style>
-    body {
-      background: #0b0f19;
-      color: #f8fafc;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 20px;
-      text-align: center;
-    }
-    .container {
-      max-width: 750px;
-      background: #131c2e;
-      border: 1px solid #1e293b;
-      border-radius: 16px;
-      padding: 40px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-    h1 { margin: 0; font-size: 2rem; color: #38bdf8; }
-    .subtitle { color: #64748b; font-size: 1rem; margin-top: 8px; }
-    .author { font-size: 0.85rem; color: #94a3b8; margin: 15px 0 30px; letter-spacing: 0.05em; }
-    .grid { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 480px; margin: 0 auto; }
-    .btn-version {
-      display: block;
-      padding: 16px;
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      border: 1px solid #334155;
-      border-radius: 10px;
-      color: #f8fafc;
-      text-decoration: none;
-      font-weight: 700;
-      transition: all 0.2s ease;
-    }
-    .btn-version:hover {
-      border-color: #38bdf8;
-      transform: translateY(-2px);
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
-    }
-    .v3-btn { border-color: #22c55e; }
-    .v3-btn:hover { border-color: #22c55e; box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); }
-    .v4-btn { border-color: #a855f7; }
-    .v4-btn:hover { border-color: #a855f7; box-shadow: 0 0 15px rgba(168, 85, 247, 0.35); }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NecPU — Evolutionary Portal-Hub</title>
+    <style>
+        :root {
+            --bg-color: #0a0e17;
+            --card-bg: #111827;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-purple: #c084fc;
+            --border-color: #1f2937;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(56, 189, 248, 0.05);
+        }
+
+        .card.v5:hover { border-color: var(--accent-green); box-shadow: 0 10px 20px rgba(52, 211, 153, 0.05); }
+        .card.v6:hover { border-color: var(--accent-purple); box-shadow: 0 10px 20px rgba(192, 132, 252, 0.05); }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge.blue { background: rgba(56, 189, 248, 0.1); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
+        .badge.green { background: rgba(52, 211, 153, 0.1); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .badge.purple { background: rgba(192, 132, 252, 0.1); color: var(--accent-purple); border: 1px solid var(--accent-purple); }
+
+        .card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            background-color: #1f2937;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .card:hover .btn {
+            background-color: var(--accent-blue);
+            color: #000;
+        }
+        .card.v5:hover .btn { background-color: var(--accent-green); color: #000; }
+        .card.v6:hover .btn { background-color: var(--accent-purple); color: #000; }
+
+        .dashboard {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+        }
+
+        .dashboard h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            color: var(--accent-blue);
+        }
+
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .matrix-table th, .matrix-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .matrix-table th {
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        .highlight-green { color: var(--accent-green); }
+        .highlight-red { color: #f87171; }
+
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Thermodynamic AGI Blueprint</h1>
-    <div class="subtitle">Chronological Evolution & Benchmarks of Cognitive AI Architectures</div>
-    <div class="author">Concept Author: Vakhtang Doundoua (NecPU)</div>
-    
-    <div class="grid">
-      <a href="./v2/" class="btn-version">Simulation V2 (Dead-End Memory & VETO Mechanism)</a>
-      <a href="./v3/" class="btn-version v3-btn" style="color: #22c55e;">Simulation V3 (Neuromorphic W-Matrix Imprinting & Hopfield LTM)</a>
-      <a href="./v4/" class="btn-version v4-btn" style="color: #c084fc;">Simulation V4 (Symmetric Test: Path Integration & Tolman Graph M)</a>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="container">
+        <header>
+            <h1>NecPU — Evolutionary Portal-Hub</h1>
+            <p>Thermodynamic AGI Blueprint Architecture & Cognitive Substrates</p>
+        </header>
+
+        <main>
+            <div class="grid">
+                <!-- V2 -->
+                <a href="./v2/" class="card">
+                    <div>
+                        <div class="card-header">
+                            <span class="badge blue">Phase V2</span>
+                        </div>
+                        <h2>Tolland Graph M</h2>
+                        <p>Initial implementation of grid cell odometry and flat topological matrix integration. Basic path-finding structures.</p>
+                    </div>
+                    <div class="btn">Launch Core</div>
+                </a>
+
+                <!-- V3 -->
+                <a href="./v3/" class="card">
+                    <div>
+                        <div class="card-header">
+                            <span class="badge blue">Phase V3</span>
+                        </div>
+                        <h2>Autoregressive Baseline</h2>
+                        <p>Red Dot evaluation environment. Standard KV-cache implementation for comparative stress-testing against thermodynamic models.</p>
+                    </div>
+                    <div class="btn">Launch Core</div>
+                </a>
+
+                <!-- V4 -->
+                <a href="./v4/" class="card">
+                    <div>
+                        <div class="card-header">
+                            <span class="badge blue">Phase V4</span>
+                        </div>
+                        <h2>Thermodynamic Inference</h2>
+                        <p>Green Dot engine activation. Comparative analysis of O(1) step cost survival in resource-depleted "Wormholes" 16x16 environments.</p>
+                    </div>
+                    <div class="btn">Launch Core</div>
+                </a>
+                <!-- V5 -->
+                <a href="./v5/" class="card v5">
+                    <div>
+                        <div class="card-header">
+                            <span class="badge green">Phase V5</span>
+                        </div>
+                        <h2>Hierarchical Hippocampal Map</h2>
+                        <p>Autonomous clustering of Place Cells into Abstract Macro-Zones triggered by synaptic saturation and odometry deltas. FEP-driven spatial entropy minimization.</p>
+                    </div>
+                    <div class="btn">Launch Substrate</div>
+                </a>
+
+                <!-- V6 -->
+                <a href="./v6/" class="card v6">
+                    <div>
+                        <div class="card-header">
+                            <span class="badge purple">Phase V6</span>
+                        </div>
+                        <h2>Multi-Agent FEP Substrate</h2>
+                        <p>Collective intelligence framework. Distributed multi-agent inference featuring Competitive Entropy Weighting (CEW) and shared cognitive realities.</p>
+                    </div>
+                    <div class="btn">Launch Substrate</div>
+                </a>
+            </div>
+
+            <div class="dashboard">
+                <h3>Empirical Verification Matrix</h3>
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Substrate Phase</th>
+                            <th>Target Metric / Scenario</th>
+                            <th>AR Agent Performance</th>
+                            <th>Thermo Agent Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Phase V4 Core</strong></td>
+                            <td>Scenario B (15% density, 10000 E)</td>
+                            <td class="highlight-red">100% Collapse (Step 262, Inference Cost: 73.02)</td>
+                            <td class="highlight-green">100% Success (Drift Error: 0.0000)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phase V4 Core</strong></td>
+                            <td>Scenario C (Extreme Hunger, 30 step cost)</td>
+                            <td class="highlight-red">Depleted & Burned out (Step 150)</td>
+                            <td class="highlight-green">Record Run (42 steps, 7900 E saved)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phase V5 Substrate</strong></td>
+                            <td>Cognitive Map Compression Rate</td>
+                            <td>N/A (Flat Token Processing)</td>
+                            <td class="highlight-green">Up to 75.0% Compression (Macro-Zones A-H)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Phase V6 Multi-Agent</strong></td>
+                            <td>Collective Entropy Collapse (CEW Link)</td>
+                            <td>Incompatible (Combinatorial Explosion)</td>
+                            <td class="highlight-green">System Uncertainty Dropped by 58.76%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <footer>
+            <p>Copyright &copy; 2026 Vakhtang Doundoua (NecPU). All rights reserved.</p>
+        </footer>
     </div>
-  </div>
+
+    <script>
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        class Node {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+                this.radius = Math.random() * 2 + 1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#38bdf8';
+                ctx.fill();
+            }
+        }
+
+        const nodes = Array.from({ length: 40 }, () => new Node());
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            
+            nodes.forEach(node => {
+                node.update();
+                node.draw();
+            });
+
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.05)';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dist = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
+                    if (dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x, nodes[i].y);
+                        ctx.lineTo(nodes[j].x, nodes[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+        console.log("Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.");
+    </script>
 </body>
 </html>
