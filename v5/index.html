@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="author" content="Vakhtang Doundoua (NecPU)">
+  <meta name="copyright" content="Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.">
+  <title>NecPU V6 Integrated — Cognitive Map Visualizer</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #141e30;
+      --text: #dbeafe;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 16px;
+    }
+    h1 { font-size: 1.1rem; margin: 0 0 4px; letter-spacing: 0.04em; }
+    .subtitle { color: var(--muted); font-size: 0.8rem; margin-bottom: 14px; }
+    .layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    canvas {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #050a12;
+      image-rendering: pixelated;
+    }
+    .side { flex: 1; min-width: 280px; max-width: 520px; }
+    .metrics {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.82rem;
+      margin-bottom: 10px;
+    }
+    .metrics span { color: var(--accent); font-weight: 600; }
+    #eventLog {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      height: 320px;
+      overflow-y: auto;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.72rem;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      margin: 0;
+    }
+    .log-substrate { color: #fbbf24; }
+    .log-friston { color: #34d399; }
+    .log-dead { color: #f87171; }
+    .log-step { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <h1>NecPU V6 Integrated — Hierarchical Hippocampal Map</h1>
+  <p class="subtitle">Динамический лабиринт · синаптическое затухание · Friston ΔF · Canvas 16×16</p>
+
+  <div class="layout">
+    <canvas id="hippocampusCanvas" width="320" height="320" aria-label="Cognitive map"></canvas>
+    <div class="side">
+      <div class="metrics" id="metrics">
+        Шаг: <span id="mStep">0</span>/300 ·
+        H_global: <span id="mEntropy">—</span> bit ·
+        Абстракция: <span id="mAbstract">0</span>% ·
+        Агент: <span id="mAgent">(0,0)</span>
+      </div>
+      <pre id="eventLog"></pre>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    'use strict';
+
+    var COPYRIGHT =
+      'Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.';
+
+    var HHM_MACRO_NAMES = [
+      'Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta',
+    ];
+
+    var HHM_CONFIG = {
+      synapticDecayAlpha: 0.005,
+      weightEpsilon: 1e-6,
+      saturationRatioMin: 1.35,
+      minInternalMass: 4,
+      forkAngleDeg: 55,
+      minTurnSamples: 1,
+      kappa: 0.85,
+      goalPriorPeak: 0.62,
+    };
+
+    var GRID_SIZE = 16;
+    var CELL_PX = 20;
+    var TOTAL_STEPS = 300;
+    var DEAD_END_STEP = 151;
+    var TICK_MS = 50;
+    var FORK_MARK = { x: 0, y: 10 };
+    var DEAD_END_MARK = { x: 5, y: 10 };
+
+    function coordKey(x, y) {
+      return x + ',' + y;
+    }
+
+    function vecFromTo(a, b) {
+      return { dx: b.x - a.x, dy: b.y - a.y };
+    }
+
+    function angleBetweenDeg(v1, v2) {
+      var m1 = Math.hypot(v1.dx, v1.dy);
+      var m2 = Math.hypot(v2.dx, v2.dy);
+      if (m1 === 0 || m2 === 0) return 0;
+      var cos = (v1.dx * v2.dx + v1.dy * v2.dy) / (m1 * m2);
+      return (Math.acos(Math.max(-1, Math.min(1, cos))) * 180) / Math.PI;
+    }
+
+    function shannonEntropy(probs) {
+      var h = 0;
+      for (var i = 0; i < probs.length; i++) {
+        if (probs[i] > 0) h -= probs[i] * Math.log2(probs[i]);
+      }
+      return h;
+    }
+
+    function klDivergence(qMap, pMap) {
+      var kl = 0;
+      qMap.forEach(function (q, key) {
+        if (q <= 0) return;
+        var p = Math.max(pMap.get(key) || 1e-12, 1e-12);
+        kl += q * Math.log2(q / p);
+      });
+      return kl;
+    }
+
+    /** Детерминированный цвет макро-зоны из id (HSL) */
+    function colorHashFromId(id) {
+      var h = 0;
+      for (var i = 0; i < id.length; i++) {
+        h = (h * 31 + id.charCodeAt(i)) >>> 0;
+      }
+      var hue = h % 360;
+      return 'hsla(' + hue + ', 72%, 52%, 0.48)';
+    }
+
+    function colorHashSolid(id) {
+      var h = 0;
+      for (var i = 0; i < id.length; i++) {
+        h = (h * 31 + id.charCodeAt(i)) >>> 0;
+      }
+      return 'hsl(' + (h % 360) + ', 72%, 52%)';
+    }
+
+    function PlaceCell(id, x, y) {
+      this.id = id;
+      this.x = x;
+      this.y = y;
+      this.links = new Map();
+      this.turnAngles = [];
+      this.visitCount = 0;
+      this.localEntropyBoost = 0;
+    }
+
+    PlaceCell.prototype.linkWeight = function (targetId) {
+      return this.links.get(targetId) || 0;
+    };
+
+    PlaceCell.prototype.incrementLink = function (targetId, delta) {
+      var d = delta === undefined ? 1 : delta;
+      this.links.set(targetId, this.linkWeight(targetId) + d);
+    };
+
+    function HierarchicalHippocampalMap(options) {
+      options = options || {};
+      this.cells = new Map();
+      this.transitionGraphM = new Map();
+      this.macroZones = new Map();
+      this.cellToZone = new Map();
+      this.forcedPartitionCuts = new Set();
+      this._trail = [];
+      this._nextCellNumericId = 0;
+      this._idToCell = new Map();
+      this.goalZoneLabel = options.goalZoneLabel || 'Beta';
+      this.kappa = options.kappa !== undefined ? options.kappa : HHM_CONFIG.kappa;
+      this.synapticDecayAlpha =
+        options.synapticDecayAlpha !== undefined
+          ? options.synapticDecayAlpha
+          : HHM_CONFIG.synapticDecayAlpha;
+      this.logger = options.logger || console.log.bind(console);
+      this.logPlaceCellBirth = options.logPlaceCellBirth === true;
+      this._tick = 0;
+    }
+
+    HierarchicalHippocampalMap.prototype._newCellId = function (x, y) {
+      this._nextCellNumericId += 1;
+      return 'PC_' + x + '_' + y + '_' + this._nextCellNumericId;
+    };
+
+    HierarchicalHippocampalMap.prototype.getOrCreateCell = function (coord) {
+      var key = coordKey(coord.x, coord.y);
+      if (this.cells.has(key)) return this.cells.get(key);
+      var cell = new PlaceCell(this._newCellId(coord.x, coord.y), coord.x, coord.y);
+      this.cells.set(key, cell);
+      this._idToCell.set(cell.id, cell);
+      if (this.logPlaceCellBirth) {
+        this.logger('[HHM] Place Cell id=' + cell.id + ' @ (' + cell.x + ',' + cell.y + ')');
+      }
+      return cell;
+    };
+
+    HierarchicalHippocampalMap.prototype._cellById = function (id) {
+      return this._idToCell.get(id) || null;
+    };
+
+    HierarchicalHippocampalMap.prototype._edgeKey = function (fromId, toId) {
+      return fromId + '->' + toId;
+    };
+
+    HierarchicalHippocampalMap.prototype._applySynapticDecay = function (activeFromId, activeToId) {
+      var alpha = this.synapticDecayAlpha;
+      var factor = 1 - alpha;
+      var activeKey = this._edgeKey(activeFromId, activeToId);
+      var self = this;
+
+      this.cells.forEach(function (cell) {
+        cell.links.forEach(function (w, tid) {
+          var isActive =
+            (cell.id === activeFromId && tid === activeToId) ||
+            (cell.id === activeToId && tid === activeFromId);
+          if (isActive) return;
+          var nw = w * factor;
+          if (nw < HHM_CONFIG.weightEpsilon) cell.links.delete(tid);
+          else cell.links.set(tid, nw);
+        });
+      });
+
+      this.transitionGraphM.forEach(function (w, ek) {
+        if (ek === activeKey) return;
+        var nw = w * factor;
+        if (nw < HHM_CONFIG.weightEpsilon) self.transitionGraphM.delete(ek);
+        else self.transitionGraphM.set(ek, nw);
+      });
+    };
+
+    HierarchicalHippocampalMap.prototype.addTransition = function (fromCoord, toCoord) {
+      this._tick += 1;
+      var fromCell = this.getOrCreateCell(fromCoord);
+      var toCell = this.getOrCreateCell(toCoord);
+      this._applySynapticDecay(fromCell.id, toCell.id);
+      fromCell.incrementLink(toCell.id, 1);
+      toCell.visitCount += 1;
+      var ek = this._edgeKey(fromCell.id, toCell.id);
+      this.transitionGraphM.set(ek, (this.transitionGraphM.get(ek) || 0) + 1);
+      this._updateOdometryForkSignal(fromCoord, toCoord);
+      this._trail.push({ coord: { x: toCoord.x, y: toCoord.y }, cellId: toCell.id });
+      if (this._trail.length > 6) this._trail.shift();
+    };
+
+    HierarchicalHippocampalMap.prototype._updateOdometryForkSignal = function (fromCoord, toCoord) {
+      if (this._trail.length < 1) return;
+      var pivot = fromCoord;
+      var entry = this._trail[this._trail.length - 1].coord;
+      if (entry.x === pivot.x && entry.y === pivot.y && this._trail.length >= 2) {
+        entry = this._trail[this._trail.length - 2].coord;
+      }
+      var vIn = vecFromTo(entry, pivot);
+      var vOut = vecFromTo(pivot, toCoord);
+      var turn = angleBetweenDeg(vIn, vOut);
+      if (turn >= HHM_CONFIG.forkAngleDeg) {
+        var pivotCell = this.getOrCreateCell(pivot);
+        pivotCell.turnAngles.push(turn);
+        this.logger('[Odometry] Δθ=' + turn.toFixed(2) + '° @ (' + pivot.x + ',' + pivot.y + ')');
+      }
+    };
+
+    HierarchicalHippocampalMap.prototype.getAbstractionDegreePercent = function () {
+      var n = this.cells.size;
+      var m = this.macroZones.size || n;
+      if (n === 0) return 0;
+      return ((n - m) / n) * 100;
+    };
+
+    HierarchicalHippocampalMap.prototype._logSubstrateRebuild = function (reason) {
+      var pct = this.getAbstractionDegreePercent();
+      this.logger(
+        '[V5 - Substrate] Матрица перестроена (' +
+          reason +
+          '). Новая степень абстракции: ' +
+          pct.toFixed(2) +
+          '%'
+      );
+    };
+
+    HierarchicalHippocampalMap.prototype.forceRemapOnDeadEnd = function (deadEndCoord, ctx) {
+      ctx = ctx || {};
+      var key = coordKey(deadEndCoord.x, deadEndCoord.y);
+      var cell = this.getOrCreateCell(deadEndCoord);
+      cell.localEntropyBoost += 2.5;
+      cell.turnAngles.push(180);
+      this.forcedPartitionCuts.add(key);
+      this.logger(
+        '[DeadEnd] Локальная энтропия ↑ @ (' +
+          cell.x +
+          ',' +
+          cell.y +
+          '), boost=' +
+          cell.localEntropyBoost.toFixed(2)
+      );
+      var links = cell.links;
+      links.forEach(function (w, tid) {
+        links.set(tid, w * 0.35);
+      });
+      var prevBeta = 0;
+      this.macroZones.forEach(function (_, zid) {
+        if (zid.indexOf('Beta') >= 0) prevBeta += 1;
+      });
+      this.detectAndFormMacroZones({ reason: 'forceRemapOnDeadEnd' });
+      var nextBeta = 0;
+      this.macroZones.forEach(function (ids, zid) {
+        if (zid.indexOf('Beta') >= 0) nextBeta += 1;
+      });
+      this.logger(
+        '[DeadEnd] Macro-Zone Beta: ' +
+          (prevBeta ? 'n=' + prevBeta : '—') +
+          ' → ' +
+          (nextBeta ? 'n=' + nextBeta + ' (трансформация)' : 'распалась')
+      );
+    };
+
+    HierarchicalHippocampalMap.prototype._buildCoordAdjacency = function () {
+      var adj = new Map();
+      var self = this;
+      function ensure(k) {
+        if (!adj.has(k)) adj.set(k, new Set());
+        return adj.get(k);
+      }
+      this.cells.forEach(function (cell) {
+        var fromKey = coordKey(cell.x, cell.y);
+        ensure(fromKey);
+        cell.links.forEach(function (w, tid) {
+          if (w <= 0) return;
+          var target = self._cellById(tid);
+          if (!target) return;
+          var toKey = coordKey(target.x, target.y);
+          ensure(toKey);
+          adj.get(fromKey).add(toKey);
+          adj.get(toKey).add(fromKey);
+        });
+      });
+      return adj;
+    };
+
+    HierarchicalHippocampalMap.prototype._directedWeight = function (fromKey, toKey) {
+      var fromCell = this.cells.get(fromKey);
+      var toCell = this.cells.get(toKey);
+      if (!fromCell || !toCell) return 0;
+      return fromCell.linkWeight(toCell.id);
+    };
+
+    HierarchicalHippocampalMap.prototype._isForkBoundary = function (coordKeyStr) {
+      if (this.forcedPartitionCuts.has(coordKeyStr)) return true;
+      var cell = this.cells.get(coordKeyStr);
+      if (!cell) return false;
+      var sharp = cell.turnAngles.filter(function (a) {
+        return a >= HHM_CONFIG.forkAngleDeg;
+      });
+      return sharp.length >= HHM_CONFIG.minTurnSamples;
+    };
+
+    HierarchicalHippocampalMap.prototype._undirectedEdgeMass = function (aKey, bKey) {
+      return this._directedWeight(aKey, bKey) + this._directedWeight(bKey, aKey);
+    };
+
+    HierarchicalHippocampalMap.prototype._medianUndirectedEdgeMass = function () {
+      var masses = [];
+      var seen = new Set();
+      var self = this;
+      this.cells.forEach(function (cell) {
+        var fromKey = coordKey(cell.x, cell.y);
+        cell.links.forEach(function (w, tid) {
+          if (w <= 0) return;
+          var target = self._cellById(tid);
+          if (!target) return;
+          var toKey = coordKey(target.x, target.y);
+          var pair = fromKey < toKey ? fromKey + '|' + toKey : toKey + '|' + fromKey;
+          if (seen.has(pair)) return;
+          seen.add(pair);
+          masses.push(self._undirectedEdgeMass(fromKey, toKey));
+        });
+      });
+      if (!masses.length) return 1;
+      masses.sort(function (a, b) {
+        return a - b;
+      });
+      return masses[Math.floor(masses.length / 2)];
+    };
+
+    HierarchicalHippocampalMap.prototype._edgeIsSynapticallySaturated = function (aKey, bKey, relaxed) {
+      var m = this._undirectedEdgeMass(aKey, bKey);
+      var med = this._medianUndirectedEdgeMass();
+      if (relaxed && m >= 1) return true;
+      return m >= HHM_CONFIG.minInternalMass || m >= med;
+    };
+
+    HierarchicalHippocampalMap.prototype._growArmFromFork = function (seedKey, blockKey, assigned, adj) {
+      var cluster = new Set([seedKey]);
+      var queue = [seedKey];
+      var self = this;
+      while (queue.length) {
+        var k = queue.shift();
+        var neighbors = adj.get(k);
+        if (!neighbors) continue;
+        neighbors.forEach(function (nb) {
+          if (nb === blockKey || assigned.has(nb) || cluster.has(nb)) return;
+          if (self._isForkBoundary(nb)) return;
+          if (!self._edgeIsSynapticallySaturated(k, nb, true)) return;
+          cluster.add(nb);
+          queue.push(nb);
+        });
+      }
+      return cluster;
+    };
+
+    HierarchicalHippocampalMap.prototype._attachForkToStrongestArm = function (forkKey, armClusters) {
+      var bestIdx = -1;
+      var bestW = 0;
+      var self = this;
+      armClusters.forEach(function (arm, idx) {
+        arm.forEach(function (k) {
+          var w = self._undirectedEdgeMass(forkKey, k);
+          if (w > bestW) {
+            bestW = w;
+            bestIdx = idx;
+          }
+        });
+      });
+      if (bestIdx >= 0) armClusters[bestIdx].add(forkKey);
+    };
+
+    HierarchicalHippocampalMap.prototype.detectAndFormMacroZones = function (opts) {
+      opts = opts || {};
+      var reason = opts.reason || 'detectAndFormMacroZones';
+      this.macroZones.clear();
+      this.cellToZone.clear();
+      var adj = this._buildCoordAdjacency();
+      var allKeys = Array.from(this.cells.keys());
+      if (!allKeys.length) return;
+
+      var forkKeys = allKeys.filter(this._isForkBoundary.bind(this));
+      var assigned = new Set();
+      var merged = [];
+      var self = this;
+
+      forkKeys.forEach(function (forkKey) {
+        var neighbors = Array.from(adj.get(forkKey) || []);
+        var arms = [];
+        neighbors.forEach(function (nb) {
+          if (assigned.has(nb)) return;
+          var arm = self._growArmFromFork(nb, forkKey, assigned, adj);
+          if (!arm.size) return;
+          arms.push(arm);
+          arm.forEach(function (k) {
+            assigned.add(k);
+          });
+        });
+        self._attachForkToStrongestArm(forkKey, arms);
+        arms.forEach(function (arm) {
+          if (arm.has(forkKey)) assigned.add(forkKey);
+        });
+        arms.forEach(function (arm) {
+          merged.push(arm);
+        });
+      });
+
+      allKeys.forEach(function (startKey) {
+        if (assigned.has(startKey)) return;
+        var queue = [startKey];
+        var cluster = new Set([startKey]);
+        assigned.add(startKey);
+        while (queue.length) {
+          var k = queue.shift();
+          var neighbors = adj.get(k);
+          if (!neighbors) continue;
+          neighbors.forEach(function (nb) {
+            if (assigned.has(nb)) return;
+            if (self._isForkBoundary(k) || self._isForkBoundary(nb)) return;
+            if (!self._edgeIsSynapticallySaturated(k, nb)) return;
+            cluster.add(nb);
+            assigned.add(nb);
+            queue.push(nb);
+          });
+        }
+        merged.push(cluster);
+      });
+
+      merged.forEach(function (clusterSet, idx) {
+        var name = HHM_MACRO_NAMES[idx] || 'Macro-' + (idx + 1);
+        var zoneId = 'Macro-Zone ' + name;
+        var cellIds = Array.from(clusterSet).map(function (k) {
+          return self.cells.get(k).id;
+        });
+        self.macroZones.set(zoneId, cellIds);
+        clusterSet.forEach(function (k) {
+          self.cellToZone.set(self.cells.get(k).id, zoneId);
+        });
+        self.logger('[Birth] ' + zoneId + ' ← ' + cellIds.length + ' cells');
+      });
+
+      this._logSubstrateRebuild(reason);
+    };
+
+    HierarchicalHippocampalMap.prototype._macroZoneDistributionQ = function () {
+      var visits = new Map();
+      var total = 0;
+      var self = this;
+      this.macroZones.forEach(function (cellIds, zoneId) {
+        var v = 0;
+        cellIds.forEach(function (cid) {
+          var c = self._cellById(cid);
+          if (c) v += c.visitCount + c.localEntropyBoost * 0.05;
+        });
+        visits.set(zoneId, v);
+        total += v;
+      });
+      var q = new Map();
+      if (total <= 0) {
+        var u = 1 / Math.max(this.macroZones.size, 1);
+        this.macroZones.forEach(function (_, z) {
+          q.set(z, u);
+        });
+        return q;
+      }
+      visits.forEach(function (v, z) {
+        q.set(z, v / total);
+      });
+      return q;
+    };
+
+    HierarchicalHippocampalMap.prototype._goalPriorP = function () {
+      var zones = Array.from(this.macroZones.keys());
+      var p = new Map();
+      if (!zones.length) return p;
+      var goalIds = zones.filter(function (z) {
+        return z.indexOf(this.goalZoneLabel) >= 0;
+      }, this);
+      var peak = HHM_CONFIG.goalPriorPeak;
+      var rest = (1 - peak) / Math.max(zones.length - goalIds.length, 1);
+      zones.forEach(function (z) {
+        var isGoal = goalIds.indexOf(z) >= 0;
+        p.set(z, isGoal ? peak / Math.max(goalIds.length, 1) : rest);
+      });
+      var s = 0;
+      p.forEach(function (v) {
+        s += v;
+      });
+      zones.forEach(function (z) {
+        p.set(z, (p.get(z) || 0) / s);
+      });
+      return p;
+    };
+
+    HierarchicalHippocampalMap.prototype.calculateGlobalActionEntropy = function (silent) {
+      var q = this._macroZoneDistributionQ();
+      var h = shannonEntropy(Array.from(q.values()));
+      if (!silent) {
+        this.logger('[Friston] H_global(q(MZ)) = ' + h.toFixed(6) + ' bit');
+      }
+      return h;
+    };
+
+    HierarchicalHippocampalMap.prototype._internalPathEntropy = function (zoneId) {
+      var ids = this.macroZones.get(zoneId) || [];
+      var idSet = new Set(ids);
+      var weights = [];
+      var self = this;
+      ids.forEach(function (cid) {
+        var cell = self._cellById(cid);
+        if (!cell) return;
+        cell.links.forEach(function (w, tid) {
+          if (w <= 0) return;
+          if (!idSet.has(tid)) return;
+          weights.push(w + cell.localEntropyBoost * 0.1);
+        });
+      });
+      if (!weights.length) return 0;
+      var sum = weights.reduce(function (a, b) {
+        return a + b;
+      }, 0);
+      return shannonEntropy(
+        weights.map(function (w) {
+          return w / sum;
+        })
+      );
+    };
+
+    HierarchicalHippocampalMap.prototype.calculateMacroFreeEnergy = function (fromZoneId, toZoneId) {
+      var q = this._macroZoneDistributionQ();
+      var p = this._goalPriorP();
+      var kl = klDivergence(q, p);
+      var hPaths = this._internalPathEntropy(toZoneId);
+      var deltaF = kl + this.kappa * hPaths;
+      this.logger(
+        '[ΔF] ' +
+          fromZoneId +
+          ' → ' +
+          toZoneId +
+          ': KL=' +
+          kl.toFixed(6) +
+          ', H_paths=' +
+          hPaths.toFixed(6) +
+          ', ΔF=' +
+          deltaF.toFixed(6)
+      );
+      return deltaF;
+    };
+
+    /**
+     * Экспорт для Canvas / NecPU renderer.
+     * @returns {Array<{id:string,color:string,cells:Array<{x:number,y:number}>,H_paths:number}>}
+     */
+    HierarchicalHippocampalMap.prototype.exportMacroZonesJSON = function () {
+      var self = this;
+      var out = [];
+      this.macroZones.forEach(function (cellIds, zoneId) {
+        var cells = cellIds
+          .map(function (cid) {
+            var c = self._cellById(cid);
+            return c ? { x: c.x, y: c.y } : null;
+          })
+          .filter(Boolean);
+        out.push({
+          id: zoneId,
+          color: colorHashSolid(zoneId),
+          cells: cells,
+          H_paths: self._internalPathEntropy(zoneId),
+        });
+      });
+      return out;
+    };
+
+    /* ——— Trajectory (Dynamic Maze) ——— */
+
+    function buildLine(x0, y0, x1, y1) {
+      var pts = [{ x: x0, y: y0 }];
+      if (x0 === x1) {
+        var sy = y1 >= y0 ? 1 : -1;
+        for (var y = y0; y !== y1; y += sy) pts.push({ x: x0, y: y + sy });
+      } else if (y0 === y1) {
+        var sx = x1 >= x0 ? 1 : -1;
+        for (var x = x0; x !== x1; x += sx) pts.push({ x: x + sx, y: y0 });
+      }
+      return pts;
+    }
+
+    function alphaBetaRoundTrip() {
+      var corridor = buildLine(0, 0, 0, 10);
+      var branch = buildLine(0, 10, 10, 10).slice(1);
+      var backBranch = buildLine(10, 10, 0, 10).slice(1);
+      var backCorridor = buildLine(0, 10, 0, 0).slice(1);
+      return corridor.concat(branch, backBranch, backCorridor);
+    }
+
+    function detourFromFork() {
+      return buildLine(0, 10, 0, 11)
+        .slice(1)
+        .concat(buildLine(0, 11, 10, 11).slice(1));
+    }
+
+    function buildDynamicMazeTrajectory() {
+      var positions = [{ x: 0, y: 0 }];
+      var roundTrip = alphaBetaRoundTrip();
+      var detour = detourFromFork();
+
+      while (positions.length < 141) {
+        for (var i = 1; i < roundTrip.length && positions.length < 141; i++) {
+          positions.push({ x: roundTrip[i].x, y: roundTrip[i].y });
+        }
+      }
+      var approach = buildLine(
+        positions[positions.length - 1].x,
+        positions[positions.length - 1].y,
+        5,
+        10
+      );
+      for (var a = 1; a < approach.length && positions.length <= 150; a++) {
+        positions.push({ x: approach[a].x, y: approach[a].y });
+      }
+      while (positions.length <= 150) positions.push({ x: 5, y: 10 });
+      positions.push({ x: 4, y: 10 });
+
+      buildLine(4, 10, 0, 10)
+        .slice(1)
+        .forEach(function (p) {
+          if (positions.length > TOTAL_STEPS) return;
+          positions.push({ x: p.x, y: p.y });
+        });
+
+      while (positions.length <= TOTAL_STEPS) {
+        for (var d = 1; d < detour.length && positions.length <= TOTAL_STEPS; d++) {
+          positions.push({ x: detour[d].x, y: detour[d].y });
+        }
+        if (positions.length <= TOTAL_STEPS) {
+          for (var r = detour.length - 2; r >= 0 && positions.length <= TOTAL_STEPS; r--) {
+            positions.push({ x: detour[r].x, y: detour[r].y });
+          }
+        }
+      }
+      return positions.slice(0, TOTAL_STEPS + 1);
+    }
+
+    /* ——— UI + Canvas ——— */
+
+    var logEl = document.getElementById('eventLog');
+    var canvas = document.getElementById('hippocampusCanvas');
+    var ctx = canvas.getContext('2d');
+    var mStep = document.getElementById('mStep');
+    var mEntropy = document.getElementById('mEntropy');
+    var mAbstract = document.getElementById('mAbstract');
+    var mAgent = document.getElementById('mAgent');
+
+    function appendLog(line, cssClass) {
+      var span = document.createElement('span');
+      if (cssClass) span.className = cssClass;
+      span.textContent = line + '\n';
+      logEl.appendChild(span);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function dualLogger(msg) {
+      console.log(msg);
+      if (msg.indexOf('[V5 - Substrate]') >= 0) appendLog(msg, 'log-substrate');
+      else if (msg.indexOf('[Friston]') >= 0) appendLog(msg, 'log-friston');
+      else if (msg.indexOf('[DeadEnd]') >= 0) appendLog(msg, 'log-dead');
+      else if (
+        msg.indexOf('[Birth]') >= 0 ||
+        msg.indexOf('[Odometry]') >= 0 ||
+        msg.indexOf('[ΔF]') >= 0 ||
+        msg.indexOf('Copyright') >= 0
+      ) {
+        appendLog(msg);
+      }
+    }
+
+    function maxEdgeWeight(map) {
+      var max = 0.001;
+      map.cells.forEach(function (cell) {
+        cell.links.forEach(function (w) {
+          if (w > max) max = w;
+        });
+      });
+      return max;
+    }
+
+    function renderCognitiveMap(map, agentCoord) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      var maxW = maxEdgeWeight(map);
+      var zones = map.exportMacroZonesJSON();
+      var zoneByCell = new Map();
+
+      zones.forEach(function (z) {
+        z.cells.forEach(function (c) {
+          zoneByCell.set(coordKey(c.x, c.y), z);
+        });
+      });
+
+      /* Синаптические рёбра (блекнут при затухании) */
+      var drawn = new Set();
+      map.cells.forEach(function (cell) {
+        cell.links.forEach(function (w, tid) {
+          if (w <= 0) return;
+          var target = map._cellById(tid);
+          if (!target) return;
+          var k1 = coordKey(cell.x, cell.y);
+          var k2 = coordKey(target.x, target.y);
+          var pair = k1 < k2 ? k1 + '|' + k2 : k2 + '|' + k1;
+          if (drawn.has(pair)) return;
+          drawn.add(pair);
+          var alpha = Math.min(1, (w / maxW) * 0.85 + 0.05);
+          ctx.strokeStyle = 'rgba(148, 163, 184, ' + alpha.toFixed(3) + ')';
+          ctx.lineWidth = 1 + (w / maxW) * 2;
+          ctx.beginPath();
+          ctx.moveTo(cell.x * CELL_PX + CELL_PX / 2, cell.y * CELL_PX + CELL_PX / 2);
+          ctx.lineTo(target.x * CELL_PX + CELL_PX / 2, target.y * CELL_PX + CELL_PX / 2);
+          ctx.stroke();
+        });
+      });
+
+      /* Place cells — заливка макро-зон */
+      for (var gy = 0; gy < GRID_SIZE; gy++) {
+        for (var gx = 0; gx < GRID_SIZE; gx++) {
+          var key = coordKey(gx, gy);
+          var cell = map.cells.get(key);
+          var x = gx * CELL_PX;
+          var y = gy * CELL_PX;
+          if (cell) {
+            var z = zoneByCell.get(key);
+            if (z) {
+              ctx.fillStyle = colorHashFromId(z.id);
+            } else {
+              ctx.fillStyle = 'rgba(51, 65, 85, 0.55)';
+            }
+            ctx.fillRect(x + 1, y + 1, CELL_PX - 2, CELL_PX - 2);
+          } else {
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.35)';
+            ctx.fillRect(x + 1, y + 1, CELL_PX - 2, CELL_PX - 2);
+          }
+          ctx.strokeStyle = 'rgba(30, 41, 59, 0.9)';
+          ctx.strokeRect(x, y, CELL_PX, CELL_PX);
+        }
+      }
+
+      function drawMarker(mx, my, stroke, label) {
+        var px = mx * CELL_PX + CELL_PX / 2;
+        var py = my * CELL_PX + CELL_PX / 2;
+        ctx.beginPath();
+        ctx.arc(px, py, CELL_PX * 0.38, 0, Math.PI * 2);
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.fillStyle = stroke;
+        ctx.font = '9px sans-serif';
+        ctx.fillText(label, px - 8, py - CELL_PX * 0.45);
+      }
+
+      drawMarker(FORK_MARK.x, FORK_MARK.y, '#22d3ee', 'Fork');
+      drawMarker(DEAD_END_MARK.x, DEAD_END_MARK.y, '#fb7185', 'Dead');
+
+      /* Агент */
+      var ax = agentCoord.x * CELL_PX + CELL_PX / 2;
+      var ay = agentCoord.y * CELL_PX + CELL_PX / 2;
+      ctx.beginPath();
+      ctx.arc(ax, ay, 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#f8fafc';
+      ctx.fill();
+      ctx.strokeStyle = '#0ea5e9';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    /* ——— Animation ——— */
+
+    var map = new HierarchicalHippocampalMap({
+      goalZoneLabel: 'Beta',
+      logger: dualLogger,
+      logPlaceCellBirth: false,
+    });
+
+    var trajectory = buildDynamicMazeTrajectory();
+    var simStep = 0;
+    var timerId = null;
+
+    function updateMetrics(agent) {
+      mStep.textContent = String(simStep);
+      mAgent.textContent = '(' + agent.x + ',' + agent.y + ')';
+      mAbstract.textContent = map.getAbstractionDegreePercent().toFixed(1);
+      if (map.macroZones.size > 0) {
+        mEntropy.textContent = map.calculateGlobalActionEntropy(true).toFixed(4);
+      }
+    }
+
+    function onSimulationTick() {
+      if (simStep >= TOTAL_STEPS) {
+        clearInterval(timerId);
+        finishReport();
+        return;
+      }
+
+      simStep += 1;
+      var from = trajectory[simStep - 1];
+      var to = trajectory[simStep];
+      map.addTransition(from, to);
+
+      if (simStep % 10 === 0 || simStep === DEAD_END_STEP) {
+        appendLog(
+          '[Step ' + simStep + '] Агент ' +
+            '(' + from.x + ',' + from.y + ') → (' + to.x + ',' + to.y + ')',
+          'log-step'
+        );
+      }
+
+      if (simStep === 50 || simStep === 75) {
+        map.detectAndFormMacroZones({ reason: 'phase-1@' + simStep });
+        map.calculateGlobalActionEntropy();
+      }
+      if (simStep === 150) {
+        map.detectAndFormMacroZones({ reason: 'pre-dead-end' });
+        map.calculateGlobalActionEntropy();
+      }
+      if (simStep === DEAD_END_STEP) {
+        map.forceRemapOnDeadEnd({ x: 5, y: 10 });
+        map.calculateGlobalActionEntropy();
+      }
+      if (simStep === 200 || simStep === 225 || simStep === 300) {
+        map.detectAndFormMacroZones({ reason: 'phase-2@' + simStep });
+        map.calculateGlobalActionEntropy();
+      }
+
+      updateMetrics(to);
+      renderCognitiveMap(map, to);
+    }
+
+    function finishReport() {
+      dualLogger('\n========== ОТЧЁТ V6 Integrated ==========');
+      dualLogger(COPYRIGHT);
+      map.exportMacroZonesJSON().forEach(function (z) {
+        dualLogger(
+          z.id + ': H_paths=' + z.H_paths.toFixed(4) + ', cells=' + z.cells.length
+        );
+      });
+      var zones = Array.from(map.macroZones.keys());
+      if (zones.length >= 2) {
+        map.calculateMacroFreeEnergy(zones[0], zones[1]);
+      }
+      dualLogger(
+        '[V5 - Substrate] Матрица перестроена (final). Новая степень абстракции: ' +
+          map.getAbstractionDegreePercent().toFixed(2) +
+          '%'
+      );
+      dualLogger('========== КОНЕЦ ОТЧЁТА ==========');
+      dualLogger(COPYRIGHT);
+      renderCognitiveMap(map, trajectory[TOTAL_STEPS]);
+    }
+
+    function startSimulation() {
+      appendLog(COPYRIGHT);
+      console.log(COPYRIGHT);
+      appendLog('[Init] Dynamic Maze · 300 ticks @ ' + TICK_MS + 'ms');
+      renderCognitiveMap(map, trajectory[0]);
+      timerId = setInterval(onSimulationTick, TICK_MS);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startSimulation);
+    } else {
+      startSimulation();
+    }
+
+    globalThis.NecPU = globalThis.NecPU || {};
+    globalThis.NecPU.HierarchicalHippocampalMap = HierarchicalHippocampalMap;
+    globalThis.NecPU.HHM_COPYRIGHT = COPYRIGHT;
+  </script>
+</body>
+</html>
