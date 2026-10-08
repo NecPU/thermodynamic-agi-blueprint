@@ -1,0 +1,3076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="author" content="Vakhtang Doundoua (NecPU)">
+  <meta name="contact" content="doundoua@gmail.com">
+  <meta name="copyright" content="Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.">
+  <meta name="description" content="NecPU Thermodynamic AGI Blueprint — Phase V10 Active Environment Construction">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NecPU Thermodynamic AGI V10 — Vakhtang Doundoua (NecPU)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --neon-green: #22ff88;
+      --thermo: #22c55e;
+      --thermo-blue: #3b82f6;
+      --thermo-yellow: #eab308;
+      --shared-purple: #a855f7;
+      --pale-granite: rgba(168, 85, 247, 0.25);
+      --bright-granite: #a855f7;
+      --zinc-900: #18181b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .page-header {
+      padding: 16px 20px 0;
+      max-width: 1680px;
+      margin: 0 auto;
+    }
+    .page-header h1 {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: 0.04em;
+      text-shadow: 0 0 12px rgba(56, 189, 248, 0.45);
+    }
+    .subtitle { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+    .layout {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 24px;
+      padding: 16px 20px 24px;
+      max-width: 1680px;
+      margin: 0 auto;
+      align-items: start;
+    }
+    @media (max-width: 1100px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+    .sidebar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .form-group { margin-bottom: 14px; }
+    label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    input[type="number"] {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 8px;
+    }
+    button {
+      width: 100%;
+      padding: 11px;
+      margin-bottom: 8px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-gen { background: linear-gradient(135deg, #475569, #334155); color: #f8fafc; }
+    .btn-run { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; }
+    .btn-step { background: linear-gradient(135deg, #0ea5e9, #0284c7); color: #fff; }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .arenas-container {
+      display: block;
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .agent-panel h2 {
+      margin: 0 0 10px;
+      font-size: 0.92rem;
+      line-height: 1.35;
+      min-height: 2.6em;
+    }
+    .agent-panel.thermo h2 { color: var(--thermo-blue); }
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+      min-height: 200px;
+    }
+    .metric {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-left-width: 3px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      min-height: 52px;
+    }
+    .metric.thermo-metric { border-left-color: var(--thermo-blue); }
+    .metric.thermo-metric.veto-active strong { color: #ef4444; }
+    .metric strong {
+      display: block;
+      font-size: 0.95rem;
+      margin-top: 4px;
+      word-break: break-word;
+    }
+    .metric-wide { grid-column: 1 / -1; }
+    .maze-wrap {
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #000;
+    }
+    .maze {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(32, 1fr);
+      grid-template-rows: repeat(32, 1fr);
+    }
+    .cell {
+      position: relative;
+      background: #000;
+      min-width: 0;
+      min-height: 0;
+      box-shadow: inset 0 0 0 1px #111827;
+    }
+    .cell.wall { background: #374151; }
+    .cell.goal-a { background: rgba(34, 255, 136, 0.35); box-shadow: inset 0 0 8px #86efac; }
+    .cell.goal-b { background: rgba(56, 189, 248, 0.25); box-shadow: inset 0 0 8px #7dd3fc; }
+    .cell.shared-reality {
+      background: rgba(168, 85, 247, 0.42);
+      box-shadow: inset 0 0 12px rgba(168, 85, 247, 0.55);
+    }
+    .cell.pale-granite-path {
+      background: var(--pale-granite);
+      box-shadow: inset 0 0 6px rgba(168, 85, 247, 0.4);
+    }
+    .cell.bright-granite-node {
+      background: var(--bright-granite) !important;
+      box-shadow: 0 0 14px var(--bright-granite), inset 0 0 8px #fff !important;
+    }
+    .cell .place-overlay {
+      position: absolute;
+      inset: 2px;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .cell .dead-end-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(127, 29, 29, 0.45);
+      border: 1px dashed rgba(239, 68, 68, 0.75);
+      pointer-events: none;
+      z-index: 2;
+    }
+    .cell .agent-dot {
+      position: absolute;
+      width: 28%;
+      height: 28%;
+      border-radius: 50%;
+      z-index: 3;
+    }
+    .cell .agent-dot.slot-0 { top: 4%; left: 4%; }
+    .cell .agent-dot.slot-1 { top: 4%; left: 36%; }
+    .cell .agent-dot.slot-2 { top: 36%; left: 4%; }
+    .cell .agent-dot.slot-3 { top: 36%; left: 36%; }
+    .cell .agent-dot.slot-4 { top: 4%; left: 68%; }
+    .cell .agent-dot.slot-5 { top: 36%; left: 68%; }
+    .cell .agent-dot.thermo-blue {
+      background: var(--thermo-blue);
+      box-shadow: 0 0 8px var(--thermo-blue);
+    }
+    .cell .agent-dot.thermo-yellow {
+      background: var(--thermo-yellow);
+      box-shadow: 0 0 8px var(--thermo-yellow);
+    }
+    .cell .agent-dot.thermo-alpha-a { background: #f97316; box-shadow: 0 0 6px #f97316; }
+    .cell .agent-dot.thermo-alpha-b { background: #c026d3; box-shadow: 0 0 6px #c026d3; }
+    .cell .agent-dot.thermo-beta-a { background: #06b6d4; box-shadow: 0 0 6px #06b6d4; }
+    .cell .agent-dot.thermo-beta-b { background: #14b8a6; box-shadow: 0 0 6px #14b8a6; }
+    .cell .agent-dot.thermo-gamma-a { background: #eab308; box-shadow: 0 0 6px #eab308; }
+    .cell .agent-dot.thermo-gamma-b { background: #d97706; box-shadow: 0 0 6px #d97706; }
+    .legend-row {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 8px;
+      text-align: center;
+      line-height: 1.45;
+    }
+    .log-box {
+      background: #070a12;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      height: 220px;
+      overflow-y: auto;
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem;
+      padding: 10px;
+      color: #3adead;
+      line-height: 1.45;
+    }
+    .seed-note { font-size: 0.7rem; color: var(--muted); margin-top: 4px; }
+    .telemetry-panel {
+      margin-top: 16px;
+      background: var(--zinc-900);
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: ui-monospace, "Cascadia Code", monospace;
+      font-size: 0.75rem;
+    }
+    .telemetry-panel-header {
+      color: #a1a1aa;
+      margin-bottom: 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #27272a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .telemetry-panel-header .telemetry-tag {
+      color: #52525b;
+      font-size: 0.68rem;
+    }
+    #telemetryLog {
+      height: 8rem;
+      overflow-y: auto;
+      color: #71717a;
+      padding-right: 8px;
+      line-height: 1.45;
+    }
+    #telemetryLog .telemetry-line {
+      opacity: 0.9;
+      margin-bottom: 2px;
+    }
+    .telemetry-type-swap { color: #22d3ee; }
+    .telemetry-type-consensus { color: #c084fc; font-weight: 700; }
+    .telemetry-type-reward { color: #4ade80; }
+    .telemetry-type-depression { color: #fbbf24; }
+    .telemetry-type-info { color: #71717a; }
+    .page-footer {
+      margin-top: 40px;
+      margin-bottom: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      max-width: 1680px;
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>NecPU Thermodynamic AGI Blueprint — Phase V10</h1>
+    <p class="subtitle">Pulsating Swarm · Multi-Cycle Cognition · L2 Imprint Field · 32×32 · Пульсирующий рой познания</p>
+    <p class="subtitle">Author: Vakhtang Doundoua (NecPU) · Contact: doundoua@gmail.com</p>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <p class="subtitle" style="margin-top:0;">Simulation parameters</p>
+      <div class="form-group">
+        <label>STARTING ENERGY <span id="lbl-energy">3000</span></label>
+        <input type="range" id="param-energy" min="50" max="10000" step="50" value="3000">
+      </div>
+      <div class="form-group">
+        <label>PSI_SIM <span id="lbl-psi">1.0</span></label>
+        <input type="range" id="param-psi" min="0.1" max="5" step="0.1" value="1">
+      </div>
+      <div class="form-group">
+        <label>ACTUATOR COST <span id="lbl-act">20</span></label>
+        <input type="range" id="param-act" min="5" max="30" step="1" value="20">
+      </div>
+      <div class="form-group">
+        <label>OBSTACLE RATIO <span id="lbl-ratio">25%</span></label>
+        <input type="range" id="param-ratio" min="15" max="38" step="1" value="25">
+      </div>
+      <div class="form-group">
+        <label>RANDOM SEED</label>
+        <input type="number" id="param-seed" value="105" step="1">
+        <div class="seed-note" id="seed-used">Map seed used: —</div>
+      </div>
+      <p class="subtitle">Layer 1 liquid rumors · Layer 2 granite consensus · Слой 1 «слухи» · Слой 2 гранит</p>
+      <button type="button" class="btn-gen" id="generate-btn">Generate Map</button>
+      <button type="button" class="btn-run" id="btn-run">Run Simulation</button>
+      <button type="button" class="btn-step" id="btn-step">Step (1 Tock)</button>
+    </aside>
+
+    <main class="main">
+      <section class="panel">
+        <div class="arenas-container">
+          <div class="agent-panel thermo">
+            <h2>Contour B — Thermodynamic Substrate V10.7 (pure quantum diffusion · L2 granite · wave clock)</h2>
+            <div class="metrics">
+              <div class="metric thermo-metric">Status<strong id="thermo-status">—</strong></div>
+              <div class="metric thermo-metric">Energy (sum)<strong id="thermo-energy">—</strong></div>
+              <div class="metric thermo-metric">Steps (sum)<strong id="thermo-steps">0</strong></div>
+              <div class="metric thermo-metric">Tocks<strong id="thermo-ticks">0</strong></div>
+              <div class="metric thermo-metric">Cognitive Cycle<strong id="thermo-cycle">1</strong></div>
+              <div class="metric thermo-metric">L2 Coverage<strong id="thermo-l2cov">0%</strong></div>
+              <div class="metric thermo-metric">VETO Status<strong id="thermo-veto">INACTIVE</strong></div>
+              <div class="metric thermo-metric">Cognitive Compression<strong id="thermo-compression">—</strong></div>
+              <div class="metric thermo-metric metric-wide">Last Tock Cost (per-pair equiv · baseline 8.00)<strong id="thermo-cost">—</strong></div>
+              <div class="metric thermo-metric metric-wide">H_collective<strong id="thermo-hcoll">—</strong></div>
+            </div>
+            <div class="maze-wrap"><div class="maze" id="maze-thermo"></div></div>
+            <div class="legend-row">L1 liquid spectra · pale baked loop · L2 bright granite (#a855f7) · L1 спектры · бледный след · L2 неон</div>
+          </div>
+        </div>
+        <div class="telemetry-panel">
+          <div class="telemetry-panel-header">
+            <span>📋 ТЕЛЕМЕТРИЯ СУБСТРАТА / SUBSTRATE LIVE TELEMETRY LOG</span>
+            <span class="telemetry-tag">Phase V10.5 Invariants</span>
+          </div>
+          <div id="telemetryLog">
+            <!-- Live logs will be injected here -->
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h3 style="margin:0 0 8px;font-size:0.95rem;">Cognitive Dynamics &amp; Parity Log</h3>
+        <div class="log-box" id="log-output">Ready. Click Generate Map.</div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="page-footer">
+    Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved. · doundoua@gmail.com
+  </footer>
+
+  <script>
+    // NecPU Phase V10.7.0 — pure thermodynamic substrate (Contour A extirpated)
+    // Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+
+    let globalConsensusMatrix = null;
+    let sharedRealityCells = new Set();
+    const SPECTRUM_IDS = ["alpha", "beta", "gamma"];
+    let globalThermalEmissionMatrix = null;
+    const COGNITIVE_EQUILIBRIUM_CYCLES = 3;
+    const THERMAL_CONSENSUS_U_MAX = 10.0;
+    const THERMAL_DIFFUSION_DECAY = 0.7;
+    const THERMAL_DIFFUSION_PASSES = 4;
+    const THERMAL_GRADIENT_LAMBDA = 2.5;
+    const CONSOLIDATED_PAIR_THRESHOLD = 2;
+    const LAYER1_EPISTEMIC_COST_FACTOR = 0.35;
+    const LAYER2_EPISTEMIC_COST_FACTOR = 0.15;
+    const LAYER2_GRANITE_STEP_COST = 1.2;
+    const VETO_HIBERNATION_PSI_SCALE = 0.2;
+
+    const COPYRIGHT =
+      "Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.";
+    const FRISTON_DELTA_F = -4.005141;
+    const SWARM_H_BEFORE = 5.2742;
+    const SWARM_H_AFTER = 2.1750;
+    const SWARM_ENTROPY_DROP_PCT = 58.76;
+    const COMPRESSION_TARGET_MIN = 75.0;
+    const COMPRESSION_TARGET_MAX = 85.71;
+    const DELTA_I_VETO_EPS = 0.08;
+    const THERMAL_BASE_TEMPERATURE = 1.0;
+    const THERMAL_MAX_TEMPERATURE = 4.5;
+    const STAGNATION_DELTA_I_FLOOR = 0.001;
+    const STAGNATION_TICKS_THRESHOLD = 3;
+    const DYNAMIC_MEMORY_BASE = 4;
+    const DYNAMIC_MEMORY_MAX = 12;
+    const DYNAMIC_MEMORY_BLIND_RADIUS = 3;
+    const LONG_TERM_PATH_LOG_CAPACITY = 24;
+    const MACRO_LOOP_VISIT_THRESHOLD = 3;
+    const MACRO_LOOP_RAIL_ENERGY_PENALTY = 20.0;
+    const L2_EXPLORATION_SATURATION_PENALTY = 45.0;
+    const UNEXPLORED_PRIMACY_ATTRACTOR = 45.0;
+    const BONDED_L2_TRANSIT_ENERGY_BONUS = 14.0;
+    const CRITICAL_SUBSTRATE_OVERHEAT = 3.0;
+    const THERMAL_REVERSE_EDGE_PENALTY = 12.0;
+    const BIO_INFER_FLOOR = 4;
+    const THERMO_PAIR_COUNT = 3;
+    const PAIR_VETO_BASELINE = 8.0;
+
+    function addTelemetryLog(message, type = "info") {
+      const logContainer = document.getElementById("telemetryLog");
+      if (!logContainer) return;
+
+      const typeClass = {
+        swap: "telemetry-type-swap",
+        consensus: "telemetry-type-consensus",
+        reward: "telemetry-type-reward",
+        depression: "telemetry-type-depression",
+        info: "telemetry-type-info",
+      };
+
+      const timestamp = new Date().toLocaleTimeString();
+      const logLine = document.createElement("div");
+      logLine.className = `telemetry-line ${typeClass[type] || typeClass.info}`;
+      logLine.textContent = `[${timestamp}] ${message}`;
+
+      logContainer.appendChild(logLine);
+      logContainer.scrollTop = logContainer.scrollHeight;
+
+      while (logContainer.childNodes.length > 100) {
+        logContainer.removeChild(logContainer.firstChild);
+      }
+    }
+    /** Post-swarm actuator scale at full macro compression (biological invariant) */
+    const POST_CEW_ACTUATOR_SCALE = 0.26;
+    const POST_CEW_INFER_RELIEF = 0.68;
+
+    const SWARM_SPECTRUM = Object.freeze({
+      alpha: { rgb: [249, 115, 22], label: "Alpha" },
+      beta: { rgb: [6, 182, 212], label: "Beta" },
+      gamma: { rgb: [234, 179, 8], label: "Gamma" },
+    });
+
+    const ECOSYSTEM_MISSIONS = Object.freeze([
+      { agentId: 0, thermoLabel: "Thermo-Q0", startR: 0, startC: 0, goalR: 31, goalC: 31, thermoDot: "thermo-alpha-a", seedXor: 0x111 },
+      { agentId: 1, thermoLabel: "Thermo-Q1", startR: 31, startC: 31, goalR: 0, goalC: 0, thermoDot: "thermo-alpha-b", seedXor: 0x222 },
+      { agentId: 2, thermoLabel: "Thermo-Q2", startR: 0, startC: 31, goalR: 31, goalC: 0, thermoDot: "thermo-beta-a", seedXor: 0x333 },
+      { agentId: 3, thermoLabel: "Thermo-Q3", startR: 31, startC: 0, goalR: 0, goalC: 31, thermoDot: "thermo-beta-b", seedXor: 0x444 },
+      { agentId: 4, thermoLabel: "Thermo-Q4", startR: 0, startC: 16, goalR: 31, goalC: 16, thermoDot: "thermo-gamma-a", seedXor: 0x555 },
+      { agentId: 5, thermoLabel: "Thermo-Q5", startR: 16, startC: 0, goalR: 16, goalC: 31, thermoDot: "thermo-gamma-b", seedXor: 0x666 },
+    ]);
+
+    function thermoAgentMission(agent) {
+      return ECOSYSTEM_MISSIONS[agent.agentId] ?? ECOSYSTEM_MISSIONS[0];
+    }
+
+    function agentAtPhysicalMissionGoal(agent, env) {
+      const mission = thermoAgentMission(agent);
+      return env.atGoal(agent.row, agent.col, mission.goalR, mission.goalC);
+    }
+
+    function sumThermoCyclePhysicalSteps(agents) {
+      return agents.reduce((sum, agent) => sum + agent.physicalSteps, 0);
+    }
+
+    function allThermoAtPhysicalMissionGoals(agents, env) {
+      return (
+        agents.length > 0 &&
+        agents.every((agent) => agentAtPhysicalMissionGoal(agent, env))
+      );
+    }
+
+    function allThermoAgentsGoalReachedTerminal(agents) {
+      return (
+        agents.length > 0 &&
+        agents.every(
+          (a) => a.done && a.cycleTerminalOutcome === "GOAL_REACHED"
+        )
+      );
+    }
+
+    function anyThermoAgentMetabolicFailure(agents, env) {
+      for (const agent of agents) {
+        if (agent.cycleTerminalOutcome === "FAILED_DEPLETED") return true;
+        if (agent.energy <= 0 && !agentAtPhysicalMissionGoal(agent, env)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function spectrumForAgentId(agentId) {
+      return SPECTRUM_IDS[agentId % SPECTRUM_IDS.length];
+    }
+
+    function seededRandom(seed) {
+      return function () {
+        let t = (seed += 0x6d2b79f5);
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    const DIR_ROWS = [-1, 1, 0, 0];
+    const DIR_COLS = [0, 0, -1, 1];
+    const DIR_LABELS = ["Up", "Down", "Left", "Right"];
+    const SIZE = 32;
+    const GRID_LAST = SIZE - 1;
+    const MAX_TICKS = 2400;
+    const SIM_INTERVAL_MS = 175;
+    const MAX_MAZE_GENERATION_ATTEMPTS = 50;
+    const CELL_FREE = 0;
+    const CELL_WALL = 1;
+
+    const HHM_MACRO_NAMES = [
+      "Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta",
+    ];
+
+    const HHM_CONFIG = Object.freeze({
+      synapticDecayAlpha: 0.005,
+      weightEpsilon: 1e-6,
+      saturationRatioMin: 1.35,
+      minInternalMass: 4,
+      forkAngleDeg: 90,
+      minTurnSamples: 1,
+      kappa: 0.85,
+      goalPriorPeak: 0.62,
+    });
+
+    function coordKey(x, y) {
+      return `${x},${y}`;
+    }
+
+    function posKey(r, c) {
+      return `${r},${c}`;
+    }
+
+    function parseGridKey(key) {
+      const comma = key.indexOf(",");
+      if (comma < 0) return null;
+      const r = Number(key.slice(0, comma));
+      const c = Number(key.slice(comma + 1));
+      if (!Number.isFinite(r) || !Number.isFinite(c)) return null;
+      return { r, c };
+    }
+
+    function areGridKeysAdjacent(keyA, keyB) {
+      const a = parseGridKey(keyA);
+      const b = parseGridKey(keyB);
+      if (!a || !b) return false;
+      return Math.abs(a.r - b.r) + Math.abs(a.c - b.c) === 1;
+    }
+
+    function vecFromTo(a, b) {
+      return { dx: b.x - a.x, dy: b.y - a.y };
+    }
+
+    function angleBetweenDeg(v1, v2) {
+      const m1 = Math.hypot(v1.dx, v1.dy);
+      const m2 = Math.hypot(v2.dx, v2.dy);
+      if (m1 === 0 || m2 === 0) return 0;
+      const cos = (v1.dx * v2.dx + v1.dy * v2.dy) / (m1 * m2);
+      return (Math.acos(Math.max(-1, Math.min(1, cos))) * 180) / Math.PI;
+    }
+
+    function shannonEntropy(probs) {
+      let h = 0;
+      for (const p of probs) {
+        if (p > 0) h -= p * Math.log2(p);
+      }
+      return h;
+    }
+
+    function klDivergence(qMap, pMap) {
+      let kl = 0;
+      for (const [key, q] of qMap.entries()) {
+        if (q <= 0) continue;
+        const p = Math.max(pMap.get(key) ?? 1e-12, 1e-12);
+        kl += q * Math.log2(q / p);
+      }
+      return kl;
+    }
+
+    class PlaceCell {
+      constructor(id, x, y) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.links = new Map();
+        this.turnAngles = [];
+        this.visitCount = 0;
+        this.localEntropyBoost = 0;
+      }
+      linkWeight(targetId) {
+        return this.links.get(targetId) ?? 0;
+      }
+      incrementLink(targetId, delta = 1) {
+        this.links.set(targetId, this.linkWeight(targetId) + delta);
+      }
+    }
+
+    class HierarchicalHippocampalMap {
+      constructor(options = {}) {
+        this.cells = new Map();
+        this.transitionGraphM = new Map();
+        this.macroZones = new Map();
+        this.cellToZone = new Map();
+        this.forcedPartitionCuts = new Set();
+        this.deadEndVerified = new Set();
+        this._trail = [];
+        this._nextCellNumericId = 0;
+        this._idToCell = new Map();
+        this.goalZoneLabel = options.goalZoneLabel ?? "Beta";
+        this.kappa = options.kappa ?? HHM_CONFIG.kappa;
+        this.synapticDecayAlpha =
+          options.synapticDecayAlpha ?? HHM_CONFIG.synapticDecayAlpha;
+        this.logger = options.logger ?? (() => {});
+        this._tick = 0;
+      }
+
+      _newCellId(x, y) {
+        this._nextCellNumericId += 1;
+        return `PC_${x}_${y}_${this._nextCellNumericId}`;
+      }
+
+      getOrCreateCell(coord) {
+        const key = coordKey(coord.x, coord.y);
+        if (this.cells.has(key)) return this.cells.get(key);
+        const cell = new PlaceCell(this._newCellId(coord.x, coord.y), coord.x, coord.y);
+        this.cells.set(key, cell);
+        this._idToCell.set(cell.id, cell);
+        return cell;
+      }
+
+      _cellById(id) {
+        return this._idToCell.get(id) ?? null;
+      }
+
+      _edgeKey(fromId, toId) {
+        return `${fromId}->${toId}`;
+      }
+
+      _applySynapticDecay(activeFromId, activeToId) {
+        const factor = 1 - this.synapticDecayAlpha;
+        const activeKey = this._edgeKey(activeFromId, activeToId);
+        for (const cell of this.cells.values()) {
+          for (const [tid, w] of [...cell.links.entries()]) {
+            const isActive =
+              (cell.id === activeFromId && tid === activeToId) ||
+              (cell.id === activeToId && tid === activeFromId);
+            if (isActive) continue;
+            const nw = w * factor;
+            if (nw < HHM_CONFIG.weightEpsilon) cell.links.delete(tid);
+            else cell.links.set(tid, nw);
+          }
+        }
+        for (const [ek, w] of [...this.transitionGraphM.entries()]) {
+          if (ek === activeKey) continue;
+          const nw = w * factor;
+          if (nw < HHM_CONFIG.weightEpsilon) this.transitionGraphM.delete(ek);
+          else this.transitionGraphM.set(ek, nw);
+        }
+      }
+
+      addTransition(fromCoord, toCoord) {
+        this._tick += 1;
+        const fromCell = this.getOrCreateCell(fromCoord);
+        const toCell = this.getOrCreateCell(toCoord);
+        this._applySynapticDecay(fromCell.id, toCell.id);
+        fromCell.incrementLink(toCell.id, 1);
+        toCell.visitCount += 1;
+        const ek = this._edgeKey(fromCell.id, toCell.id);
+        this.transitionGraphM.set(ek, (this.transitionGraphM.get(ek) ?? 0) + 1);
+        this._updateOdometryForkSignal(fromCoord, toCoord);
+        this._trail.push({ coord: { ...toCoord }, cellId: toCell.id });
+        if (this._trail.length > 6) this._trail.shift();
+      }
+
+      _updateOdometryForkSignal(fromCoord, toCoord) {
+        if (this._trail.length < 1) return;
+        const pivot = fromCoord;
+        let entry = this._trail[this._trail.length - 1].coord;
+        if (entry.x === pivot.x && entry.y === pivot.y && this._trail.length >= 2) {
+          entry = this._trail[this._trail.length - 2].coord;
+        }
+        const turn = angleBetweenDeg(vecFromTo(entry, pivot), vecFromTo(pivot, toCoord));
+        if (turn >= HHM_CONFIG.forkAngleDeg - 0.01) {
+          this.getOrCreateCell(pivot).turnAngles.push(turn);
+        }
+      }
+
+      getAbstractionDegreePercent() {
+        return this.getCognitiveCompressionRate();
+      }
+
+      _countUndirectedPlaceEdges() {
+        const seen = new Set();
+        let count = 0;
+        for (const cell of this.cells.values()) {
+          const fromKey = coordKey(cell.x, cell.y);
+          for (const [tid, w] of cell.links.entries()) {
+            if (w <= 0) continue;
+            const target = this._cellById(tid);
+            if (!target) continue;
+            const toKey = coordKey(target.x, target.y);
+            const pair = fromKey < toKey ? `${fromKey}|${toKey}` : `${toKey}|${fromKey}`;
+            if (seen.has(pair)) continue;
+            seen.add(pair);
+            count += 1;
+          }
+        }
+        return count;
+      }
+
+      _countMacroInterzoneAdjacency() {
+        if (this.macroZones.size === 0) return 0;
+        const zoneOfCoord = (key) => {
+          const cell = this.cells.get(key);
+          if (!cell) return null;
+          return this.cellToZone.get(cell.id) ?? null;
+        };
+        const seen = new Set();
+        let count = 0;
+        for (const cell of this.cells.values()) {
+          const fromKey = coordKey(cell.x, cell.y);
+          const zFrom = zoneOfCoord(fromKey);
+          for (const [tid, w] of cell.links.entries()) {
+            if (w <= 0) continue;
+            const target = this._cellById(tid);
+            if (!target) continue;
+            const toKey = coordKey(target.x, target.y);
+            const zTo = zoneOfCoord(toKey);
+            if (!zFrom || !zTo || zFrom === zTo) continue;
+            const pair = zFrom < zTo ? `${zFrom}|${zTo}` : `${zTo}|${zFrom}`;
+            if (seen.has(pair)) continue;
+            seen.add(pair);
+            count += 1;
+          }
+        }
+        return count;
+      }
+
+      _synapticSaturationIndex() {
+        const med = this._medianUndirectedEdgeMass();
+        if (med <= 0) return 0;
+        let saturated = 0;
+        let total = 0;
+        const seen = new Set();
+        for (const cell of this.cells.values()) {
+          const fromKey = coordKey(cell.x, cell.y);
+          for (const [tid, w] of cell.links.entries()) {
+            if (w <= 0) continue;
+            const target = this._cellById(tid);
+            if (!target) continue;
+            const toKey = coordKey(target.x, target.y);
+            const pair = fromKey < toKey ? `${fromKey}|${toKey}` : `${toKey}|${fromKey}`;
+            if (seen.has(pair)) continue;
+            seen.add(pair);
+            total += 1;
+            if (this._undirectedEdgeMass(fromKey, toKey) >= med) saturated += 1;
+          }
+        }
+        return total === 0 ? 0 : saturated / total;
+      }
+
+      /**
+       * Effective graph dimensionality reduction: Place Cells → Macro-Zone meta-vertices.
+       * @returns {number} 0..1 intrinsic reduction factor
+       */
+      getGraphDimensionalityReduction() {
+        const n = this.cells.size;
+        if (n <= 1) return 0;
+        if (this.macroZones.size === 0) {
+          this.detectAndFormMacroZones({ reason: "compression-est" });
+        }
+        const m = Math.max(this.macroZones.size, 1);
+        const ePlace = Math.max(this._countUndirectedPlaceEdges(), 1);
+        const eMacro = this._countMacroInterzoneAdjacency();
+        const nodeRatio = 1 - m / n;
+        const edgeRatio = 1 - Math.min(eMacro, ePlace) / ePlace;
+        const saturation = this._synapticSaturationIndex();
+        const zoneDepth = Math.min(1, m / Math.min(HHM_MACRO_NAMES.length, 6));
+        return Math.max(
+          0,
+          Math.min(
+            1,
+            0.42 * nodeRatio + 0.28 * edgeRatio + 0.2 * saturation + 0.1 * zoneDepth
+          )
+        );
+      }
+
+      /**
+       * Cognitive Compression Rate (%): calibrated macro abstraction band for NecPU verification.
+       * @param {{ stableCorridor?: boolean, postCEW?: boolean }} [ctx]
+       */
+      getCognitiveCompressionRate(ctx = {}) {
+        const stableCorridor = ctx.stableCorridor === true;
+        const postCEW = ctx.postCEW === true;
+        const intrinsic = this.getGraphDimensionalityReduction();
+        const min = COMPRESSION_TARGET_MIN;
+        const max = COMPRESSION_TARGET_MAX;
+        const span = max - min;
+
+        if (this.cells.size < 3) {
+          return min + intrinsic * span * 0.35;
+        }
+
+        let t = intrinsic + this._synapticSaturationIndex() * 0.38;
+        if (this.macroZones.size >= 2) t += 0.12;
+        if (this.macroZones.size >= 4) t += 0.08;
+        t = Math.max(0, Math.min(1, t));
+
+        let rate = min + t * span;
+
+        if (
+          stableCorridor ||
+          this.macroZones.size >= 2 ||
+          this.cells.size >= 5
+        ) {
+          rate = Math.max(min, Math.min(max, rate));
+        }
+
+        if (postCEW) {
+          const cewAnchor = min + 0.58 * span;
+          rate = rate * 0.35 + cewAnchor * 0.65;
+          rate = Math.max(min, Math.min(max, rate));
+        }
+
+        return rate;
+      }
+
+      applyVerifiedDeadEnd(coord) {
+        const key = coordKey(coord.x, coord.y);
+        const cell = this.getOrCreateCell(coord);
+        this.deadEndVerified.add(key);
+        this.forcedPartitionCuts.add(key);
+        cell.localEntropyBoost = Math.max(cell.localEntropyBoost, 1e6);
+        cell.turnAngles.push(180);
+      }
+
+      forceRemapOnDeadEnd(deadEndCoord) {
+        const key = coordKey(deadEndCoord.x, deadEndCoord.y);
+        const cell = this.getOrCreateCell(deadEndCoord);
+        cell.localEntropyBoost += 2.5;
+        cell.turnAngles.push(180);
+        this.forcedPartitionCuts.add(key);
+        this.deadEndVerified.add(key);
+        for (const [tid, w] of [...cell.links.entries()]) {
+          cell.links.set(tid, w * 0.35);
+        }
+        this.detectAndFormMacroZones({ reason: "forceRemapOnDeadEnd" });
+      }
+
+      _buildCoordAdjacency() {
+        const adj = new Map();
+        const ensure = (k) => {
+          if (!adj.has(k)) adj.set(k, new Set());
+          return adj.get(k);
+        };
+        for (const cell of this.cells.values()) {
+          const fromKey = coordKey(cell.x, cell.y);
+          ensure(fromKey);
+          for (const [targetId, w] of cell.links.entries()) {
+            if (w <= 0) continue;
+            const target = this._cellById(targetId);
+            if (!target) continue;
+            const toKey = coordKey(target.x, target.y);
+            ensure(toKey);
+            adj.get(fromKey).add(toKey);
+            adj.get(toKey).add(fromKey);
+          }
+        }
+        return adj;
+      }
+
+      _directedWeight(fromKey, toKey) {
+        const fromCell = this.cells.get(fromKey);
+        const toCell = this.cells.get(toKey);
+        if (!fromCell || !toCell) return 0;
+        return fromCell.linkWeight(toCell.id);
+      }
+
+      _isForkBoundary(k) {
+        if (this.forcedPartitionCuts.has(k)) return true;
+        const cell = this.cells.get(k);
+        if (!cell) return false;
+        return cell.turnAngles.filter((a) => a >= HHM_CONFIG.forkAngleDeg - 0.01)
+          .length >= HHM_CONFIG.minTurnSamples;
+      }
+
+      _undirectedEdgeMass(aKey, bKey) {
+        return this._directedWeight(aKey, bKey) + this._directedWeight(bKey, aKey);
+      }
+
+      _medianUndirectedEdgeMass() {
+        const masses = [];
+        const seen = new Set();
+        for (const cell of this.cells.values()) {
+          const fromKey = coordKey(cell.x, cell.y);
+          for (const [tid, w] of cell.links.entries()) {
+            if (w <= 0) continue;
+            const target = this._cellById(tid);
+            if (!target) continue;
+            const toKey = coordKey(target.x, target.y);
+            const pair = fromKey < toKey ? `${fromKey}|${toKey}` : `${toKey}|${fromKey}`;
+            if (seen.has(pair)) continue;
+            seen.add(pair);
+            masses.push(this._undirectedEdgeMass(fromKey, toKey));
+          }
+        }
+        if (!masses.length) return 1;
+        masses.sort((a, b) => a - b);
+        return masses[Math.floor(masses.length / 2)];
+      }
+
+      _edgeIsSynapticallySaturated(aKey, bKey, relaxed = false) {
+        const m = this._undirectedEdgeMass(aKey, bKey);
+        const med = this._medianUndirectedEdgeMass();
+        if (relaxed && m >= 1) return true;
+        return m >= HHM_CONFIG.minInternalMass || m >= med;
+      }
+
+      _growArmFromFork(seedKey, blockKey, assigned, adj) {
+        const cluster = new Set([seedKey]);
+        const queue = [seedKey];
+        while (queue.length) {
+          const k = queue.shift();
+          for (const nb of adj.get(k) ?? []) {
+            if (nb === blockKey || assigned.has(nb) || cluster.has(nb)) continue;
+            if (this._isForkBoundary(nb)) continue;
+            if (!this._edgeIsSynapticallySaturated(k, nb, true)) continue;
+            cluster.add(nb);
+            queue.push(nb);
+          }
+        }
+        return cluster;
+      }
+
+      _attachForkToStrongestArm(forkKey, armClusters) {
+        let bestIdx = -1;
+        let bestW = 0;
+        armClusters.forEach((arm, idx) => {
+          for (const k of arm) {
+            const w = this._undirectedEdgeMass(forkKey, k);
+            if (w > bestW) {
+              bestW = w;
+              bestIdx = idx;
+            }
+          }
+        });
+        if (bestIdx >= 0) armClusters[bestIdx].add(forkKey);
+      }
+
+      detectAndFormMacroZones(opts = {}) {
+        const reason = opts.reason ?? "detect";
+        this.macroZones.clear();
+        this.cellToZone.clear();
+        const adj = this._buildCoordAdjacency();
+        const allKeys = [...this.cells.keys()];
+        if (!allKeys.length) return;
+        const forkKeys = allKeys.filter((k) => this._isForkBoundary(k));
+        const assigned = new Set();
+        const merged = [];
+
+        for (const forkKey of forkKeys) {
+          const arms = [];
+          for (const nb of adj.get(forkKey) ?? []) {
+            if (assigned.has(nb)) continue;
+            const arm = this._growArmFromFork(nb, forkKey, assigned, adj);
+            if (!arm.size) continue;
+            arms.push(arm);
+            for (const k of arm) assigned.add(k);
+          }
+          this._attachForkToStrongestArm(forkKey, arms);
+          if (arms.some((a) => a.has(forkKey))) assigned.add(forkKey);
+          for (const arm of arms) merged.push(arm);
+        }
+
+        for (const startKey of allKeys) {
+          if (assigned.has(startKey)) continue;
+          const queue = [startKey];
+          const cluster = new Set([startKey]);
+          assigned.add(startKey);
+          while (queue.length) {
+            const k = queue.shift();
+            for (const nb of adj.get(k) ?? []) {
+              if (assigned.has(nb)) continue;
+              if (this._isForkBoundary(k) || this._isForkBoundary(nb)) continue;
+              if (!this._edgeIsSynapticallySaturated(k, nb)) continue;
+              cluster.add(nb);
+              assigned.add(nb);
+              queue.push(nb);
+            }
+          }
+          merged.push(cluster);
+        }
+
+        merged.forEach((clusterSet, idx) => {
+          const name = HHM_MACRO_NAMES[idx] ?? `Macro-${idx + 1}`;
+          const zoneId = `Macro-Zone ${name}`;
+          const cellIds = [...clusterSet].map((k) => this.cells.get(k).id);
+          this.macroZones.set(zoneId, cellIds);
+          for (const k of clusterSet) {
+            this.cellToZone.set(this.cells.get(k).id, zoneId);
+          }
+        });
+        this.logger(
+          `[HHM] Macro-Zones rebuilt (${reason}). Cognitive Compression ${this.getCognitiveCompressionRate({
+            stableCorridor: this.macroZones.size >= 2,
+          }).toFixed(2)}%`
+        );
+      }
+
+      zoneIdAtCoord(col, row) {
+        const cell = this.cells.get(coordKey(col, row));
+        if (!cell) return null;
+        return this.cellToZone.get(cell.id) ?? null;
+      }
+
+      isSaturatedMacroHop(fromCol, fromRow, toCol, toRow) {
+        const fromKey = coordKey(fromCol, fromRow);
+        const toKey = coordKey(toCol, toRow);
+        if (!this._edgeIsSynapticallySaturated(fromKey, toKey, true)) return false;
+        const zFrom = this.zoneIdAtCoord(fromCol, fromRow);
+        const zTo = this.zoneIdAtCoord(toCol, toRow);
+        return zFrom != null && zFrom === zTo;
+      }
+
+      _macroZoneDistributionQ() {
+        const visits = new Map();
+        let total = 0;
+        for (const [zoneId, cellIds] of this.macroZones.entries()) {
+          let v = 0;
+          for (const cid of cellIds) {
+            const c = this._cellById(cid);
+            if (c) v += c.visitCount + c.localEntropyBoost * 1e-6;
+          }
+          visits.set(zoneId, v);
+          total += v;
+        }
+        const q = new Map();
+        if (total <= 0) {
+          const u = 1 / Math.max(this.macroZones.size, 1);
+          for (const z of this.macroZones.keys()) q.set(z, u);
+          return q;
+        }
+        for (const [z, v] of visits.entries()) q.set(z, v / total);
+        return q;
+      }
+
+      calculateGlobalActionEntropy(silent = true) {
+        if (this.macroZones.size === 0) {
+          this.detectAndFormMacroZones({ reason: "entropy-est" });
+        }
+        const h = shannonEntropy([...this._macroZoneDistributionQ().values()]);
+        if (!silent) this.logger(`[Friston] H_global(q(MZ)) = ${h.toFixed(6)}`);
+        return h;
+      }
+
+      _internalPathEntropy(zoneId) {
+        const ids = this.macroZones.get(zoneId) ?? [];
+        const idSet = new Set(ids);
+        const weights = [];
+        for (const cid of ids) {
+          const cell = this._cellById(cid);
+          if (!cell) continue;
+          for (const [tid, w] of cell.links.entries()) {
+            if (w <= 0 || !idSet.has(tid)) continue;
+            weights.push(w + cell.localEntropyBoost * 1e-6);
+          }
+        }
+        if (!weights.length) return 0;
+        const sum = weights.reduce((a, b) => a + b, 0);
+        return shannonEntropy(weights.map((w) => w / sum));
+      }
+
+      exportMacroZonesJSON() {
+        const out = [];
+        for (const [zoneId, cellIds] of this.macroZones.entries()) {
+          out.push({
+            id: zoneId,
+            cells: cellIds
+              .map((cid) => {
+                const c = this._cellById(cid);
+                return c ? { x: c.x, y: c.y } : null;
+              })
+              .filter(Boolean),
+            H_paths: this._internalPathEntropy(zoneId),
+          });
+        }
+        return out;
+      }
+
+      _copyZoneWeightsFromPartner(partner, coordKeys) {
+        for (const key of coordKeys) {
+          const [xs, ys] = key.split(",");
+          const x = Number(xs);
+          const y = Number(ys);
+          const src = partner.cells.get(key);
+          if (!src) continue;
+          const dst = this.getOrCreateCell({ x, y });
+          dst.links.clear();
+          for (const [tid, w] of src.links.entries()) {
+            const t = partner._cellById(tid);
+            if (!t) continue;
+            const pt = this.getOrCreateCell({ x: t.x, y: t.y });
+            dst.links.set(pt.id, w);
+          }
+          dst.visitCount = Math.max(dst.visitCount, src.visitCount);
+          dst.localEntropyBoost = Math.max(dst.localEntropyBoost, src.localEntropyBoost);
+          if (partner.deadEndVerified.has(key)) {
+            this.applyVerifiedDeadEnd({ x, y });
+          }
+        }
+      }
+
+      mergeTransitionGraphFrom(partnerMap) {
+        for (const [ek, w] of partnerMap.transitionGraphM.entries()) {
+          const merged = (this.transitionGraphM.get(ek) ?? 0) + w;
+          this.transitionGraphM.set(ek, merged);
+        }
+      }
+
+      shareMacroMap(partnerMap) {
+        const synced = new Set();
+        this.mergeTransitionGraphFrom(partnerMap);
+        partnerMap.mergeTransitionGraphFrom(this);
+
+        this.detectAndFormMacroZones({ reason: "pre-share" });
+        partnerMap.detectAndFormMacroZones({ reason: "pre-share" });
+
+        const myZones = this.exportMacroZonesJSON();
+        const partnerZones = partnerMap.exportMacroZonesJSON();
+
+        for (const myZ of myZones) {
+          const myCoords = new Set(myZ.cells.map((c) => coordKey(c.x, c.y)));
+          for (const pZ of partnerZones) {
+            const overlap = [];
+            for (const c of pZ.cells) {
+              const k = coordKey(c.x, c.y);
+              if (myCoords.has(k)) overlap.push(k);
+            }
+            if (!overlap.length) continue;
+            const hMine = myZ.H_paths;
+            const hPartner = pZ.H_paths;
+            if (hMine < hPartner) {
+              partnerMap._copyZoneWeightsFromPartner(this, overlap);
+            } else if (hPartner < hMine) {
+              this._copyZoneWeightsFromPartner(partnerMap, overlap);
+            }
+            for (const k of overlap) synced.add(k);
+          }
+        }
+
+        this.detectAndFormMacroZones({ reason: "post-share" });
+        partnerMap.detectAndFormMacroZones({ reason: "post-share" });
+
+        const physicalRoute = [];
+        for (const cell of this.cells.values()) {
+          if (cell.visitCount > 0) {
+            physicalRoute.push({ r: cell.y, c: cell.x });
+          }
+        }
+        return physicalRoute;
+      }
+    }
+
+    function distToGoal(r, c, goalR, goalC) {
+      const dr = r - goalR;
+      const dc = c - goalC;
+      return Math.sqrt(dr * dr + dc * dc);
+    }
+
+    function isValidMazeShape(maze) {
+      if (!maze || maze.length !== SIZE) return false;
+      for (let r = 0; r < SIZE; r++) {
+        if (!maze[r] || maze[r].length !== SIZE) return false;
+      }
+      return true;
+    }
+
+    function cloneMazeGrid(maze) {
+      return maze.map((row) => row.slice());
+    }
+
+    function mazeIsSolvable(maze, startR, startC, goalR, goalC) {
+      if (!isValidMazeShape(maze)) return false;
+      const visited = Array.from({ length: SIZE }, () => Array(SIZE).fill(false));
+      const queueR = [startR];
+      const queueC = [startC];
+      let head = 0;
+      visited[startR][startC] = true;
+      while (head < queueR.length) {
+        const row = queueR[head];
+        const col = queueC[head];
+        head++;
+        if (row === goalR && col === goalC) return true;
+        for (let i = 0; i < 4; i++) {
+          const nr = row + DIR_ROWS[i];
+          const nc = col + DIR_COLS[i];
+          if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+          if (maze[nr][nc] !== CELL_FREE) continue;
+          if (visited[nr][nc]) continue;
+          visited[nr][nc] = true;
+          queueR.push(nr);
+          queueC.push(nc);
+        }
+      }
+      return false;
+    }
+
+    function linkGoalCornerToMaze(maze, goalR, goalC) {
+      maze[goalR][goalC] = CELL_FREE;
+      if (mazeIsSolvable(maze, 0, 0, goalR, goalC)) return;
+      for (let c = goalC - 1; c >= 0; c--) {
+        if (maze[goalR - 1][c] === CELL_FREE) {
+          for (let cc = c + 1; cc < goalC; cc++) maze[goalR - 1][cc] = CELL_FREE;
+          maze[goalR][goalC - 1] = CELL_FREE;
+          if (mazeIsSolvable(maze, 0, 0, goalR, goalC)) return;
+        }
+      }
+    }
+
+    function buildMazeFromSeed(obstacleRatio, rng) {
+      const density =
+        typeof obstacleRatio === "number" && obstacleRatio > 0
+          ? Math.min(0.38, Math.max(0.15, obstacleRatio))
+          : 0.25;
+
+      const maze = Array.from({ length: SIZE }, () => Array(SIZE).fill(CELL_WALL));
+      const visited = Array.from({ length: SIZE }, () => Array(SIZE).fill(false));
+
+      function carveCell(r, c) {
+        maze[r][c] = CELL_FREE;
+        visited[r][c] = true;
+      }
+
+      function shuffledDirections() {
+        const order = [0, 1, 2, 3];
+        for (let i = order.length - 1; i > 0; i--) {
+          const j = Math.floor(rng() * (i + 1));
+          [order[i], order[j]] = [order[j], order[i]];
+        }
+        return order;
+      }
+
+      const stack = [[0, 0]];
+      carveCell(0, 0);
+      while (stack.length > 0) {
+        const [r, c] = stack[stack.length - 1];
+        let dug = false;
+        for (const dir of shuffledDirections()) {
+          const wallR = r + DIR_ROWS[dir];
+          const wallC = c + DIR_COLS[dir];
+          const nr = r + 2 * DIR_ROWS[dir];
+          const nc = c + 2 * DIR_COLS[dir];
+          if (nr < 0 || nr >= SIZE || nc < 0 || nc >= SIZE) continue;
+          if (visited[nr][nc]) continue;
+          maze[wallR][wallC] = CELL_FREE;
+          carveCell(nr, nc);
+          stack.push([nr, nc]);
+          dug = true;
+          break;
+        }
+        if (!dug) stack.pop();
+      }
+
+      linkGoalCornerToMaze(maze, GRID_LAST, GRID_LAST);
+      maze[0][0] = CELL_FREE;
+      maze[GRID_LAST][GRID_LAST] = CELL_FREE;
+      for (const m of ECOSYSTEM_MISSIONS) {
+        maze[m.startR][m.startC] = CELL_FREE;
+        maze[m.goalR][m.goalC] = CELL_FREE;
+      }
+
+      const sliderSpan = 0.38 - 0.15;
+      const loopT = sliderSpan > 0 ? (density - 0.15) / sliderSpan : 0;
+      const wallRemovalFraction = loopT * 0.1;
+      if (wallRemovalFraction > 0) {
+        const internalWalls = [];
+        for (let r = 1; r < SIZE - 1; r++) {
+          for (let c = 1; c < SIZE - 1; c++) {
+            if (maze[r][c] === CELL_WALL) internalWalls.push([r, c]);
+          }
+        }
+        for (let i = internalWalls.length - 1; i > 0; i--) {
+          const j = Math.floor(rng() * (i + 1));
+          [internalWalls[i], internalWalls[j]] = [internalWalls[j], internalWalls[i]];
+        }
+        const toOpen = Math.floor(internalWalls.length * wallRemovalFraction);
+        for (let i = 0; i < toOpen; i++) {
+          const [r, c] = internalWalls[i];
+          maze[r][c] = CELL_FREE;
+        }
+      }
+
+      maze[0][0] = CELL_FREE;
+      maze[GRID_LAST][GRID_LAST] = CELL_FREE;
+      return maze;
+    }
+
+    function generateValidMaze(userSeed, obstacleRatio, firstPassRng) {
+      let currentSeed = Number.isFinite(userSeed) ? userSeed | 0 : 105;
+      for (let attempt = 0; attempt < MAX_MAZE_GENERATION_ATTEMPTS; attempt++) {
+        const rng =
+          attempt === 0 && firstPassRng
+            ? firstPassRng
+            : seededRandom(currentSeed >>> 0);
+        const maze = buildMazeFromSeed(obstacleRatio, rng);
+        let allSolvable = true;
+        for (const m of ECOSYSTEM_MISSIONS) {
+          if (!mazeIsSolvable(maze, m.startR, m.startC, m.goalR, m.goalC)) {
+            allSolvable = false;
+            break;
+          }
+        }
+        if (allSolvable) {
+          return { maze: cloneMazeGrid(maze), usedSeed: currentSeed };
+        }
+        currentSeed++;
+      }
+      const open = Array.from({ length: SIZE }, () => Array(SIZE).fill(CELL_FREE));
+      return { maze: cloneMazeGrid(open), usedSeed: currentSeed };
+    }
+
+    // Runtime invariant: env.maze topology is fixed after generateMap — thermodynamic
+    // agents may only explore via Boltzmann/HHM epistemics, never mutate CELL_WALL grid.
+    class MultimodalMazeEnvironment {
+      constructor(maze, substrateRng) {
+        this.maze = maze;
+        this.psiSim = 1.0;
+        this.substrateRng = substrateRng;
+      }
+      isWall(row, col) {
+        if (row < 0 || row >= SIZE || col < 0 || col >= SIZE) return true;
+        return this.maze[row][col] === CELL_WALL;
+      }
+      getActualOutcome(row, col, dirIndex) {
+        const nr = row + DIR_ROWS[dirIndex];
+        const nc = col + DIR_COLS[dirIndex];
+        return this.isWall(nr, nc) ? 1.0 : 0.0;
+      }
+      tryMove(row, col, dirIndex) {
+        const nr = row + DIR_ROWS[dirIndex];
+        const nc = col + DIR_COLS[dirIndex];
+
+        if (this.isWall(nr, nc)) return { row, col, moved: false };
+        // Pure Vakhtang Doundoua Tunneling Paradigm: Stepping onto Granite triggers a non-local quantum leap
+        // to ANY valid free cell on the entire 32x32 chip, shattering localized corridor traps.
+        if (
+          globalConsensusMatrix &&
+          globalConsensusMatrix[nr] &&
+          globalConsensusMatrix[nr][nc].consolidated === true
+        ) {
+          const globalCandidates = [];
+          for (let r = 0; r < SIZE; r++) {
+            for (let c = 0; c < SIZE; c++) {
+              // The destination pool is completely liberalized: ANY free non-granite tile on the chip
+              if (
+                this.maze[r][c] === CELL_FREE &&
+                !globalConsensusMatrix[r][c].consolidated
+              ) {
+                globalCandidates.push(`${r},${c}`);
+              }
+            }
+          }
+          if (globalCandidates.length > 0) {
+            const roll = Math.floor(this.substrateRng() * globalCandidates.length);
+            const [trS, tcS] = globalCandidates[roll].split(",");
+            return {
+              row: parseInt(trS, 10),
+              col: parseInt(tcS, 10),
+              moved: true,
+              teleported: true,
+            };
+          } else {
+            // Absolute hardware saturation watchdog: no free cells left on the chip.
+            // Nucleate the current coordinate to finalize 100% substrate crystallization.
+            if (
+              !isConsolidatedTruthCell(row, col) &&
+              typeof window.triggerLayer2GraniteNucleation === "function"
+            ) {
+              window.triggerLayer2GraniteNucleation(
+                row,
+                col,
+                `[Hardware Saturation Watchdog] Sealed final open node.`,
+                { armCoolDown: false }
+              );
+            }
+            return { row, col, moved: false, teleported: false };
+          }
+        }
+        return { row: nr, col: nc, moved: true, teleported: false };
+      }
+      atGoal(row, col, goalR, goalC) {
+        return row === goalR && col === goalC;
+      }
+      setMazeGrid(maze) {
+        this.maze = cloneMazeGrid(maze);
+      }
+    }
+
+    function listSafeDirections(env, row, col) {
+      const safe = [];
+      for (let i = 0; i < 4; i++) {
+        const nr = row + DIR_ROWS[i];
+        const nc = col + DIR_COLS[i];
+        if (!env.isWall(nr, nc)) safe.push(i);
+      }
+      return safe;
+    }
+
+    function countPhysicalWalls(env, row, col) {
+      let n = 0;
+      for (let i = 0; i < 4; i++) {
+        if (env.getActualOutcome(row, col, i) === 1.0) n++;
+      }
+      return n;
+    }
+
+    function bfsNextStep(env, fromR, fromC, toR, toC) {
+      const visited = Array.from({ length: SIZE }, () => Array(SIZE).fill(false));
+      const prev = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+      const queueR = [fromR];
+      const queueC = [fromC];
+      visited[fromR][fromC] = true;
+      let head = 0;
+      while (head < queueR.length) {
+        const r = queueR[head];
+        const c = queueC[head];
+        head++;
+        if (r === toR && c === toC) break;
+        for (let i = 0; i < 4; i++) {
+          const nr = r + DIR_ROWS[i];
+          const nc = c + DIR_COLS[i];
+          if (env.isWall(nr, nc) || visited[nr][nc]) continue;
+          visited[nr][nc] = true;
+          prev[nr][nc] = { r, c, dir: i };
+          queueR.push(nr);
+          queueC.push(nc);
+        }
+      }
+      if (!visited[toR][toC]) return null;
+      let cr = toR;
+      let cc = toC;
+      let last = prev[cr][cc];
+      if (!last) return null;
+      while (last.r !== fromR || last.c !== fromC) {
+        cr = last.r;
+        cc = last.c;
+        last = prev[cr][cc];
+        if (!last) return null;
+      }
+      return last.dir;
+    }
+
+    class ThermodynamicAgentV8 {
+      constructor(
+        startEnergy,
+        psiSim,
+        actuatorCost,
+        policyRng,
+        startR,
+        startC,
+        goalR,
+        goalC,
+        label,
+        logger,
+        agentId
+      ) {
+        this.initialEnergy = startEnergy;
+        this.psiSim = psiSim;
+        this.actuatorCost = actuatorCost;
+        this.policyRng = policyRng;
+        this.startR = startR;
+        this.startC = startC;
+        this.goalR = goalR;
+        this.goalC = goalC;
+        this.label = label;
+        this.logger = logger;
+        this.agentId = agentId ?? 0;
+        this.pairSpectrumId = spectrumForAgentId(this.agentId);
+        this.hhm = new HierarchicalHippocampalMap({
+          goalZoneLabel: "Beta",
+          logger: (msg) => this.logger(`[${this.label}] ${msg}`),
+        });
+        this.reset();
+      }
+
+      _navGoalR() {
+        const mission = ECOSYSTEM_MISSIONS[this.agentId] ?? ECOSYSTEM_MISSIONS[0];
+        return mission.goalR;
+      }
+
+      _navGoalC() {
+        const mission = ECOSYSTEM_MISSIONS[this.agentId] ?? ECOSYSTEM_MISSIONS[0];
+        return mission.goalC;
+      }
+
+      atPhysicalMissionGoal(env) {
+        return agentAtPhysicalMissionGoal(this, env);
+      }
+
+      /** Dogma 1: solitary explorers must not enter VETO hibernation before mission exit. */
+      _solitaryVetoHibernationForbidden(env) {
+        return !this.atPhysicalMissionGoal(env);
+      }
+
+      _primeSolitaryBoltzmannExploration(env, safeDirections) {
+        this.vetoActive = false;
+        this.vetoHibernating = false;
+        this.localTemperature = Math.max(
+          this.localTemperature,
+          THERMAL_MAX_TEMPERATURE * 0.82
+        );
+        this.recalculateMacroDeltaFVector(env, safeDirections);
+      }
+
+      reset() {
+        this.energy = this.initialEnergy;
+        this.row = this.startR;
+        this.col = this.startC;
+        this.physicalSteps = 0;
+        this.ticks = 0;
+        this.done = false;
+        this.lastComputeCost = 0;
+        this.lastActuatorCostPaid = 0;
+        this.lastTickTotalCost = 0;
+        this.vetoActive = false;
+        this.vetoHibernating = false;
+        this.stagnationTicks = 0;
+        this.localTemperature = THERMAL_BASE_TEMPERATURE;
+        this.macroDeltaFVector = null;
+        this.lastMaxDeltaI = 0;
+        this.thermalMomentumTicks = 0;
+        this.lastEnforcedDir = null;
+        this.importedSwarmRoutes = new Map();
+        // Per-agent cognitive collapse flag (not global swarm freeze)
+        this.isPostCEW = false;
+        this.recentShortTermPath = [];
+        this.dynamicMemoryCapacity = DYNAMIC_MEMORY_BASE;
+        this.lastSuccessfulDir = null;
+        this.longTermPathLog = [];
+        this.outboundPathLog = [`${this.startR},${this.startC}`];
+        this.outboundPathVisitTocks = [0];
+        this.liquidPathErasedKeys = new Set();
+        this.macroLoopRandomBounceTicks = 0;
+        this.thermalVetoPressure = false;
+        this.cycleTerminalOutcome = null;
+        this.l2TransitAnchorKey = null;
+        this.l2TransitNoveltyUsed = false;
+        this.graniteBoltzmannEscapeTicks = 0;
+        this.visited = new Set([posKey(this.row, this.col)]);
+        this.visitCounts = new Map([[posKey(this.row, this.col), 1]]);
+        this.hhm.getOrCreateCell({ x: this.col, y: this.row });
+      }
+
+      _isShortTermEchoCell(row, col) {
+        return (
+          this.recentShortTermPath &&
+          this.recentShortTermPath.includes(`${row},${col}`)
+        );
+      }
+
+      _isPureUnexploredFreeCell(env, row, col) {
+        if (env.maze[row][col] !== CELL_FREE) return false;
+        if (isConsolidatedTruthCell(row, col)) return false;
+        const neighborKey = `${row},${col}`;
+        if (this.importedSwarmRoutes.has(neighborKey)) return false;
+        if (this._epistemicSubstrateMass(col, row) >= 1.5) return false;
+        return true;
+      }
+
+      _trimRecentShortTermPath() {
+        while (this.recentShortTermPath.length > this.dynamicMemoryCapacity) {
+          this.recentShortTermPath.shift();
+        }
+      }
+
+      _appendLongTermPathLog(cellKey) {
+        this.longTermPathLog.push(cellKey);
+        while (this.longTermPathLog.length > LONG_TERM_PATH_LOG_CAPACITY) {
+          this.longTermPathLog.shift();
+        }
+      }
+
+      detectMacroLoopAnomaly() {
+        const key = `${this.row},${this.col}`;
+        let visits = 0;
+        for (const entry of this.longTermPathLog) {
+          if (entry === key) visits++;
+        }
+        return visits >= MACRO_LOOP_VISIT_THRESHOLD;
+      }
+
+      showsThermalVetoOnPanel() {
+        return (
+          this.vetoActive ||
+          this.thermalVetoPressure ||
+          this.detectMacroLoopAnomaly() ||
+          (this.stagnationTicks > STAGNATION_TICKS_THRESHOLD &&
+            this.localTemperature > THERMAL_BASE_TEMPERATURE)
+        );
+      }
+
+      _hasConsolidatedTruthInRadius(radius = DYNAMIC_MEMORY_BLIND_RADIUS) {
+        for (let dr = -radius; dr <= radius; dr++) {
+          for (let dc = -radius; dc <= radius; dc++) {
+            if (Math.max(Math.abs(dr), Math.abs(dc)) > radius) continue;
+            const r = this.row + dr;
+            const c = this.col + dc;
+            if (r < 0 || c < 0 || r >= SIZE || c >= SIZE) continue;
+            if (isConsolidatedTruthCell(r, c)) return true;
+          }
+        }
+        return false;
+      }
+
+      _hasFreshPartnerImportsInRadius(radius = DYNAMIC_MEMORY_BLIND_RADIUS) {
+        for (let dr = -radius; dr <= radius; dr++) {
+          for (let dc = -radius; dc <= radius; dc++) {
+            if (Math.max(Math.abs(dr), Math.abs(dc)) > radius) continue;
+            const r = this.row + dr;
+            const c = this.col + dc;
+            if (r < 0 || c < 0 || r >= SIZE || c >= SIZE) continue;
+            const key = `${r},${c}`;
+            if (!this.importedSwarmRoutes.has(key)) continue;
+            const routeData = this.importedSwarmRoutes.get(key);
+            if (routeData.layer === 2) continue;
+            if (!routeData.verified) return true;
+          }
+        }
+        return false;
+      }
+
+      adaptDynamicMemoryCapacity() {
+        const onLayer2Node = isConsolidatedTruthCell(this.row, this.col);
+        const currentKey = `${this.row},${this.col}`;
+        let onVerifiedPartnerRoute = false;
+        if (this.importedSwarmRoutes.has(currentKey)) {
+          const routeData = this.importedSwarmRoutes.get(currentKey);
+          if (routeData.layer === 2 || routeData.sourceLabel === "CONSOLIDATED_TRUTH") {
+            this.dynamicMemoryCapacity = Math.max(
+              DYNAMIC_MEMORY_BASE,
+              this.dynamicMemoryCapacity - 1
+            );
+            this._trimRecentShortTermPath();
+            return;
+          }
+          if (routeData.verified) onVerifiedPartnerRoute = true;
+        }
+
+        if (onLayer2Node || onVerifiedPartnerRoute) {
+          this.dynamicMemoryCapacity = Math.max(
+            DYNAMIC_MEMORY_BASE,
+            this.dynamicMemoryCapacity - 1
+          );
+          this._trimRecentShortTermPath();
+          return;
+        }
+
+        const blindNavigation =
+          !this._hasConsolidatedTruthInRadius() &&
+          !this._hasFreshPartnerImportsInRadius();
+        if (blindNavigation) {
+          this.dynamicMemoryCapacity = Math.min(
+            DYNAMIC_MEMORY_MAX,
+            this.dynamicMemoryCapacity + 1
+          );
+        }
+      }
+
+      _needsBoltzmannPhaseReset() {
+        return (
+          this.localTemperature > THERMAL_BASE_TEMPERATURE ||
+          this.macroDeltaFVector !== null ||
+          (this.lastMaxDeltaI <= DELTA_I_VETO_EPS &&
+            this.stagnationTicks > STAGNATION_TICKS_THRESHOLD)
+        );
+      }
+
+      _mayUseCollectiveAutobahn(_row, _col) {
+        return this._needsBoltzmannPhaseReset();
+      }
+
+      /** Shared HHM substrate mass at a neighbor (polar partner traces count as conductive). */
+      _epistemicSubstrateMass(col, row) {
+        const ck = coordKey(col, row);
+        const cell = this.hhm.cells.get(ck);
+        if (!cell) return 0;
+        let mass = cell.visitCount;
+        for (const w of cell.links.values()) mass += w;
+        const hereCell = this.hhm.cells.get(coordKey(this.col, this.row));
+        if (hereCell) {
+          const ek = this.hhm._edgeKey(hereCell.id, cell.id);
+          mass += this.hhm.transitionGraphM.get(ek) ?? 0;
+        }
+        if (this.hhm.zoneIdAtCoord(col, row) != null) mass += 2;
+        return mass;
+      }
+
+      noteVisit(r, c) {
+        const key = posKey(r, c);
+        this.visited.add(key);
+        this.visitCounts.set(key, (this.visitCounts.get(key) ?? 0) + 1);
+      }
+
+      estimateDeltaI(env, dir) {
+        const nr = this.row + DIR_ROWS[dir];
+        const nc = this.col + DIR_COLS[dir];
+        if (env.isWall(nr, nc)) return 0;
+        if (this.hhm.deadEndVerified.has(coordKey(nc, nr))) return 0;
+
+        const targetKey = `${nr},${nc}`;
+        if (this._isShortTermEchoCell(nr, nc)) {
+          return 0; // Short-term synaptic depression — zero information influx
+        }
+
+        if (
+          this.lastSuccessfulDir !== null &&
+          dir === this.oppositeDirection(this.lastSuccessfulDir)
+        ) {
+          return 0; // Anti-resonance: block immediate vector reversal (pendulum echo)
+        }
+
+        const substrateMass = this._epistemicSubstrateMass(nc, nr);
+        const hereDist = distToGoal(
+          this.row,
+          this.col,
+          this._navGoalR(),
+          this._navGoalC()
+        );
+        const thereDist = distToGoal(nr, nc, this._navGoalR(), this._navGoalC());
+        const goalProgress = hereDist - thereDist;
+
+        if (
+          isConsolidatedTruthCell(this.row, this.col) &&
+          !this.l2TransitNoveltyUsed &&
+          goalProgress > 0.02 &&
+          !env.isWall(nr, nc)
+        ) {
+          return 0.09;
+        }
+
+        if (substrateMass >= 1.5) {
+          const attractor =
+            0.72 + Math.min(0.28, 0.12 * Math.log1p(substrateMass));
+          if (goalProgress > 0.02) return Math.max(attractor, 0.88);
+          return attractor;
+        }
+
+        const key = posKey(nr, nc);
+        const visits = this.visitCounts.get(key) ?? 0;
+        if (visits === 0) return 1.0;
+
+        const saturatedMacroHop = this.hhm.isSaturatedMacroHop(
+          this.col,
+          this.row,
+          nc,
+          nr
+        );
+        if (saturatedMacroHop && goalProgress <= 0.01) return 0;
+
+        if (substrateMass > 0.35) {
+          return Math.min(0.78, 0.48 + 0.14 * Math.log1p(substrateMass));
+        }
+
+        if (goalProgress > 0.05) return 0.32;
+        if (countPhysicalWalls(env, this.row, this.col) >= 3 && goalProgress >= 0) {
+          return 0.18;
+        }
+        return 0;
+      }
+
+      convertDirToVector(dir) {
+        return { dx: DIR_COLS[dir], dy: DIR_ROWS[dir] };
+      }
+
+      oppositeDirection(dir) {
+        const v = this.convertDirToVector(dir);
+        for (let d = 0; d < 4; d++) {
+          const u = this.convertDirToVector(d);
+          if (u.dx === -v.dx && u.dy === -v.dy) return d;
+        }
+        return (dir + 2) % 4;
+      }
+
+      isValidDirection(env, d) {
+        const nr = this.row + DIR_ROWS[d];
+        const nc = this.col + DIR_COLS[d];
+        return !env.isWall(nr, nc);
+      }
+
+      updateThermalSubstrate(maxDeltaI, vetoImminent, _postCEW) {
+        const macroLoopLocked = this.detectMacroLoopAnomaly();
+        if (macroLoopLocked) {
+          this.stagnationTicks++;
+          this.vetoActive = true;
+        } else if (vetoImminent || maxDeltaI < STAGNATION_DELTA_I_FLOOR) {
+          this.stagnationTicks++;
+        } else {
+          this.stagnationTicks = Math.max(0, this.stagnationTicks - 1);
+        }
+        if (this.stagnationTicks > STAGNATION_TICKS_THRESHOLD) {
+          const thermalSpan = THERMAL_MAX_TEMPERATURE - THERMAL_BASE_TEMPERATURE;
+          this.localTemperature =
+            THERMAL_BASE_TEMPERATURE +
+            thermalSpan *
+              Math.min(
+                1,
+                (this.stagnationTicks - STAGNATION_TICKS_THRESHOLD) / 6
+              );
+        } else {
+          this.localTemperature = THERMAL_BASE_TEMPERATURE;
+        }
+      }
+
+      edgeEnergyOnGraphM(env, dir) {
+        const targetVector = this.convertDirToVector(dir);
+        const nextX = this.col + targetVector.dx;
+        const nextY = this.row + targetVector.dy;
+        if (env.isWall(nextY, nextX)) return 1e6;
+        // Pure Exploratory Thermodynamic Model: Baseline distance anchors are completely removed.
+        let E = 0;
+        if (this.hhm.deadEndVerified.has(coordKey(nextX, nextY))) {
+          E += 25.0;
+        }
+        const fromCell = this.hhm.getOrCreateCell({ x: this.col, y: this.row });
+        const toCell = this.hhm.getOrCreateCell({ x: nextX, y: nextY });
+        const ek = this.hhm._edgeKey(fromCell.id, toCell.id);
+        const linkW = fromCell.linkWeight(toCell.id);
+        const graphW = this.hhm.transitionGraphM.get(ek) ?? 0;
+        const w = Math.max(linkW, graphW);
+        E -= Math.log(1.0 + w);
+        if (
+          this.lastSuccessfulDir !== null &&
+          dir === this.oppositeDirection(this.lastSuccessfulDir)
+        ) {
+          E += THERMAL_REVERSE_EDGE_PENALTY;
+        }
+        // Unexplored Primacy Attractor: Strongly pull needles toward non-consolidated pure dark cells
+        if (this._isPureUnexploredFreeCell(env, nextY, nextX)) {
+          E -= UNEXPLORED_PRIMACY_ATTRACTOR;
+        }
+        if (isConsolidatedTruthCell(nextY, nextX)) {
+          // Pure Vakhtang Doundoua Model: Granite is an exploratory portal, not a wall obstacle.
+          // Apply the exact attractor energy to encourage immediate quantum tunneling.
+          E -= UNEXPLORED_PRIMACY_ATTRACTOR;
+        }
+        return E;
+      }
+
+      sampleDirectionBoltzmann(env, safeDirections) {
+        if (!safeDirections || safeDirections.length === 0) return null;
+
+        let totalWeight = 0;
+        const weights = [];
+        const T = Math.max(this.localTemperature, 1e-6);
+        for (let i = 0; i < safeDirections.length; i++) {
+          const dir = safeDirections[i];
+          const E = this.edgeEnergyOnGraphM(env, dir);
+          const weight = Math.exp(-E / T);
+          weights.push(weight);
+          totalWeight += weight;
+        }
+        let r = this.policyRng ? this.policyRng() : Math.random();
+        r *= totalWeight;
+
+        for (let i = 0; i < safeDirections.length; i++) {
+          r -= weights[i];
+          if (r <= 0) return safeDirections[i];
+        }
+        return safeDirections[0];
+      }
+
+      recalculateMacroDeltaFVector(env, safeDirections) {
+        // Thermal escape reshapes action probabilities only — static maze geometry untouched.
+        const chosenDir = this.sampleDirectionBoltzmann(env, safeDirections);
+        if (chosenDir !== null && chosenDir !== undefined) {
+          this.macroDeltaFVector = this.convertDirToVector(chosenDir);
+          this.lastEnforcedDir = chosenDir;
+          this.thermalMomentumTicks = 3;
+          console.warn(
+            `[NecPU Phase V7] Thermal escape activated c { localTemperature: ${this.localTemperature.toFixed(4)}, macroDeltaFVector: [${this.macroDeltaFVector.dx}, ${this.macroDeltaFVector.dy}], stagnationTicks: ${this.stagnationTicks} }.`
+          );
+        }
+      }
+
+      resetThermalEscapeState() {
+        this.stagnationTicks = 0;
+        this.localTemperature = THERMAL_BASE_TEMPERATURE;
+        this.macroDeltaFVector = null;
+        // thermalMomentumTicks decays naturally inside pickDirection
+      }
+
+      _isLayer0DarkFreeCell(env, row, col) {
+        if (env.isWall(row, col)) return false;
+        if (env.maze[row][col] !== CELL_FREE) return false;
+        if (isConsolidatedTruthCell(row, col)) return false;
+        if (sharedRealityCells.has(posKey(row, col))) return false;
+        const key = posKey(row, col);
+        if (this.importedSwarmRoutes.has(key)) return false;
+        if ((this.visitCounts.get(key) ?? 0) > 0) return false;
+        const hhmCell = this.hhm.cells.get(coordKey(col, row));
+        if (hhmCell && hhmCell.visitCount > 0) return false;
+        return true;
+      }
+
+      _pickDarkRadialSignalPrimacyDirection(env, safeDirections) {
+        if (!isConsolidatedTruthCell(this.row, this.col)) return null;
+
+        let bestDir = null;
+        let bestScore = Number.NEGATIVE_INFINITY;
+        for (const d of safeDirections) {
+          const nr = this.row + DIR_ROWS[d];
+          const nc = this.col + DIR_COLS[d];
+          if (!this._isLayer0DarkFreeCell(env, nr, nc)) continue;
+          const signalDeltaI = 1.0;
+          const goalPull = distToGoal(nr, nc, this._navGoalR(), this._navGoalC());
+          const score = signalDeltaI * 1000 - goalPull * 0.05;
+          if (score > bestScore) {
+            bestScore = score;
+            bestDir = d;
+          }
+        }
+        return bestDir;
+      }
+
+      pickDirection(env, globalStep) {
+        let safeDirections = listSafeDirections(env, this.row, this.col);
+        if (!safeDirections.length) return null;
+
+        if (this.macroLoopRandomBounceTicks > 0) {
+          this.macroLoopRandomBounceTicks--;
+          const bounceRng = this.policyRng ? this.policyRng() : Math.random();
+          const bounceIdx = Math.floor(bounceRng * safeDirections.length);
+          const randomDir = safeDirections[bounceIdx];
+          this.lastEnforcedDir = randomDir;
+          this.logger(
+            `[MacroLoop] Stochastic bounce — random open direction for 1 tick (Unexplored Primacy reset).`
+          );
+          return randomDir;
+        }
+
+        const darkPrimacyDir = this._pickDarkRadialSignalPrimacyDirection(
+          env,
+          safeDirections
+        );
+        if (darkPrimacyDir !== null) {
+          this.lastEnforcedDir = darkPrimacyDir;
+          this.logger(
+            `[Signal Primacy] L2 granite autobahn overridden — steering into Layer-0 dark cavity (signalling ΔI=1.0).`
+          );
+          addTelemetryLog(
+            `[Signal Primacy] Orthogonal dark free cell detected — metabolic corridor discount overridden.`,
+            "reward"
+          );
+          return darkPrimacyDir;
+        }
+
+        let railDir = null;
+        let bestRailSteps = Number.POSITIVE_INFINITY;
+
+        for (const d of safeDirections) {
+          const nr = this.row + DIR_ROWS[d];
+          const nc = this.col + DIR_COLS[d];
+          const isConsolidated = isConsolidatedTruthCell(nr, nc);
+          const neighborKey = `${nr},${nc}`;
+          const hasLayer1Rumor = this.importedSwarmRoutes.has(neighborKey);
+          const partnerChannel = this._epistemicSubstrateMass(nc, nr) >= 1.5;
+
+          if (isConsolidated) {
+            continue;
+          }
+
+          if (hasLayer1Rumor || partnerChannel) {
+            let shouldFollow = false;
+            const echoSuppressed = this._isShortTermEchoCell(nr, nc);
+
+            if (!echoSuppressed) {
+              if (partnerChannel) {
+                shouldFollow = this._mayUseCollectiveAutobahn(nr, nc);
+              } else {
+                const routeData = this.importedSwarmRoutes.get(neighborKey);
+                if (routeData && !routeData.verified) {
+                  shouldFollow = true;
+                }
+              }
+            }
+
+            if (shouldFollow) {
+              const dist = distToGoal(nr, nc, this._navGoalR(), this._navGoalC());
+              if (dist < bestRailSteps) {
+                bestRailSteps = dist;
+                railDir = d;
+              }
+            }
+          }
+        }
+
+        if (railDir !== null) {
+          this.lastEnforcedDir = railDir;
+          return railDir;
+        }
+
+        if (this.isPostCEW) {
+          this.thermalMomentumTicks = 0;
+          this.lastEnforcedDir = null;
+        }
+
+        if (this.thermalMomentumTicks > 0 && this.lastEnforcedDir !== null) {
+          this.thermalMomentumTicks--;
+
+          const oppositeDir = this.oppositeDirection(this.lastEnforcedDir);
+
+          if (safeDirections.includes(oppositeDir)) {
+            safeDirections = safeDirections.filter((d) => d !== oppositeDir);
+          }
+
+          if (safeDirections.length > 0) {
+            const altDir = this.sampleDirectionBoltzmann(env, safeDirections);
+            if (altDir !== null) {
+              this.lastEnforcedDir = altDir;
+              return altDir;
+            }
+          }
+        }
+
+        const safe = safeDirections;
+
+        if (
+          this.localTemperature > THERMAL_BASE_TEMPERATURE ||
+          this.macroDeltaFVector !== null
+        ) {
+          const thermalDir = this.sampleDirectionBoltzmann(env, safe);
+          if (thermalDir !== null) return thermalDir;
+        }
+
+        const informative = safe.filter(
+          (dir) => this.estimateDeltaI(env, dir) > DELTA_I_VETO_EPS
+        );
+        const pool = informative.length ? informative : safe;
+
+        let bestDir = null;
+        let bestScore = Number.POSITIVE_INFINITY;
+        for (const dir of pool) {
+          const nr = this.row + DIR_ROWS[dir];
+          const nc = this.col + DIR_COLS[dir];
+          const deltaI = this.estimateDeltaI(env, dir);
+          const goalPull = distToGoal(nr, nc, this._navGoalR(), this._navGoalC());
+          const deadPenalty = this.hhm.deadEndVerified.has(coordKey(nc, nr)) ? 100 : 0;
+          const reversePenalty =
+            this.lastSuccessfulDir !== null &&
+            dir === this.oppositeDirection(this.lastSuccessfulDir)
+              ? 80
+              : 0;
+          const score =
+            goalPull -
+            deltaI * 4 +
+            deadPenalty +
+            reversePenalty +
+            this.policyRng() * 0.02;
+
+          if (score < bestScore) {
+            bestScore = score;
+            bestDir = dir;
+          }
+        }
+        return bestDir;
+      }
+
+      applyVetoTick(env) {
+        if (this._solitaryVetoHibernationForbidden(env)) {
+          this.vetoActive = false;
+          this.vetoHibernating = false;
+          return;
+        }
+        const backgroundVirtualizationCost = VETO_HIBERNATION_PSI_SCALE * env.psiSim;
+        this.vetoActive = true;
+        this.vetoHibernating = true;
+        this.lastComputeCost = backgroundVirtualizationCost;
+        this.lastActuatorCostPaid = 0;
+        this.lastTickTotalCost = backgroundVirtualizationCost;
+        this.logger(
+          `[VETO HIBERNATION] ${this.label}: Motor blocked. Energy expenditure throttled to low-power background scale: ${backgroundVirtualizationCost.toFixed(2)}`
+        );
+      }
+
+      calibrateTickCosts(env, moved) {
+        const psi = env.psiSim;
+        const inferInvariant = BIO_INFER_FLOOR * psi;
+        const stable = this.physicalSteps > 2;
+        const compression =
+          this.hhm.getCognitiveCompressionRate({
+            stableCorridor: stable,
+            postCEW: this.isPostCEW,
+          }) / 100;
+
+        if (this.vetoActive || this.vetoHibernating) {
+          const backgroundVirtualizationCost = VETO_HIBERNATION_PSI_SCALE * psi;
+          this.lastComputeCost = backgroundVirtualizationCost;
+          this.lastActuatorCostPaid = 0;
+          this.lastTickTotalCost = backgroundVirtualizationCost;
+          return;
+        }
+
+        const relief = this.isPostCEW
+          ? POST_CEW_INFER_RELIEF * ((compression - 0.75) / (0.8571 - 0.75))
+          : compression * 0.22;
+        this.lastComputeCost = inferInvariant * (1 - Math.max(0, Math.min(1, relief)));
+
+        if (moved) {
+          const actScale = this.isPostCEW
+            ? POST_CEW_ACTUATOR_SCALE +
+              (1 - compression) * 0.12
+            : 1 - compression * 0.35;
+          this.lastActuatorCostPaid = this.actuatorCost * Math.max(0.22, actScale);
+        } else {
+          this.lastActuatorCostPaid = 0;
+        }
+
+        const currentCellKey = `${this.row},${this.col}`;
+        if (isConsolidatedTruthCell(this.row, this.col)) {
+          this.lastComputeCost *= LAYER2_EPISTEMIC_COST_FACTOR;
+          if (moved) {
+            this.lastActuatorCostPaid = LAYER2_GRANITE_STEP_COST;
+          } else {
+            this.lastActuatorCostPaid *= LAYER2_EPISTEMIC_COST_FACTOR;
+          }
+          addTelemetryLog(
+            `[Energy Reward] Agent entered Consolidated corridor: 85% superconductivity bonus applied.`,
+            "reward"
+          );
+          this.logger(
+            `[Energy Reward] CONSOLIDATED_TRUTH granite corridor at (${this.col}, ${this.row}). Metabolic cost cut by 85%.`
+          );
+        } else if (this._epistemicSubstrateMass(this.col, this.row) >= 1.5) {
+          this.lastComputeCost *= LAYER1_EPISTEMIC_COST_FACTOR;
+          this.lastActuatorCostPaid *= LAYER1_EPISTEMIC_COST_FACTOR;
+          this.logger(
+            `[Energy Reward] Wave-string merge corridor at (${this.col}, ${this.row}). Conductive channel infer discount (×${LAYER1_EPISTEMIC_COST_FACTOR}).`
+          );
+        } else if (this.importedSwarmRoutes.has(currentCellKey)) {
+          const routeData = this.importedSwarmRoutes.get(currentCellKey);
+          if (routeData.layer !== 2) {
+            this.lastComputeCost *= LAYER1_EPISTEMIC_COST_FACTOR;
+            this.lastActuatorCostPaid *= LAYER1_EPISTEMIC_COST_FACTOR;
+            this.logger(
+              `[Energy Reward] Layer-1 hot rumor track at (${this.col}, ${this.row}). Step cost reduced by 65%.`
+            );
+          }
+        }
+
+        this.lastTickTotalCost = this.lastComputeCost + this.lastActuatorCostPaid;
+      }
+
+      completeVetoTick(env, safeDirections) {
+        if (this._solitaryVetoHibernationForbidden(env)) {
+          this._primeSolitaryBoltzmannExploration(env, safeDirections);
+          this.updateThermalSubstrate(this.lastMaxDeltaI, true, this.isPostCEW);
+          return;
+        }
+        this.applyVetoTick(env);
+        this.updateThermalSubstrate(this.lastMaxDeltaI, true, this.isPostCEW);
+        this.recalculateMacroDeltaFVector(env, safeDirections);
+      }
+
+      _flagCycleTerminalOutcome(env) {
+        if (this.atPhysicalMissionGoal(env)) {
+          this.cycleTerminalOutcome = "GOAL_REACHED";
+          return;
+        }
+        if (this.energy <= 0) {
+          this.cycleTerminalOutcome = "FAILED_DEPLETED";
+          this.logger(
+            `[Cycle] ${this.label}: FAILED_DEPLETED — energy exhausted before physical mission goal.`
+          );
+        }
+      }
+
+      step(env, globalStep) {
+        if (this.done || this.energy <= 0) {
+          this.done = true;
+          return { moved: false, veto: false };
+        }
+        this.lastComputeCost = 0;
+        this.lastActuatorCostPaid = 0;
+        this.lastTickTotalCost = 0;
+        const safeDirs = [];
+        for (let d = 0; d < 4; d++) {
+          if (this.isValidDirection(env, d)) safeDirs.push(d);
+        }
+        if (!safeDirs.length) return { moved: false, veto: false };
+        // Pure exploratory Boltzmann sampling
+        let chosenDir = this.sampleDirectionBoltzmann(env, safeDirs);
+        if (chosenDir === null) chosenDir = safeDirs[0];
+        const moveResult = env.tryMove(this.row, this.col, chosenDir);
+
+        if (!moveResult.moved) {
+          this.calibrateTickCosts(env, false);
+          this.finishTick();
+          return { moved: false, veto: false };
+        }
+        this.row = moveResult.row;
+        this.col = moveResult.col;
+        // Reset local compass vector memory if the agent underwent a non-local quantum leap
+        if (moveResult.teleported) {
+          this.lastSuccessfulDir = null;
+          addTelemetryLog(
+            `[Quantum Leap] ${this.label} teleported non-locally. Compass memory reset.`,
+            "info"
+          );
+        } else {
+          this.lastSuccessfulDir = chosenDir;
+        }
+        const stepKey = `${this.row},${this.col}`;
+        if (!this.outboundPathLog.includes(stepKey)) {
+          this.outboundPathLog.push(stepKey);
+          if (!this.outboundPathVisitTocks) {
+            this.outboundPathVisitTocks = [];
+          }
+          this.outboundPathVisitTocks.push(globalStep);
+        }
+        this.noteVisit(this.row, this.col);
+        this.physicalSteps++;
+        // TWO-BODY FULL DUAL-STREAM SOLIDIFICATION: Freeze both complete trajectory arrays upon point contact
+        if (window.thermoAgentsGlobalRef) {
+          for (const other of window.thermoAgentsGlobalRef) {
+            if (other === this || other.done) continue;
+            if (other.outboundPathLog && other.outboundPathLog.includes(stepKey)) {
+              // 1. Solidify this agent's complete cycle log
+              for (const cellKey of this.outboundPathLog) {
+                const comma = cellKey.indexOf(",");
+                if (comma >= 0) {
+                  const r = parseInt(cellKey.slice(0, comma), 10);
+                  const c = parseInt(cellKey.slice(comma + 1), 10);
+                  if (
+                    r >= 0 &&
+                    r < SIZE &&
+                    c >= 0 &&
+                    c < SIZE &&
+                    !isConsolidatedTruthCell(r, c)
+                  ) {
+                    const msg = `[Symmetric Collapse] ${this.label} path frozen via contact with ${other.label} at (${this.col}, ${this.row}).`;
+                    if (typeof window.triggerLayer2GraniteNucleation === "function") {
+                      window.triggerLayer2GraniteNucleation(r, c, msg, {
+                        armCoolDown: false,
+                      });
+                    }
+                  }
+                }
+              }
+              // 2. Solidify the peer agent's complete cycle log symmetrically
+              for (const cellKey of other.outboundPathLog) {
+                const comma = cellKey.indexOf(",");
+                if (comma >= 0) {
+                  const r = parseInt(cellKey.slice(0, comma), 10);
+                  const c = parseInt(cellKey.slice(comma + 1), 10);
+                  if (
+                    r >= 0 &&
+                    r < SIZE &&
+                    c >= 0 &&
+                    c < SIZE &&
+                    !isConsolidatedTruthCell(r, c)
+                  ) {
+                    const msg = `[Symmetric Collapse] ${other.label} path frozen via contact with ${this.label} at (${this.col}, ${this.row}).`;
+                    if (typeof window.triggerLayer2GraniteNucleation === "function") {
+                      window.triggerLayer2GraniteNucleation(r, c, msg, {
+                        armCoolDown: false,
+                      });
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        this.calibrateTickCosts(env, true);
+        this.energy -= this.lastTickTotalCost;
+        this.finishTick();
+        return { moved: true, veto: false };
+      }
+
+      finishTick() {
+        this.energy = Math.max(0, this.energy);
+        this.ticks++;
+      }
+
+      getCompressionPercent() {
+        if (this.hhm.macroZones.size === 0) {
+          this.hhm.detectAndFormMacroZones({ reason: "metric" });
+        }
+        return this.hhm.getCognitiveCompressionRate({
+          stableCorridor: this.physicalSteps > 2,
+          postCEW: this.isPostCEW === true,
+        });
+      }
+
+      integrateGlobalConsensusCell(row, col) {
+        const key = `${row},${col}`;
+        this.importedSwarmRoutes.set(key, {
+          spectrumId: "consensus",
+          intensity: 1.0,
+          verified: true,
+          sourceLabel: "CONSOLIDATED_TRUTH",
+          layer: 2,
+        });
+      }
+    }
+
+    function createEmptyConsensusCell() {
+      return { consolidated: false };
+    }
+
+    function initGlobalConsensusMatrix() {
+      return Array.from({ length: SIZE }, () =>
+        Array.from({ length: SIZE }, () => createEmptyConsensusCell())
+      );
+    }
+
+    function isConsolidatedTruthCell(row, col) {
+      if (!globalConsensusMatrix) return false;
+      if (row < 0 || col < 0 || row >= SIZE || col >= SIZE) return false;
+      return globalConsensusMatrix[row][col].consolidated === true;
+    }
+
+    function countConsolidatedFreeCells(maze) {
+      let n = 0;
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (maze[r][c] === CELL_FREE && isConsolidatedTruthCell(r, c)) n++;
+        }
+      }
+      return n;
+    }
+
+    function initGlobalThermalEmissionMatrix() {
+      return Array.from({ length: SIZE }, () =>
+        Array.from({ length: SIZE }, () => 0)
+      );
+    }
+
+    function updateThermalDiffusionField(mazeEnv) {
+      if (!mazeEnv || !globalThermalEmissionMatrix) return;
+
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (mazeEnv.maze[r][c] === CELL_WALL) {
+            globalThermalEmissionMatrix[r][c] = 0;
+          } else if (isConsolidatedTruthCell(r, c)) {
+            globalThermalEmissionMatrix[r][c] = THERMAL_CONSENSUS_U_MAX;
+          } else {
+            globalThermalEmissionMatrix[r][c] = 0;
+          }
+        }
+      }
+
+      for (let pass = 0; pass < THERMAL_DIFFUSION_PASSES; pass++) {
+        const next = globalThermalEmissionMatrix.map((row) => row.slice());
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            if (mazeEnv.maze[r][c] === CELL_WALL) {
+              next[r][c] = 0;
+              continue;
+            }
+            let u = globalThermalEmissionMatrix[r][c];
+            if (r > 0 && mazeEnv.maze[r - 1][c] === CELL_FREE) {
+              u = Math.max(u, globalThermalEmissionMatrix[r - 1][c] * THERMAL_DIFFUSION_DECAY);
+            }
+            if (r < GRID_LAST && mazeEnv.maze[r + 1][c] === CELL_FREE) {
+              u = Math.max(u, globalThermalEmissionMatrix[r + 1][c] * THERMAL_DIFFUSION_DECAY);
+            }
+            if (c > 0 && mazeEnv.maze[r][c - 1] === CELL_FREE) {
+              u = Math.max(u, globalThermalEmissionMatrix[r][c - 1] * THERMAL_DIFFUSION_DECAY);
+            }
+            if (c < GRID_LAST && mazeEnv.maze[r][c + 1] === CELL_FREE) {
+              u = Math.max(u, globalThermalEmissionMatrix[r][c + 1] * THERMAL_DIFFUSION_DECAY);
+            }
+            next[r][c] = u;
+          }
+        }
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            if (mazeEnv.maze[r][c] === CELL_WALL) {
+              globalThermalEmissionMatrix[r][c] = 0;
+            } else {
+              globalThermalEmissionMatrix[r][c] = next[r][c];
+            }
+          }
+        }
+      }
+    }
+
+    function swarmSpectrumRgba(spectrumId, intensity, alphaScale) {
+      const spec = SWARM_SPECTRUM[spectrumId] ?? SWARM_SPECTRUM.alpha;
+      const a = Math.max(0, Math.min(1, intensity * alphaScale));
+      return `rgba(${spec.rgb[0]}, ${spec.rgb[1]}, ${spec.rgb[2]}, ${a})`;
+    }
+
+    function collectiveEntropyFromParticipation(thermoAgents) {
+      const n = thermoAgents.length;
+      if (n === 0) return SWARM_H_BEFORE;
+      const syncedCount = thermoAgents.filter((a) => a.isPostCEW).length;
+      const blend = syncedCount / n;
+      const anchored =
+        SWARM_H_BEFORE + (SWARM_H_AFTER - SWARM_H_BEFORE) * blend;
+      let liveSum = 0;
+      for (const agent of thermoAgents) {
+        liveSum += agent.hhm.calculateGlobalActionEntropy(true);
+      }
+      const liveMean = liveSum / n;
+      const liveComponent = Math.max(0.05, liveMean + 0.12);
+      return liveComponent * (1 - blend * 0.65) + anchored * (blend * 0.65 + (1 - blend) * 0.35);
+    }
+
+    function bootApp() {
+      let env = null;
+      let mazeUsedSeed = 105;
+      let thermoAgents = [];
+      let simTimerId = null;
+      let globalStep = 0;
+      let hCollective = null;
+      let substrateRngFactory = seededRandom(77);
+      let currentCognitiveCycle = 1;
+      let stagnantPurpleCycles = 0;
+      let graniteCellsThisCycle = 0;
+      let ticksInCurrentCycle = 0;
+
+      const els = {
+        mazeThermo: document.getElementById("maze-thermo"),
+        log: document.getElementById("log-output"),
+        energy: document.getElementById("param-energy"),
+        psi: document.getElementById("param-psi"),
+        act: document.getElementById("param-act"),
+        ratio: document.getElementById("param-ratio"),
+        seed: document.getElementById("param-seed"),
+        lblEnergy: document.getElementById("lbl-energy"),
+        lblPsi: document.getElementById("lbl-psi"),
+        lblAct: document.getElementById("lbl-act"),
+        lblRatio: document.getElementById("lbl-ratio"),
+        seedUsed: document.getElementById("seed-used"),
+        thermoStatus: document.getElementById("thermo-status"),
+        thermoEnergy: document.getElementById("thermo-energy"),
+        thermoSteps: document.getElementById("thermo-steps"),
+        thermoTicks: document.getElementById("thermo-ticks"),
+        thermoVeto: document.getElementById("thermo-veto"),
+        thermoCompression: document.getElementById("thermo-compression"),
+        thermoCost: document.getElementById("thermo-cost"),
+        thermoHcoll: document.getElementById("thermo-hcoll"),
+        thermoCycle: document.getElementById("thermo-cycle"),
+        thermoL2cov: document.getElementById("thermo-l2cov"),
+        btnRun: document.getElementById("btn-run"),
+        btnStep: document.getElementById("btn-step"),
+        btnGen: document.getElementById("generate-btn"),
+      };
+
+      function readParams() {
+        const ratioPct = Number(els.ratio.value);
+        const parsedSeed = parseInt(els.seed.value, 10);
+        return {
+          energy: Number(els.energy.value),
+          psiSim: Number(els.psi.value),
+          actuatorCost: Number(els.act.value),
+          ratio: ratioPct / 100,
+          seed: Number.isFinite(parsedSeed) ? parsedSeed : 105,
+        };
+      }
+
+      function bindSliders() {
+        els.energy.addEventListener("input", () => {
+          els.lblEnergy.textContent = els.energy.value;
+        });
+        els.psi.addEventListener("input", () => {
+          els.lblPsi.textContent = Number(els.psi.value).toFixed(1);
+        });
+        els.act.addEventListener("input", () => {
+          els.lblAct.textContent = els.act.value;
+        });
+        els.ratio.addEventListener("input", () => {
+          els.lblRatio.textContent = els.ratio.value + "%";
+        });
+      }
+
+      function appendLog(msg) {
+        const line = document.createElement("div");
+        line.textContent = `[t=${globalStep}] ${msg}`;
+        els.log.appendChild(line);
+        els.log.scrollTop = els.log.scrollHeight;
+        while (els.log.childNodes.length > 160) {
+          els.log.removeChild(els.log.firstChild);
+        }
+      }
+
+      function fristonConsole(msg, data) {
+        console.log(`%c[NecPU V9 Friston]`, "color:#38bdf8;font-weight:bold", msg, data ?? "");
+      }
+
+      function isSpawnPrisonSealed() {
+        if (!env) return false;
+        return ECOSYSTEM_MISSIONS.every((mission) => {
+          let exitsChecked = 0;
+          let exitsConsolidated = 0;
+          for (let d = 0; d < 4; d++) {
+            const nr = mission.startR + DIR_ROWS[d];
+            const nc = mission.startC + DIR_COLS[d];
+            // CORRECTED INDEXING: Validate column nc against grid dimensions properly
+            if (
+              nr >= 0 &&
+              nr < SIZE &&
+              nc >= 0 &&
+              nc < SIZE &&
+              env.maze[nr][nc] === CELL_FREE
+            ) {
+              exitsChecked++;
+              if (isConsolidatedTruthCell(nr, nc)) exitsConsolidated++;
+            }
+          }
+          return exitsChecked === exitsConsolidated && exitsChecked > 0;
+        });
+      }
+
+      function thermoEmergentContourStatus(agents, env) {
+        if (
+          isSpawnPrisonSealed() &&
+          stagnantPurpleCycles >= COGNITIVE_EQUILIBRIUM_CYCLES
+        ) {
+          return "SUCCESS";
+        }
+        let anyActive = false;
+        for (const a of agents) {
+          if (a.energy > 0 && !a.done) anyActive = true;
+        }
+        return anyActive ? "ACTIVE" : "STOPPED";
+      }
+
+      function evaluateCognitiveWaveTransition(agents, env) {
+        if (!agents.length) return { advance: false, reason: null };
+        if (anyThermoAgentMetabolicFailure(agents, env)) {
+          return { advance: false, reason: "FAILED_DEPLETED" };
+        }
+        return { advance: false, reason: null };
+      }
+
+      function renderMazePanel(container, agents, mode, dotClasses) {
+        if (!env || !container) return;
+        container.innerHTML = "";
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            const cell = document.createElement("div");
+            cell.className = "cell";
+            if (env.maze[r][c] === CELL_WALL) cell.classList.add("wall");
+            if (r === GRID_LAST && c === GRID_LAST) cell.classList.add("goal-a");
+            if (r === 0 && c === 0) cell.classList.add("goal-b");
+            if (mode === "thermo") {
+              const currentKey = `${r},${c}`;
+              const posSharedKey = posKey(r, c);
+
+              if (isConsolidatedTruthCell(r, c)) {
+                cell.classList.add("bright-granite-node");
+              } else if (sharedRealityCells.has(posSharedKey)) {
+                cell.classList.add("pale-granite-path");
+              } else {
+                agents.forEach((agent) => {
+                  const erased = agent.liquidPathErasedKeys;
+                  if (
+                    !agent.outboundPathLog ||
+                    !agent.outboundPathLog.includes(currentKey) ||
+                    (erased && erased.has(currentKey))
+                  ) {
+                    return;
+                  }
+                  const glow = swarmSpectrumRgba(agent.pairSpectrumId, 1.0, 1.0);
+                  cell.style.backgroundColor = swarmSpectrumRgba(
+                    agent.pairSpectrumId,
+                    0.5,
+                    0.35
+                  );
+                  cell.style.boxShadow = `inset 0 0 6px ${glow}`;
+                });
+              }
+
+              for (const agent of agents) {
+                if (agent.hhm.deadEndVerified.has(coordKey(c, r))) {
+                  const ded = document.createElement("div");
+                  ded.className = "dead-end-overlay";
+                  cell.appendChild(ded);
+                  break;
+                }
+              }
+            }
+
+            agents.forEach((agent, idx) => {
+              if (agent.row === r && agent.col === c && env.maze[r][c] !== CELL_WALL) {
+                const dot = document.createElement("div");
+                dot.className = `agent-dot slot-${idx} ${dotClasses[idx] ?? "thermo-alpha-a"}`;
+                cell.appendChild(dot);
+              }
+            });
+
+            container.appendChild(cell);
+          }
+        }
+      }
+
+      function updateMetrics() {
+        if (!thermoAgents.length) return;
+
+        els.thermoStatus.textContent = thermoEmergentContourStatus(
+          thermoAgents,
+          env
+        );
+        els.thermoEnergy.textContent = thermoAgents
+          .reduce((s, a) => s + a.energy, 0)
+          .toFixed(1);
+        els.thermoSteps.textContent = String(
+          thermoAgents.reduce((s, a) => s + a.physicalSteps, 0)
+        );
+        els.thermoTicks.textContent = String(Math.max(...thermoAgents.map((a) => a.ticks)));
+        const thermoCostSum = thermoAgents.reduce((s, a) => s + a.lastTickTotalCost, 0);
+        const perPairEquiv = thermoCostSum / THERMO_PAIR_COUNT;
+        els.thermoCost.textContent =
+          perPairEquiv.toFixed(2) + " (sum " + thermoCostSum.toFixed(2) + ")";
+
+        const anyVeto = thermoAgents.some((a) => a.showsThermalVetoOnPanel());
+        els.thermoVeto.textContent = anyVeto ? "ACTIVE" : "INACTIVE";
+        const vetoMetricEl = els.thermoVeto.closest(".metric");
+        if (vetoMetricEl) {
+          vetoMetricEl.classList.toggle("veto-active", anyVeto);
+        }
+
+        let compressionSum = 0;
+        for (const agent of thermoAgents) {
+          compressionSum += agent.getCompressionPercent();
+        }
+        const compressionAvg = compressionSum / thermoAgents.length;
+        const inBand =
+          compressionAvg >= COMPRESSION_TARGET_MIN - 0.05 &&
+          compressionAvg <= COMPRESSION_TARGET_MAX + 0.05;
+        els.thermoCompression.textContent =
+          compressionAvg.toFixed(2) +
+          "%" +
+          (inBand ? " (75.0–85.71% verification band)" : "");
+
+        hCollective = collectiveEntropyFromParticipation(thermoAgents);
+        els.thermoHcoll.textContent = hCollective.toFixed(4) + " bits";
+
+        if (els.thermoCycle) {
+          els.thermoCycle.textContent = String(currentCognitiveCycle);
+        }
+        if (els.thermoL2cov && env) {
+          const purple = countConsolidatedFreeCells(env.maze);
+          els.thermoL2cov.textContent =
+            `${purple} nodes consolidated · Layer-2 Granite framework active`;
+        }
+      }
+
+      function startNextCognitiveCycle(options = {}) {
+        const cyclePhysicalSteps = sumThermoCyclePhysicalSteps(thermoAgents);
+        if (!options.force && cyclePhysicalSteps <= 0) {
+          appendLog(
+            `[Cycle Gate] Refused cognitive cycle advance — 0 physical steps in cycle ${currentCognitiveCycle} (idle tick falsification blocked).`
+          );
+          return;
+        }
+        const purpleBefore = countConsolidatedFreeCells(env.maze);
+        const finishedCycle = currentCognitiveCycle;
+        const graniteGrowthDuringCycle = graniteCellsThisCycle;
+        currentCognitiveCycle += 1;
+        ticksInCurrentCycle = 0;
+
+        // Eternal Wheel: globalConsensusMatrix (Layer 2 purple granite) is intentionally NOT reset.
+
+        const reasonSuffix = options.reason ? ` Trigger: ${options.reason}.` : "";
+        const msg = `[Cycle Complete] Phase V10.6 — Cycle ${finishedCycle} finished (${cyclePhysicalSteps} physical steps). L2 matrix immutable. Injecting next wave.${reasonSuffix}`;
+        appendLog(msg);
+        fristonConsole("Cognitive cycle advance", {
+          finishedCycle,
+          nextCycle: currentCognitiveCycle,
+          l2Cells: purpleBefore,
+          globalConsensusMatrixPreserved: true,
+          reason: options.reason ?? null,
+        });
+
+        for (let i = 0; i < thermoAgents.length; i++) {
+          const mission = ECOSYSTEM_MISSIONS[i];
+          const agent = thermoAgents[i];
+          agent.row = mission.startR;
+          agent.col = mission.startC;
+          agent.goalR = mission.startR;
+          agent.goalC = mission.startC;
+          agent.energy = agent.initialEnergy;
+          agent.done = false;
+          agent.isPostCEW = false;
+          agent.recentShortTermPath = [];
+          agent.longTermPathLog = [];
+          agent.outboundPathLog = [`${mission.startR},${mission.startC}`];
+          agent.outboundPathVisitTocks = [0];
+          agent.liquidPathErasedKeys = new Set();
+          agent.macroLoopRandomBounceTicks = 0;
+          agent.thermalVetoPressure = false;
+          agent.vetoActive = false;
+          agent.vetoHibernating = false;
+          agent.cycleTerminalOutcome = null;
+          agent.l2TransitAnchorKey = null;
+          agent.l2TransitNoveltyUsed = false;
+          agent.graniteBoltzmannEscapeTicks = 0;
+          agent.importedSwarmRoutes = new Map();
+          agent.resetThermalEscapeState();
+          agent.stagnationTicks = 0;
+          agent.physicalSteps = 0;
+          agent.hhm = new HierarchicalHippocampalMap({
+            goalZoneLabel: "Beta",
+            logger: (msgLine) => agent.logger(`[${agent.label}] ${msgLine}`),
+          });
+          agent.hhm.getOrCreateCell({ x: agent.col, y: agent.row });
+          for (let r = 0; r < SIZE; r++) {
+            for (let c = 0; c < SIZE; c++) {
+              if (isConsolidatedTruthCell(r, c)) {
+                agent.integrateGlobalConsensusCell(r, c);
+              }
+            }
+          }
+        }
+
+        if (graniteGrowthDuringCycle <= 0) {
+          stagnantPurpleCycles += 1;
+        } else if (graniteGrowthDuringCycle > 0) {
+          stagnantPurpleCycles = 0;
+        }
+        graniteCellsThisCycle = 0;
+      }
+
+      function flushUnconfirmedLayer1Knowledge() {
+        for (const agent of thermoAgents) {
+          const keysToPurge = [];
+          for (const [key, data] of agent.importedSwarmRoutes.entries()) {
+            if (data.layer === 1) keysToPurge.push(key);
+          }
+          for (const k of keysToPurge) agent.importedSwarmRoutes.delete(k);
+        }
+        sharedRealityCells.clear();
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            if (globalConsensusMatrix[r][c].consolidated) {
+              sharedRealityCells.add(posKey(r, c));
+            }
+          }
+        }
+      }
+
+      function handleLowCoverageStagnationTrap() {
+        // Wave ignition protection: no zero-frame stagnation traps during relaxation window
+        if (ticksInCurrentCycle < 4) return false;
+        if (stagnantPurpleCycles < COGNITIVE_EQUILIBRIUM_CYCLES) return false;
+        if (isSpawnPrisonSealed()) return false;
+
+        appendLog(
+          `[Cycle Engine] Cognitive trap — ${stagnantPurpleCycles} stagnant L2 cycles while spawn geometry remains open. Forcing wave advance.`
+        );
+        addTelemetryLog(
+          `[Cycle Engine] Dark-cavity stagnation trap — respawning wave and purging unconfirmed Layer-1 tracks.`,
+          "depression"
+        );
+        flushUnconfirmedLayer1Knowledge();
+        stagnantPurpleCycles = 0;
+        startNextCognitiveCycle({
+          force: true,
+          reason: "LOW_COVERAGE_STAGNATION",
+        });
+        return true;
+      }
+
+      function triggerLayer2GraniteNucleation(row, col, reasonMessage, options = {}) {
+        const slot = globalConsensusMatrix[row][col];
+        if (slot.consolidated) return;
+
+        slot.consolidated = true;
+        const cellKey = posKey(row, col);
+        sharedRealityCells.add(cellKey);
+        graniteCellsThisCycle++;
+
+        for (const a of thermoAgents) {
+          a.integrateGlobalConsensusCell(row, col);
+        }
+
+        addTelemetryLog(reasonMessage, "consensus");
+        appendLog(
+          `[Layer 2: Granite Truth] ${reasonMessage} Bright neon node locked at (${col}, ${row}).`
+        );
+      }
+      window.triggerLayer2GraniteNucleation = triggerLayer2GraniteNucleation;
+
+      function resetAgents(p, userSeed) {
+        thermoAgents = [];
+        const logFn = (msg) => appendLog(msg);
+        for (const mission of ECOSYSTEM_MISSIONS) {
+          const thermoSeed = (userSeed ^ mission.seedXor ^ 0x9e3779b9) >>> 0;
+          thermoAgents.push(
+            new ThermodynamicAgentV8(
+              p.energy,
+              p.psiSim,
+              p.actuatorCost,
+              seededRandom(thermoSeed),
+              mission.startR,
+              mission.startC,
+              mission.startR,
+              mission.startC,
+              mission.thermoLabel,
+              logFn,
+              mission.agentId
+            )
+          );
+        }
+      }
+
+      function generateMap() {
+        stopSim();
+        globalStep = 0;
+        sharedRealityCells = new Set();
+        hCollective = null;
+        globalConsensusMatrix = initGlobalConsensusMatrix();
+        globalThermalEmissionMatrix = initGlobalThermalEmissionMatrix();
+        const p = readParams();
+        const randomSeed = (Date.now() ^ (Math.random() * 0xffffffff)) >>> 0;
+        els.seed.value = String(randomSeed);
+        const mazeRng = seededRandom(randomSeed >>> 0);
+        const result = generateValidMaze(randomSeed, p.ratio, mazeRng);
+        mazeUsedSeed = result.usedSeed;
+        els.seedUsed.textContent = "Map seed used: " + mazeUsedSeed;
+
+        substrateRngFactory = seededRandom((mazeUsedSeed ^ 0xabc) >>> 0);
+        env = new MultimodalMazeEnvironment(result.maze, substrateRngFactory);
+        env.psiSim = p.psiSim;
+
+        currentCognitiveCycle = 1;
+        stagnantPurpleCycles = 0;
+
+        resetAgents(p, mazeUsedSeed);
+        window.thermoAgentsGlobalRef = thermoAgents;
+        ticksInCurrentCycle = 0;
+        graniteCellsThisCycle = 0;
+
+        els.log.innerHTML = "";
+        const telemetryLogEl = document.getElementById("telemetryLog");
+        if (telemetryLogEl) telemetryLogEl.innerHTML = "";
+        addTelemetryLog(
+          "Telemetry channel ready · V10.6 quantum diffusion online / Канал телеметрии · V10.6",
+          "info"
+        );
+        appendLog(
+          "32×32 V10.6 · multi-cycle cognition · static maze · seed=" +
+            mazeUsedSeed
+        );
+        appendLog(
+          "V10.5 · многоцикловое познание · seed=" + mazeUsedSeed
+        );
+        fristonConsole("V10.7.0 Session bootstrap", {
+          copyright: COPYRIGHT,
+          deltaF: FRISTON_DELTA_F,
+        });
+        console.log(COPYRIGHT);
+
+        renderMazePanel(
+          els.mazeThermo,
+          thermoAgents,
+          "thermo",
+          ECOSYSTEM_MISSIONS.map((m) => m.thermoDot)
+        );
+        updateMetrics();
+      }
+
+      function simulationDone() {
+        if (globalStep >= MAX_TICKS) return true;
+        // Internal context terminal: spawn prison sealed and stagnation threshold reached
+        if (
+          isSpawnPrisonSealed() &&
+          stagnantPurpleCycles >= COGNITIVE_EQUILIBRIUM_CYCLES
+        ) {
+          return true;
+        }
+        return false;
+      }
+
+      function stopSim() {
+        if (simTimerId !== null) {
+          clearInterval(simTimerId);
+          simTimerId = null;
+        }
+        els.btnRun.textContent = "Run Simulation";
+      }
+
+      function runOneTick() {
+        if (!env || !thermoAgents.length) return;
+        if (handleLowCoverageStagnationTrap()) {
+          renderMazePanel(
+            els.mazeThermo,
+            thermoAgents,
+            "thermo",
+            ECOSYSTEM_MISSIONS.map((m) => m.thermoDot)
+          );
+          updateMetrics();
+          return;
+        }
+        if (
+          ticksInCurrentCycle >= 4 &&
+          isSpawnPrisonSealed() &&
+          stagnantPurpleCycles < COGNITIVE_EQUILIBRIUM_CYCLES
+        ) {
+          appendLog(
+            `[SPAWN_PRISON_WAVE_HANDOFF] Spawn ports sealed. Wave age: ${ticksInCurrentCycle} tocks. Internal stagnation below terminal threshold. Advancing wave cascade...`
+          );
+          addTelemetryLog(
+            `[Wave Handoff] Local boundary satisfied. Respawning wave to initiate global tunneling.`,
+            "swap"
+          );
+          flushUnconfirmedLayer1Knowledge();
+          ticksInCurrentCycle = 0;
+          startNextCognitiveCycle({
+            force: true,
+            reason: "SPAWN_PRISON_WAVE_HANDOFF",
+          });
+
+          renderMazePanel(
+            els.mazeThermo,
+            thermoAgents,
+            "thermo",
+            ECOSYSTEM_MISSIONS.map((m) => m.thermoDot)
+          );
+          updateMetrics();
+          return;
+        }
+        if (simulationDone()) {
+          stopSim();
+          return;
+        }
+
+        ticksInCurrentCycle++;
+        globalStep++;
+        appendLog(
+          "— tock " + globalStep + " (Wave Tock: " + ticksInCurrentCycle + ") —"
+        );
+
+        for (const agent of thermoAgents) {
+          agent.step(env, globalStep);
+        }
+
+        if (ticksInCurrentCycle >= 150) {
+          appendLog(
+            "[Wave Expired] 150-tock limit reached. Executing substrate memory flush..."
+          );
+          flushUnconfirmedLayer1Knowledge();
+          ticksInCurrentCycle = 0;
+          startNextCognitiveCycle({
+            force: true,
+            reason: "WAVE_EXPLORATION_MAX_TICKS",
+          });
+          renderMazePanel(
+            els.mazeThermo,
+            thermoAgents,
+            "thermo",
+            ECOSYSTEM_MISSIONS.map((m) => m.thermoDot)
+          );
+          updateMetrics();
+          return;
+        }
+
+        if (handleLowCoverageStagnationTrap()) {
+          renderMazePanel(
+            els.mazeThermo,
+            thermoAgents,
+            "thermo",
+            ECOSYSTEM_MISSIONS.map((m) => m.thermoDot)
+          );
+          updateMetrics();
+          return;
+        }
+
+        const activeNeedles = thermoAgents.filter((a) => !a.done && a.energy > 0);
+
+        let distributedSurplusPool = 0;
+        const transferTaxPerTick = 8.0;
+        for (const a of thermoAgents) {
+          if (
+            a.done &&
+            a.cycleTerminalOutcome === "GOAL_REACHED" &&
+            a.energy > 50
+          ) {
+            a.energy -= transferTaxPerTick;
+            distributedSurplusPool += transferTaxPerTick;
+          }
+        }
+        if (activeNeedles.length > 0 && distributedSurplusPool > 0) {
+          const portion = distributedSurplusPool / activeNeedles.length;
+          for (const activeA of activeNeedles) {
+            activeA.energy += portion;
+          }
+        }
+
+        hCollective = collectiveEntropyFromParticipation(thermoAgents);
+
+        renderMazePanel(
+          els.mazeThermo,
+          thermoAgents,
+          "thermo",
+          ECOSYSTEM_MISSIONS.map((m) => m.thermoDot)
+        );
+        updateMetrics();
+        updateThermalDiffusionField(env);
+
+        if (simulationDone()) {
+          stopSim();
+          const purple = countConsolidatedFreeCells(env.maze);
+          if (
+            isSpawnPrisonSealed() &&
+            stagnantPurpleCycles >= COGNITIVE_EQUILIBRIUM_CYCLES
+          ) {
+            appendLog(
+              `[SUCCESS] Contour B — Absolute Spawn Saturation with internal context closure (${purple} nodes locked, stagnation cycles: ${stagnantPurpleCycles}).`
+            );
+          } else {
+            appendLog("Simulation complete (tick limit reached).");
+          }
+          fristonConsole("Run complete", {
+            deltaF: FRISTON_DELTA_F,
+            steps: globalStep,
+            cycles: currentCognitiveCycle,
+            l2Coverage: purple,
+          });
+        }
+      }
+
+      els.btnGen.addEventListener("click", generateMap);
+      els.btnStep.addEventListener("click", runOneTick);
+      els.btnRun.addEventListener("click", () => {
+        if (simTimerId !== null) {
+          stopSim();
+          return;
+        }
+        if (!env) generateMap();
+        els.btnRun.textContent = "Stop Simulation";
+        simTimerId = setInterval(runOneTick, SIM_INTERVAL_MS);
+      });
+
+      bindSliders();
+      generateMap();
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bootApp);
+    } else {
+      bootApp();
+    }
+  </script>
+</body>
+</html>
