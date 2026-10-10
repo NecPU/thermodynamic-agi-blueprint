@@ -1,1 +1,1929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="author" content="Vakhtang Doundoua (NecPU)">
+  <meta name="copyright" content="Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NecPU Matrix Crystal V13.1 — Compact Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #38bdf8;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --neon-blue: #06b6d4;
+      --neon-purple: #a855f7;
+      --grid-line: #334155;
+    }
+    * { box-sizing: border-box; }
+    html { height: 100%; overflow: hidden; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-height: 100vh;
+      overflow: hidden;
+      padding: 0;
+    }
+    .wrap {
+      max-width: 1400px;
+      height: 100vh;
+      margin: 0 auto;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+    .page-header {
+      flex-shrink: 0;
+      margin-bottom: 10px;
+      padding-bottom: 4px;
+    }
+    h1 {
+      margin: 0 0 2px;
+      font-size: 1.15rem;
+      color: var(--border);
+      text-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+    }
+    .subtitle { color: var(--muted); font-size: 0.72rem; margin: 0; line-height: 1.25; }
+    .dashboard {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr) 320px;
+      gap: 12px;
+      align-items: stretch;
+      overflow: hidden;
+    }
+    .col-controllers {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .col-controllers .controls-stack { flex: 1; min-height: 0; }
+    .col-controllers label { margin: 6px 0 2px; font-size: 0.65rem; }
+    .col-controllers button { margin-top: 4px; padding: 6px 8px; font-size: 0.72rem; }
+    .col-controllers input[type="range"] { height: 18px; }
+    .demo-barrier-input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px 10px;
+      font-size: 0.72rem;
+      line-height: 1.35;
+      background: #0f172a;
+      border: 1px solid var(--grid-line);
+      border-radius: 6px;
+      color: var(--text);
+      opacity: 0.92;
+      cursor: default;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+    }
+    .col-engine {
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .col-telemetry {
+      min-width: 0;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .panel {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    label {
+      display: block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 10px 0 4px;
+    }
+    .col-engine label {
+      margin: 4px 0 2px;
+      font-size: 0.62rem;
+      letter-spacing: 0.04em;
+    }
+    input[type="range"] { width: 100%; accent-color: var(--border); }
+    button {
+      width: 100%;
+      margin-top: 8px;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+    }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button.secondary { background: linear-gradient(135deg, #475569, #334155); }
+    .metrics,
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .col-telemetry .metrics-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+    .col-telemetry .metric {
+      padding: 4px 6px;
+      border-radius: 4px;
+      border-left-width: 2px;
+      font-size: 0.65rem;
+      line-height: 1.2;
+    }
+    .col-telemetry .metric strong {
+      display: block;
+      font-size: 0.75rem;
+      margin-top: 2px;
+      word-break: break-word;
+    }
+    .col-telemetry .metric:last-child { grid-column: 1 / -1; }
+    .metric {
+      background: #0f172a;
+      border: 1px solid var(--grid-line);
+      border-left: 3px solid var(--border);
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+    }
+    .metric strong { display: block; font-size: 0.9rem; margin-top: 4px; word-break: break-word; }
+    .metric-wide { grid-column: 1 / -1; }
+    canvas { display: block; border: 2px solid var(--border); border-radius: 8px; background: #000; }
+    #board-canvas, #agent-canvas { image-rendering: pixelated; }
+    .engine-glasses {
+      display: grid;
+      grid-template-columns: 200px 150px 200px;
+      gap: 12px 24px;
+      align-items: start;
+      justify-content: center;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    .preview-dock {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      align-self: start;
+      justify-self: center;
+      margin-top: 0;
+      min-width: 150px;
+    }
+    #preview-canvas {
+      image-rendering: pixelated;
+      display: block;
+    }
+    .glass-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      align-self: start;
+      margin-top: 0;
+    }
+    .glass-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 4px;
+      text-align: center;
+    }
+    .agent-glass .glass-label {
+      color: var(--neon-purple);
+      text-shadow: 0 0 8px rgba(168, 85, 247, 0.45);
+    }
+    .agent-glass #agent-canvas {
+      border-color: var(--neon-purple);
+      box-shadow: 0 0 14px rgba(168, 85, 247, 0.22);
+      transition: border-color 0.12s ease, box-shadow 0.12s ease;
+    }
+    .agent-glass.veto-active #agent-canvas {
+      border: 2px solid rgba(239, 68, 68, 0.85);
+      box-shadow:
+        0 0 16px rgba(239, 68, 68, 0.62),
+        0 0 32px rgba(239, 68, 68, 0.35);
+    }
+    .glass-column .controller-row.needle-row { width: 200px; max-width: 100%; }
+    .agent-mirror-hint,
+    .agent-status-bar {
+      font-size: 0.6rem;
+      color: var(--muted);
+      margin: 2px 0 0;
+      text-align: center;
+      max-width: 200px;
+      line-height: 1.2;
+      max-height: 2.4em;
+      overflow: hidden;
+    }
+    .col-engine .log-box {
+      width: 100%;
+      margin-top: 8px;
+      max-height: 165px;
+      height: 165px;
+    }
+    .log-box {
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: #0f172a;
+      border: 1px solid var(--grid-line);
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 0.65rem;
+      line-height: 1.35;
+      color: #cbd5e1;
+    }
+    .controller-row {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px;
+      justify-content: center;
+    }
+    .ctrl-btn {
+      flex: 1;
+      padding: 4px 2px;
+      font-size: 0.6rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      background: #1e293b;
+      border: 1px solid var(--grid-line);
+      color: var(--muted);
+      border-radius: 6px;
+      text-align: center;
+      transition: all 0.05s ease;
+      cursor: pointer;
+    }
+    .ctrl-btn.active-blue {
+      background: var(--neon-blue);
+      color: #000;
+      box-shadow: 0 0 8px var(--neon-blue);
+      border-color: var(--neon-blue);
+    }
+    .ctrl-btn.active-purple {
+      background: var(--neon-purple);
+      color: #fff;
+      box-shadow: 0 0 8px var(--neon-purple);
+      border-color: var(--neon-purple);
+    }
+    footer {
+      flex-shrink: 0;
+      margin: 0;
+      padding: 4px 0 0;
+      text-align: center;
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+    .causal-index-title {
+      margin: 0 0 4px;
+      font-size: 0.72rem;
+      color: var(--border);
+      letter-spacing: 0.03em;
+      line-height: 1.2;
+    }
+    .col-telemetry .causal-section {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid var(--grid-line);
+    }
+    .weights-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 6px;
+      font-size: 0.62rem;
+      line-height: 1.15;
+    }
+    .weights-section .causal-metric,
+    .weights-section .causal-sensor {
+      background: #0f172a;
+      border: 1px solid var(--grid-line);
+      border-radius: 4px;
+      padding: 4px 6px;
+      color: var(--muted);
+      margin: 0;
+    }
+    .weights-section .causal-metric { border-left-width: 3px; border-left-style: solid; }
+    .weights-section .causal-metric-label {
+      display: block;
+      font-size: 0.62rem;
+      line-height: 1.2;
+      color: var(--muted);
+    }
+    .weights-section .causal-value-row {
+      display: block;
+      margin-top: 2px;
+      font-family: ui-monospace, "Cascadia Mono", monospace;
+      font-size: 0.75rem;
+      font-weight: bold;
+      line-height: 1.25;
+      color: var(--text);
+    }
+    .weights-section .causal-value-row strong {
+      display: inline;
+      margin: 0;
+      font-size: inherit;
+      font-weight: inherit;
+      color: inherit;
+    }
+    .weights-section .causal-value-row .causal-delta {
+      display: inline;
+      margin-left: 6px;
+      font-size: 0.65rem;
+      font-weight: normal;
+      vertical-align: baseline;
+    }
+    .weights-section .causal-sensor {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .weights-section .causal-sensor-label {
+      flex: 1;
+      min-width: 0;
+      font-size: 0.62rem;
+      line-height: 1.2;
+    }
+    .weights-section .causal-sensor strong {
+      flex-shrink: 0;
+      margin: 0;
+      font-family: ui-monospace, "Cascadia Mono", monospace;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: var(--neon-purple);
+    }
+    .causal-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 12px; }
+    .causal-metric { background: #0f172a; border-radius: 8px; padding: 10px 12px; font-size: 0.72rem; color: var(--muted); border-left: 4px solid var(--border); }
+    .causal-metric strong { display: inline-block; margin-top: 6px; font-size: 1.05rem; color: var(--text); }
+    .causal-delta { display: inline-block; margin-left: 4px; font-size: 0.58rem; color: #94a3b8; vertical-align: middle; }
+    .causal-delta.positive { color: #22c55e; }
+    .causal-delta.negative { color: #ef4444; }
+    .causal-metric.height { border-left-color: #ef4444; }
+    .causal-metric.holes { border-left-color: #eab308; }
+    .causal-metric.bumpiness { border-left-color: #06b6d4; }
+    .causal-metric.lines { border-left-color: #22c55e; }
+    .causal-sensors { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.78rem; }
+    .causal-sensor { background: #0f172a; border: 1px solid var(--grid-line); border-radius: 8px; padding: 10px; color: var(--muted); }
+    .causal-sensor strong { display: block; color: var(--neon-purple); font-size: 1rem; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="page-header">
+      <h1>NecPU Phase V13.1 — Just a Game</h1>
+      <p class="subtitle">decoupled layers architecture · discrete core kinetics · 10×20 substrate</p>
+    </header>
 
+    <div class="dashboard">
+      <aside class="panel col-controllers">
+        <div class="controls-stack">
+          <label>Metabolic scale <span id="meta-val">1.00</span></label>
+          <input type="range" id="metabolic-scale" min="0.25" max="2" step="0.05" value="1">
+
+          <label>Demo training barrier</label>
+          <input type="text" class="demo-barrier-input" readonly value="5 total lines cleared (fixed target)">
+
+          <button type="button" id="btn-reset">Reset Crystal</button>
+          <button type="button" id="btn-demo">Start Demo Absorption</button>
+          <button type="button" id="btn-active" disabled>Start Active Minimization</button>
+          <button type="button" class="secondary" id="btn-pause">Pause / Resume Clock</button>
+        </div>
+      </aside>
+
+      <main class="panel col-engine">
+        <div class="engine-glasses">
+          <div class="glass-column glass-column-l1">
+            <p class="glass-label">Layer-1 · Physical Glass</p>
+            <canvas id="board-canvas" width="200" height="400" aria-label="Matrix crystal board"></canvas>
+            <label style="margin-top:12px; text-align:center;">Layer-1 Game Controller Inputs</label>
+            <div class="controller-row">
+              <div class="ctrl-btn" id="ctrl-g-left">Left</div>
+              <div class="ctrl-btn" id="ctrl-g-right">Right</div>
+              <div class="ctrl-btn" id="ctrl-g-rot">Rotate</div>
+              <div class="ctrl-btn" id="ctrl-g-drop">Drop</div>
+            </div>
+          </div>
+          <div class="preview-dock preview-wrap">
+            <p class="glass-label">Next target shape</p>
+            <canvas id="preview-canvas" width="150" height="70"></canvas>
+          </div>
+          <div class="glass-column agent-glass">
+            <p class="glass-label">Layer-2 // Agent ROY · Cognitive Crystal</p>
+            <canvas id="agent-canvas" width="200" height="400" aria-label="Agent action mirror"></canvas>
+            <label style="margin-top:12px; text-align:center;">Layer-2 Cognitive Needle Actuator Feedback</label>
+            <div class="controller-row needle-row">
+              <div class="ctrl-btn" id="ctrl-n-left">Needle L</div>
+              <div class="ctrl-btn" id="ctrl-n-right">Needle R</div>
+              <div class="ctrl-btn" id="ctrl-n-rot">Needle Rot</div>
+              <div class="ctrl-btn" id="ctrl-n-drop">Needle Drop</div>
+            </div>
+            <p class="agent-mirror-hint agent-status-bar" id="agent-mirror-status">Awaiting agent plan</p>
+          </div>
+        </div>
+        <div class="log-box" id="log-output">Ready. Reset crystal or start demo absorption.</div>
+      </main>
+
+      <aside class="panel col-telemetry">
+        <div class="metrics-grid">
+          <div class="metric">Status<strong id="m-status">IDLE</strong></div>
+          <div class="metric">H_glass (Matrix Entropy)<strong id="m-entropy">—</strong></div>
+          <div class="metric">Cognitive Compression<strong id="m-compression">—</strong></div>
+          <div class="metric">Variational Free Energy (VFE)<strong id="m-vfe">—</strong></div>
+          <div class="metric">Layer-2 Granite Nodes<strong id="m-l2">0</strong></div>
+          <div class="metric">Energy Pool Reserve<strong id="m-energy">5000.0</strong></div>
+          <div class="metric">Classic Score<strong id="m-classic">0</strong></div>
+          <div class="metric">Total Lines Cleared<strong id="m-lines">0</strong></div>
+          <div class="metric">Clock Ratio (Gamma/Alpha)<strong id="m-clock-ratio">20:1 (Locked)</strong></div>
+          <div class="metric">Metabolic Efficiency<strong id="m-metabolic-eff">—</strong></div>
+          <div class="metric">Phase<strong id="m-phase">Awaiting reset</strong></div>
+        </div>
+
+        <div class="causal-section">
+          <h2 class="causal-index-title">🧠 COGNITIVE NEEDLE CAUSAL ANALYSIS INDEX</h2>
+          <div class="weights-section">
+            <div class="causal-metric height">
+              <span class="causal-metric-label">Height wt</span>
+              <div class="causal-value-row">
+                <strong id="causal-w-height">0.000</strong>
+                <span id="causal-d-height" class="causal-delta">(Δ: 0.000)</span>
+              </div>
+            </div>
+            <div class="causal-metric holes">
+              <span class="causal-metric-label">Holes wt</span>
+              <div class="causal-value-row">
+                <strong id="causal-w-holes">0.000</strong>
+                <span id="causal-d-holes" class="causal-delta">(Δ: 0.000)</span>
+              </div>
+            </div>
+            <div class="causal-metric bumpiness">
+              <span class="causal-metric-label">Bump wt</span>
+              <div class="causal-value-row">
+                <strong id="causal-w-bumpiness">0.000</strong>
+                <span id="causal-d-bumpiness" class="causal-delta">(Δ: 0.000)</span>
+              </div>
+            </div>
+            <div class="causal-metric lines">
+              <span class="causal-metric-label">Lines wt</span>
+              <div class="causal-value-row">
+                <strong id="causal-w-lines">0.000</strong>
+                <span id="causal-d-lines" class="causal-delta">(Δ: 0.000)</span>
+              </div>
+            </div>
+            <div class="causal-sensor">
+              <span class="causal-sensor-label">Voids / holes (live)</span>
+              <strong id="causal-live-holes">0</strong>
+            </div>
+            <div class="causal-sensor">
+              <span class="causal-sensor-label">Column height Σ (live)</span>
+              <strong id="causal-live-height">0</strong>
+            </div>
+            <div class="causal-sensor">
+              <span class="causal-sensor-label">Bumpiness (live)</span>
+              <strong id="causal-live-bumpiness">0</strong>
+            </div>
+            <div class="causal-sensor">
+              <span class="causal-sensor-label">Near-line reward (≥90%)</span>
+              <strong id="causal-live-near-lines">0</strong>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.</footer>
+  </div>
+
+  <script>
+    // Mock class for standalone operational resilience if external script isn't appended
+    class HierarchicalHippocampalMap {
+      constructor(opts) {
+        this.macroZones = new Set();
+        this.logger = opts.logger || console.log;
+      }
+      addTransition(from, to) {
+        this.logger(`[HHM Transit] (${from.x}, ${from.y}) -> (${to.x}, ${to.y})`);
+      }
+      detectAndFormMacroZones(reason) {
+        this.macroZones.add(this.macroZones.size + 1);
+      }
+      getCognitiveCompressionRate() {
+        return 82.37; // Locked stabilization corridor baseline
+      }
+    }
+  </script>
+
+  <script>
+    // NecPU Phase V12.7 — ROY inception · symmetric collapse · inhibitory VETO
+    // Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+
+    const COLS = 10;
+    const ROWS = 20;
+    const BLOCK_SIZE = 20; // Calibrated size to lock 1px lines perfectly into the device grid
+
+    const SPAWN_COL = Math.floor(COLS / 2) - 2;
+    const GAMMA_INTERVAL_MS = 10;
+    const ALPHA_STEP_DIVIDER = 20;
+    const LINE_REWARD = Object.freeze({ 1: 200, 2: 500, 3: 900, 4: 1500 });
+    const CLASSIC_LINE_SCORE = Object.freeze({ 1: 100, 2: 300, 3: 700, 4: 1500 });
+    const TARGET_DEMO_LINES_CLEARED = 5;
+
+    const BOLTZMANN_BASE_TEMP = 1.0;
+    const CAUSAL_CALIBRATION_LR = 0.12;
+    const BASE_THETA = 150.0;
+    const PATH_VFE_GAMMA = 0.85;
+
+    const CAUSAL_BASELINE_ANCHORS = Object.freeze({
+      height: 1.0,
+      holes: 1.0,
+      bumpiness: 0.5,
+      lines: 2.0,
+    });
+
+    function cloneCausalBaseline() {
+      return {
+        height: CAUSAL_BASELINE_ANCHORS.height,
+        holes: CAUSAL_BASELINE_ANCHORS.holes,
+        bumpiness: CAUSAL_BASELINE_ANCHORS.bumpiness,
+        lines: CAUSAL_BASELINE_ANCHORS.lines,
+      };
+    }
+
+    /** Demo anchors — drift via calibrateCausalWeights during passive observation */
+    let causalWeights = cloneCausalBaseline();
+    let causalWeightDeltas = { height: 0.0, holes: 0.0, bumpiness: 0.0, lines: 0.0 };
+    let currentVFE = 0;
+
+    const SHAPES = Object.freeze({
+      I: [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]],
+      O: [[0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+      T: [[0, 1, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+      S: [[0, 1, 1, 0], [1, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+      Z: [[1, 1, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+      J: [[1, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+      L: [[0, 0, 1, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+    });
+    const SHAPE_KEYS = Object.keys(SHAPES);
+    const SHAPE_COLORS = Object.freeze({
+      I: "#06b6d4", O: "#eab308", T: "#a855f7", S: "#22c55e", Z: "#ef4444", J: "#3b82f6", L: "#f97316"
+    });
+
+    // ==========================================
+    // LAYER 1: PURE ISOLATED GAME SUBSTRATE
+    // ==========================================
+    let board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+    let activePiece = null;
+    let nextShapeKey = SHAPE_KEYS[Math.floor(Math.random() * SHAPE_KEYS.length)];
+    let totalLinesCleared = 0;
+    let classicScore = 0;
+    let globalStep = 0;
+    let lineFlashTicks = 0;
+    let flashRows = [];
+
+    // ==========================================
+    // LAYER 2: THERMODYNAMIC COGNITIVE NEEDLE
+    // ==========================================
+    let energyPool = 5000.0;
+    let metabolicScale = 1.0;
+    let mode = "IDLE"; 
+    let demoFrozen = false;
+    let hhm = null;
+    let layer2Granite = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+    let clockPaused = false;
+    let gravityTimer = null;
+    let targetTrajectoryPlan = null;
+    /** Environment external player target (Layer-1 conduit only; never Layer-2 plan) */
+    let environmentTargetPlan = null;
+    /** Layer-2 conductive channel: every cell visited during active piece descent */
+    let pieceTrajectoryTrace = new Set();
+    let vetoLogLatch = false;
+
+    const els = {
+      log: document.getElementById("log-output"),
+      status: document.getElementById("m-status"),
+      entropy: document.getElementById("m-entropy"),
+      compression: document.getElementById("m-compression"),
+      vfe: document.getElementById("m-vfe"),
+      l2: document.getElementById("m-l2"),
+      energy: document.getElementById("m-energy"),
+      lines: document.getElementById("m-lines"),
+      classic: document.getElementById("m-classic"),
+      clockRatio: document.getElementById("m-clock-ratio"),
+      metabolicEff: document.getElementById("m-metabolic-eff"),
+      causalWHeight: document.getElementById("causal-w-height"),
+      causalWHoles: document.getElementById("causal-w-holes"),
+      causalWBumpiness: document.getElementById("causal-w-bumpiness"),
+      causalWLines: document.getElementById("causal-w-lines"),
+      causalDHeight: document.getElementById("causal-d-height"),
+      causalDHoles: document.getElementById("causal-d-holes"),
+      causalDBumpiness: document.getElementById("causal-d-bumpiness"),
+      causalDLines: document.getElementById("causal-d-lines"),
+      causalLiveHoles: document.getElementById("causal-live-holes"),
+      causalLiveHeight: document.getElementById("causal-live-height"),
+      causalLiveBumpiness: document.getElementById("causal-live-bumpiness"),
+      causalLiveNearLines: document.getElementById("causal-live-near-lines"),
+      phase: document.getElementById("m-phase"),
+      metaScale: document.getElementById("metabolic-scale"),
+      metaVal: document.getElementById("meta-val"),
+      btnReset: document.getElementById("btn-reset"),
+      btnDemo: document.getElementById("btn-demo"),
+      btnActive: document.getElementById("btn-active"),
+      btnPause: document.getElementById("btn-pause"),
+      boardCanvas: document.getElementById("board-canvas"),
+      agentCanvas: document.getElementById("agent-canvas"),
+      agentMirrorStatus: document.getElementById("agent-mirror-status"),
+      previewCanvas: document.getElementById("preview-canvas"),
+      gLeft: document.getElementById("ctrl-g-left"),
+      gRight: document.getElementById("ctrl-g-right"),
+      gRot: document.getElementById("ctrl-g-rot"),
+      gDrop: document.getElementById("ctrl-g-drop"),
+      nLeft: document.getElementById("ctrl-n-left"),
+      nRight: document.getElementById("ctrl-n-right"),
+      nRot: document.getElementById("ctrl-n-rot"),
+      nDrop: document.getElementById("ctrl-n-drop"),
+    };
+
+    const boardCtx = els.boardCanvas.getContext("2d");
+    const agentCtx = els.agentCanvas.getContext("2d");
+    const previewCtx = els.previewCanvas.getContext("2d");
+
+    /** Read-only mirror alphas — Layer-2 agent glass (does not affect Layer-1 physics) */
+    const AGENT_MIRROR_ALPHA = Object.freeze({
+      grid: 0.22,
+      substrate: 0.32,
+      granite: 0.55,
+      trace: 0.5,
+      activePiece: 0.42,
+      t1Delta: 0.26,
+      ghostPlan: 0.58,
+      /** Inhibitory VETO corridor — locked at 0.24 per cognitive rendering spec */
+      ghostVeto: 0.24,
+    });
+
+    function rgbaFromHex(hex, alpha) {
+      const h = hex.replace("#", "");
+      const r = parseInt(h.slice(0, 2), 16);
+      const g = parseInt(h.slice(2, 4), 16);
+      const b = parseInt(h.slice(4, 6), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    function cellFilled(cell) {
+      return cell !== 0 && cell !== "0" && cell !== false && cell != null;
+    }
+
+    function landingRowOnBoard(substrateBoard, matrix, col) {
+      let r = 0;
+      if (collidesOnBoardSimulation(substrateBoard, r, col, matrix)) return null;
+      while (r < ROWS - 1) {
+        if (collidesOnBoardSimulation(substrateBoard, r + 1, col, matrix)) break;
+        r++;
+      }
+      return r;
+    }
+
+    function fillMirrorCell(ctx, col, row, fillStyle) {
+      ctx.fillStyle = fillStyle;
+      ctx.fillRect(col * BLOCK_SIZE + 1, row * BLOCK_SIZE + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+    }
+
+    function syncAgentMirrorStatus() {
+      if (!els.agentMirrorStatus) return;
+      if (mode === "DEMO_ABSORPTION") {
+        els.agentMirrorStatus.textContent = "Passive camera — syncing environment button matrix";
+        return;
+      }
+      if (mode === "IDLE" || !targetTrajectoryPlan) {
+        els.agentMirrorStatus.textContent = mode === "IDLE"
+          ? "Awaiting agent plan"
+          : "No trajectory lock — spawn or reset";
+        return;
+      }
+      const { col, rot, veto } = targetTrajectoryPlan;
+      if (veto && mode === "ACTIVE_MINIMIZATION") {
+        els.agentMirrorStatus.textContent = `VETO · ghost col ${col} rot ${rot} (suppressed)`;
+        return;
+      }
+      const tag = mode === "DEMO_ABSORPTION" ? "Demo" : "VFE needle";
+      const vfeBit = mode === "ACTIVE_MINIMIZATION" && targetTrajectoryPlan.vfe != null
+        ? ` · VFE ${targetTrajectoryPlan.vfe.toFixed(2)}`
+        : "";
+      els.agentMirrorStatus.textContent = `${tag} · col ${col} rot ${rot}${vfeBit}`;
+    }
+
+    function appendLog(msg) {
+      const line = document.createElement("div");
+      line.textContent = msg;
+      els.log.appendChild(line);
+      els.log.scrollTop = els.log.scrollHeight;
+    }
+
+    function recordActivePieceFootprint() {
+      if (!activePiece) return;
+      const { row, col, matrix } = activePiece;
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (!matrix[r][c]) continue;
+          const br = row + r;
+          const bc = col + c;
+          if (br >= 0 && br < ROWS && bc >= 0 && bc < COLS) {
+            pieceTrajectoryTrace.add(`${br},${bc}`);
+          }
+        }
+      }
+    }
+
+    function solidifySymmetricTrajectoryCollapse() {
+      for (const cellKey of pieceTrajectoryTrace) {
+        const sep = cellKey.indexOf(",");
+        const br = Number(cellKey.slice(0, sep));
+        const bc = Number(cellKey.slice(sep + 1));
+        if (br < 0 || br >= ROWS || bc < 0 || bc >= COLS) continue;
+        if (!layer2Granite[br][bc]) {
+          layer2Granite[br][bc] = true;
+          hhm.addTransition({ x: bc, y: br }, { x: COLS - 1 - bc, y: br });
+        }
+      }
+      pieceTrajectoryTrace.clear();
+    }
+
+    // ==========================================
+    // CORE LAYER 1 GAME LOGIC FUNCTIONS
+    // ==========================================
+    function rotateMatrix(m) {
+      const n = m.length;
+      const out = Array.from({ length: n }, () => Array(n).fill(0));
+      for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) { out[c][n - 1 - r] = m[r][c]; }
+      }
+      return out;
+    }
+
+    function shapeAtRotation(key, rot) {
+      let m = SHAPES[key].map(row => row.slice());
+      for (let i = 0; i < rot % 4; i++) m = rotateMatrix(m);
+      return m;
+    }
+
+    function collides(row, col, matrix, b = board) {
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (matrix[r][c] !== 0) {
+            const br = row + r;
+            const bc = col + c;
+            if (bc < 0 || bc >= COLS || br >= ROWS) return true;
+            if (br >= 0 && b[br][bc]) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function dynamicAlphaDivider() {
+      const accel = Math.min(12, totalLinesCleared * 2);
+      return Math.max(8, ALPHA_STEP_DIVIDER - accel);
+    }
+
+    function handleBoardSaturated(reason) {
+      mode = "IDLE";
+      activePiece = null;
+      targetTrajectoryPlan = null;
+      environmentTargetPlan = null;
+      stopGravityClock();
+      appendLog(`[Game Over] ${reason}`);
+      els.btnDemo.disabled = false;
+      els.btnActive.disabled = demoFrozen ? false : true;
+      syncGravityClockLabel();
+      updateMetrics();
+      drawAll();
+    }
+
+    function spawnPiece() {
+      const key = nextShapeKey;
+      nextShapeKey = SHAPE_KEYS[Math.floor(Math.random() * SHAPE_KEYS.length)];
+      activePiece = {
+        key,
+        rot: 0,
+        row: 0,
+        col: SPAWN_COL,
+        matrix: shapeAtRotation(key, 0)
+      };
+      if (collides(activePiece.row, activePiece.col, activePiece.matrix)) {
+        handleBoardSaturated("Spawn collision — matrix saturated at crown");
+        return false;
+      }
+      pieceTrajectoryTrace = new Set();
+      recordActivePieceFootprint();
+      return true;
+    }
+
+    // ==========================================
+    // LAYER 1: PHYSICAL SUBSTRATE (button matrix ingress only)
+    // ==========================================
+    function layer1ExecutePhysicalAction(action) {
+      if (!activePiece) return false;
+      flashInterfaceButton(action, "blue");
+      if (action === "LEFT") {
+        if (!collides(activePiece.row, activePiece.col - 1, activePiece.matrix, board)) {
+          activePiece.col--;
+          recordActivePieceFootprint();
+          return true;
+        }
+      } else if (action === "RIGHT") {
+        if (!collides(activePiece.row, activePiece.col + 1, activePiece.matrix, board)) {
+          activePiece.col++;
+          recordActivePieceFootprint();
+          return true;
+        }
+      } else if (action === "ROTATE") {
+        const nextRot = (activePiece.rot + 1) % 4;
+        const nextMatrix = shapeAtRotation(activePiece.key, nextRot);
+        if (!collides(activePiece.row, activePiece.col, nextMatrix, board)) {
+          activePiece.rot = nextRot;
+          activePiece.matrix = nextMatrix;
+          recordActivePieceFootprint();
+          return true;
+        }
+      } else if (action === "DROP") {
+        let dropCounter = 0;
+        while (!collides(activePiece.row + 1, activePiece.col, activePiece.matrix, board)) {
+          activePiece.row++;
+          recordActivePieceFootprint();
+          dropCounter++;
+        }
+        appendLog(`[Action Execute] Hard Drop engaged. Dropped ${dropCounter} rows instantly.`);
+        lockAndClearProcess();
+        return true;
+      }
+      return false;
+    }
+
+    function layer1BindButtonMatrix(action, gameButtonEl) {
+      gameButtonEl.addEventListener("click", () => {
+        if (layer1ExecutePhysicalAction(action)) {
+          updateMetrics();
+          drawAll();
+        }
+      });
+    }
+
+    // ==========================================
+    // ENVIRONMENT: demo auto-player (Layer-1 button conduit only)
+    // ==========================================
+    function environmentEmitLayer1Button(action) {
+      if (mode !== "DEMO_ABSORPTION") return;
+      const buttonMap = {
+        LEFT: els.gLeft,
+        RIGHT: els.gRight,
+        ROTATE: els.gRot,
+        DROP: els.gDrop,
+      };
+      const target = buttonMap[action];
+      if (target) target.click();
+    }
+
+    function environmentProceduralLookahead(pieceKey) {
+      let best = { score: -Infinity, col: SPAWN_COL, rot: 0 };
+
+      for (let rot = 0; rot < 4; rot++) {
+        for (let col = -3; col < COLS; col++) {
+          const sim = simulatePlacement(pieceKey, rot, col);
+          if (!sim) continue;
+
+          const lines = potentialLinesCleared(sim);
+          const totalHeight = aggregateHeight(sim);
+          const holes = countHoles(sim);
+          const bump = surfaceBumpiness(sim);
+
+          let maxHeight = 0;
+          for (let c = 0; c < COLS; c++) {
+            for (let r = 0; r < ROWS; r++) {
+              if (sim[r][c]) {
+                maxHeight = Math.max(maxHeight, ROWS - r);
+                break;
+              }
+            }
+          }
+
+          const score =
+            lines * 2000 -
+            holes * 600 -
+            maxHeight * 50 -
+            totalHeight * 6 -
+            bump * 18;
+
+          if (score > best.score) {
+            best = { score, col, rot };
+          }
+        }
+      }
+      return { col: best.col, rot: best.rot };
+    }
+
+    function environmentAutoPlayerStep() {
+      if (mode !== "DEMO_ABSORPTION" || !activePiece) return;
+
+      if (!environmentTargetPlan) {
+        environmentTargetPlan = environmentProceduralLookahead(activePiece.key);
+      }
+
+      const targetCol = environmentTargetPlan.col;
+      const targetRot = environmentTargetPlan.rot;
+
+      if (activePiece.rot !== targetRot) {
+        environmentEmitLayer1Button("ROTATE");
+        return;
+      }
+      if (activePiece.col < targetCol) {
+        environmentEmitLayer1Button("RIGHT");
+        return;
+      }
+      if (activePiece.col > targetCol) {
+        environmentEmitLayer1Button("LEFT");
+        return;
+      }
+    }
+
+    // ==========================================
+    // LAYER 2: AGENT ROY (needle matrix egress → Layer-1 blue buttons)
+    // ==========================================
+    function layer2RoyEmitNeedleButton(action) {
+      if (mode !== "ACTIVE_MINIMIZATION") return;
+      const needleMap = {
+        LEFT: els.nLeft,
+        RIGHT: els.nRight,
+        ROTATE: els.nRot,
+        DROP: els.nDrop,
+      };
+      const target = needleMap[action];
+      if (target) target.click();
+    }
+
+    function layer2BindNeedleConduit(action, needleEl, gameButtonEl) {
+      needleEl.addEventListener("click", () => {
+        if (mode !== "ACTIVE_MINIMIZATION") return;
+        gameButtonEl.click();
+      });
+    }
+
+    function runAlphaGravityStep() {
+      if (!activePiece) return;
+      if (!collides(activePiece.row + 1, activePiece.col, activePiece.matrix, board)) {
+        activePiece.row++;
+        recordActivePieceFootprint();
+      } else {
+        lockAndClearProcess();
+      }
+    }
+
+    function lockAndClearProcess() {
+      recordActivePieceFootprint();
+      const { row, col, matrix, key } = activePiece;
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (matrix[r][c] !== 0) {
+            const br = row + r;
+            const bc = col + c;
+            if (br >= 0 && br < ROWS && bc >= 0 && bc < COLS) {
+              if (board[br][bc] === 0 || board[br][bc] === "0") board[br][bc] = key;
+            }
+          }
+        }
+      }
+      solidifySymmetricTrajectoryCollapse();
+      activePiece = null;
+      appendLog(`[Granite Lock] Saturated structure crystallized at baseline.`);
+
+      let preSnapshot = boardSensorSnapshot(board);
+
+      const fullRows = [];
+      for (let r = 0; r < ROWS; r++) {
+        if (board[r].every(cell => cell !== 0 && cell !== "0")) fullRows.push(r);
+      }
+
+      let clearedCount = fullRows.length;
+      if (clearedCount > 0) {
+        flashRows = fullRows.slice();
+        lineFlashTicks = 12;
+
+        for (const r of fullRows) {
+          for (let c = 0; c < COLS; c++) {
+            if (!layer2Granite[r][c]) {
+              layer2Granite[r][c] = true;
+              hhm.addTransition({ x: c, y: r }, { x: COLS - 1 - c, y: r });
+            }
+          }
+        }
+
+        const newBoard = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+        const newGranite = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+        let dst = ROWS - 1;
+        for (let r = ROWS - 1; r >= 0; r--) {
+          if (fullRows.includes(r)) continue;
+          newBoard[dst] = board[r].slice();
+          newGranite[dst] = layer2Granite[r].slice();
+          dst--;
+        }
+        board = newBoard;
+        layer2Granite = newGranite;
+
+        const capped = Math.min(4, clearedCount);
+        energyPool += LINE_REWARD[capped];
+        classicScore += CLASSIC_LINE_SCORE[capped];
+        totalLinesCleared += clearedCount;
+        appendLog(`[Row Clear] ${clearedCount} saturated row(s) purged · Classic +${CLASSIC_LINE_SCORE[capped]} · Energy +${LINE_REWARD[capped]}`);
+      }
+
+      if (preSnapshot && mode === "DEMO_ABSORPTION") {
+        const postSnapshot = boardSensorSnapshot(board);
+        preSnapshot.lines = 0;
+        postSnapshot.lines = clearedCount;
+        calibrateCausalWeights(preSnapshot, postSnapshot);
+      }
+
+      targetTrajectoryPlan = null;
+      environmentTargetPlan = null;
+      if (mode === "DEMO_ABSORPTION" && totalLinesCleared >= TARGET_DEMO_LINES_CLEARED) {
+        finishDemoAbsorption();
+      }
+    }
+
+    // ==========================================
+    // LAYER 2: ANALYTICAL MATHEMATICS & API CONTROLLER
+    // ==========================================
+    function boardSensorSnapshot(b) {
+      return {
+        height: aggregateHeight(b),
+        holes: countHoles(b),
+        bumpiness: surfaceBumpiness(b),
+        lines: 0,
+        entropy: matrixEntropyFromBoard(b),
+      };
+    }
+
+    function aggregateHeight(b) {
+      let sum = 0;
+      for (let c = 0; c < COLS; c++) {
+        for (let r = 0; r < ROWS; r++) {
+          if (b[r][c]) { sum += (ROWS - r); break; }
+        }
+      }
+      return sum;
+    }
+
+    function peakColumnHeight(b) {
+      let peak = 0;
+      for (let c = 0; c < COLS; c++) {
+        for (let r = 0; r < ROWS; r++) {
+          if (b[r][c]) {
+            peak = Math.max(peak, ROWS - r);
+            break;
+          }
+        }
+      }
+      return peak;
+    }
+
+    function dynamicThermodynamicThresholds(b) {
+      const peakHeight = peakColumnHeight(b);
+      const urgency = Math.max(0, peakHeight - 10) / 10;
+      const theta = BASE_THETA + urgency * 1500.0;
+      const maxDeltaIThreshold =
+        urgency > 0.4 ? 0 : Math.max(0.001, 0.08 * (1.0 - urgency));
+      return { theta, maxDeltaIThreshold, urgency, peakHeight };
+    }
+
+    function countHoles(b) {
+      let holes = 0;
+      for (let c = 0; c < COLS; c++) {
+        let blockSeen = false;
+        for (let r = 0; r < ROWS; r++) {
+          if (b[r][c]) blockSeen = true;
+          else if (blockSeen) holes++;
+        }
+      }
+      return holes;
+    }
+
+    function surfaceBumpiness(b) {
+      let bump = 0;
+      const heights = [];
+      for (let c = 0; c < COLS; c++) {
+        let h = 0;
+        for (let r = 0; r < ROWS; r++) {
+          if (b[r][c]) { h = ROWS - r; break; }
+        }
+        heights.push(h);
+      }
+      for (let c = 0; c < COLS - 1; c++) { bump += Math.abs(heights[c] - heights[c+1]); }
+      return bump;
+    }
+
+    function matrixEntropyFromBoard(b) {
+      const total = COLS * ROWS;
+      let filled = 0;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          if (b[r][c]) filled++;
+        }
+      }
+      const p1 = filled / total;
+      if (p1 <= 0 || p1 >= 1) return 0;
+      return -(p1 * Math.log2(p1) + (1 - p1) * Math.log2(1 - p1));
+    }
+
+    function matrixEntropyH() {
+      return matrixEntropyFromBoard(board);
+    }
+
+    function potentialLinesCleared(b) {
+      let n = 0;
+      for (let r = 0; r < ROWS; r++) {
+        if (b[r].every(cell => cell !== 0 && cell !== "0")) n++;
+      }
+      return n;
+    }
+
+    function purgeFullRowsFromVirtualBoard(simBoard) {
+      const fullRows = [];
+      for (let r = 0; r < ROWS; r++) {
+        if (simBoard[r].every(cell => cell !== 0 && cell !== "0")) fullRows.push(r);
+      }
+      if (fullRows.length === 0) return simBoard;
+      const newBoard = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+      let dst = ROWS - 1;
+      for (let r = ROWS - 1; r >= 0; r--) {
+        if (fullRows.includes(r)) continue;
+        newBoard[dst] = simBoard[r].slice();
+        dst--;
+      }
+      return newBoard;
+    }
+
+    function calculateStructuralNovelty(preBoard, postBoard) {
+      const dH = Math.abs(aggregateHeight(postBoard) - aggregateHeight(preBoard));
+      const dHole = Math.abs(countHoles(postBoard) - countHoles(preBoard));
+      const dBump = Math.abs(surfaceBumpiness(postBoard) - surfaceBumpiness(preBoard));
+      return dH * 0.02 + dHole * 0.25 + dBump * 0.05 + potentialLinesCleared(postBoard) * 0.5;
+    }
+
+    function simulatePlacement(key, rot, col) {
+      return simulatePlacementOnBoard(board, key, rot, col);
+    }
+
+    function simulatePlacementOnBoard(substrateBoard, key, rot, col) {
+      const matrix = shapeAtRotation(key, rot);
+      if (col < -3 || col >= COLS) return null;
+
+      let valid = false;
+      for (let pr = 0; pr < 4; pr++) {
+        for (let pc = 0; pc < 4; pc++) {
+          if (matrix[pr][pc]) {
+            const cc = col + pc;
+            if (cc >= 0 && cc < COLS) valid = true;
+          }
+        }
+      }
+      if (!valid) return null;
+      let r = 0;
+      if (collidesOnBoardSimulation(substrateBoard, r, col, matrix)) return null;
+      while (r < ROWS - 1) {
+        if (collidesOnBoardSimulation(substrateBoard, r + 1, col, matrix)) break;
+        r++;
+      }
+      const simBoard = substrateBoard.map(row => row.slice());
+      for (let pr = 0; pr < 4; pr++) {
+        for (let pc = 0; pc < 4; pc++) {
+          if (matrix[pr][pc]) {
+            const br = r + pr;
+            const bc = col + pc;
+            if (br >= 0 && br < ROWS && bc >= 0 && bc < COLS) simBoard[br][bc] = key;
+          }
+        }
+      }
+      return purgeFullRowsFromVirtualBoard(simBoard);
+    }
+
+    function collidesOnBoardSimulation(substrateBoard, row, col, matrix) {
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (matrix[r][c] !== 0) {
+            const br = row + r;
+            const bc = col + c;
+            if (bc < 0 || bc >= COLS || br >= ROWS) return true;
+            if (br >= 0 && substrateBoard[br][bc]) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function bestSecondStepVFEOnBoard(simBoard1, a2Key) {
+      let bestVfe = Infinity;
+      let bestBoard = null;
+      for (let rot = 0; rot < 4; rot++) {
+        for (let col = -3; col < COLS; col++) {
+          const simBoard2 = simulatePlacementOnBoard(simBoard1, a2Key, rot, col);
+          if (!simBoard2) continue;
+          const vfe2 = computeVFE(simBoard2);
+          if (vfe2 < bestVfe) {
+            bestVfe = vfe2;
+            bestBoard = simBoard2;
+          }
+        }
+      }
+      if (bestBoard === null) {
+        bestVfe = computeVFE(simBoard1);
+      }
+      return bestVfe;
+    }
+
+    function computeVFE(simB) {
+      return (
+        causalWeights.height * aggregateHeight(simB) +
+        causalWeights.holes * countHoles(simB) +
+        causalWeights.bumpiness * surfaceBumpiness(simB) -
+        causalWeights.lines * potentialLinesCleared(simB)
+      );
+    }
+
+    function autonomousVFETrajectory(key) {
+      const { theta, maxDeltaIThreshold, urgency } = dynamicThermodynamicThresholds(board);
+      const a2Key = nextShapeKey;
+      let bestValidPlan = null;
+      let bestVetoedPlan = null;
+
+      for (let rot = 0; rot < 4; rot++) {
+        for (let col = -3; col < COLS; col++) {
+          const simBoard1 = simulatePlacement(key, rot, col);
+          if (!simBoard1) continue;
+
+          const vfeT1 = computeVFE(simBoard1);
+          const vfeT2 = bestSecondStepVFEOnBoard(simBoard1, a2Key);
+          const fTotal = vfeT1 + PATH_VFE_GAMMA * vfeT2;
+          const structuralDeltaI = calculateStructuralNovelty(board, simBoard1);
+
+          const noveltyGate = urgency > 0.4 ? true : structuralDeltaI > maxDeltaIThreshold;
+          const veto = fTotal >= theta || !noveltyGate;
+
+          if (!veto) {
+            if (bestValidPlan === null || fTotal < bestValidPlan.vfe) {
+              bestValidPlan = {
+                vfe: fTotal,
+                vfeT1,
+                vfeT2,
+                col,
+                rot,
+                urgency,
+                theta,
+                veto: false,
+                compromise: false,
+              };
+            }
+          } else if (bestVetoedPlan === null || fTotal < bestVetoedPlan.vfe) {
+            bestVetoedPlan = {
+              vfe: fTotal,
+              vfeT1,
+              vfeT2,
+              col,
+              rot,
+              urgency,
+              theta,
+              veto: true,
+              compromise: false,
+            };
+          }
+        }
+      }
+
+      if (bestValidPlan) return bestValidPlan;
+
+      if (bestVetoedPlan && urgency > 0.2) {
+        return { ...bestVetoedPlan, veto: false, compromise: true };
+      }
+
+      return (
+        bestVetoedPlan || {
+          vfe: Infinity,
+          col: SPAWN_COL,
+          rot: 0,
+          veto: true,
+          urgency,
+          theta,
+          compromise: false,
+        }
+      );
+    }
+
+    function calibrateCausalWeights(pre, post) {
+      const lr = CAUSAL_CALIBRATION_LR;
+      const rewardSignal = Math.max(
+        0.05,
+        (pre.entropy - post.entropy) * 2.0 + (post.lines > 0 ? 15.0 : 0.0)
+      );
+      const penaltySignal = 1.0;
+      const before = { ...causalWeights };
+
+      if (post.height > pre.height) causalWeights.height += lr * penaltySignal;
+      else causalWeights.height -= lr * 0.2;
+
+      if (post.holes > pre.holes) causalWeights.holes += lr * penaltySignal * 3.5;
+      else causalWeights.holes -= lr * 0.4;
+
+      if (post.bumpiness > pre.bumpiness) causalWeights.bumpiness += lr * penaltySignal * 0.8;
+      else causalWeights.bumpiness -= lr * 0.3;
+
+      if (post.lines > 0) causalWeights.lines += lr * rewardSignal * 2.0;
+
+      causalWeights.height = Math.max(0.5, Math.min(15.0, causalWeights.height));
+      causalWeights.holes = Math.max(1.5, Math.min(15.0, causalWeights.holes));
+      causalWeights.bumpiness = Math.max(0.1, Math.min(15.0, causalWeights.bumpiness));
+      causalWeights.lines = Math.max(0.1, Math.min(15.0, causalWeights.lines));
+
+      causalWeightDeltas.height = causalWeights.height - before.height;
+      causalWeightDeltas.holes = causalWeights.holes - before.holes;
+      causalWeightDeltas.bumpiness = causalWeights.bumpiness - before.bumpiness;
+      causalWeightDeltas.lines = causalWeights.lines - before.lines;
+
+      appendLog(
+        `[Causal Calibration] w shifted -> h:${causalWeights.height.toFixed(3)}, ho:${causalWeights.holes.toFixed(3)}, b:${causalWeights.bumpiness.toFixed(3)}, l:${causalWeights.lines.toFixed(3)}`
+      );
+    }
+
+    // ==========================================
+    // SIGNAL CONDUIT MECHANICS & FLASHER INTERFACES
+    // ==========================================
+    function flashInterfaceButton(action, tone) {
+      let gEl = null;
+      let nEl = null;
+      if (action === "LEFT") {
+        gEl = els.gLeft;
+        nEl = els.nLeft;
+      } else if (action === "RIGHT") {
+        gEl = els.gRight;
+        nEl = els.nRight;
+      } else if (action === "ROTATE") {
+        gEl = els.gRot;
+        nEl = els.nRot;
+      } else if (action === "DROP") {
+        gEl = els.gDrop;
+        nEl = els.nDrop;
+      }
+      if (gEl && nEl) {
+        gEl.classList.add(tone === "blue" ? "active-blue" : "active-purple");
+        nEl.classList.add("active-purple");
+        setTimeout(() => {
+          gEl.classList.remove("active-blue", "active-purple");
+          nEl.classList.remove("active-purple");
+        }, 60);
+      }
+    }
+
+    function runDualClockEngine() {
+      globalStep += 1;
+      if (!activePiece) {
+        if (!spawnPiece()) return;
+        if (mode === "ACTIVE_MINIMIZATION") {
+          targetTrajectoryPlan = autonomousVFETrajectory(activePiece.key);
+          vetoLogLatch = false;
+          currentVFE = targetTrajectoryPlan.vfe;
+          if (!targetTrajectoryPlan.veto) {
+            const compromiseTag = targetTrajectoryPlan.compromise ? " · Thermodynamic Compromise" : "";
+            appendLog(
+              `[Active VFE Deep Path] Urgency: ${targetTrajectoryPlan.urgency.toFixed(2)}, Theta: ${targetTrajectoryPlan.theta.toFixed(1)}, Plan: Col ${targetTrajectoryPlan.col} · Composite VFE = ${currentVFE.toFixed(3)} (t+1=${targetTrajectoryPlan.vfeT1.toFixed(3)}, γ·t+2=${(PATH_VFE_GAMMA * targetTrajectoryPlan.vfeT2).toFixed(3)}) Rot ${targetTrajectoryPlan.rot}${compromiseTag}`
+            );
+          }
+        } else {
+          targetTrajectoryPlan = null;
+        }
+      }
+      if (activePiece && mode === "ACTIVE_MINIMIZATION" && targetTrajectoryPlan && targetTrajectoryPlan.veto) {
+        targetTrajectoryPlan = autonomousVFETrajectory(activePiece.key);
+        if (targetTrajectoryPlan.veto) {
+          if (!vetoLogLatch) {
+            appendLog(`[VETO ACTIVATED] Invariant protection engaged · Suppressing energy-inefficient actuator signal.`);
+            vetoLogLatch = true;
+          }
+        } else {
+          vetoLogLatch = false;
+        }
+      }
+      environmentAutoPlayerStep();
+      if (
+        activePiece &&
+        mode === "ACTIVE_MINIMIZATION" &&
+        targetTrajectoryPlan &&
+        !targetTrajectoryPlan.veto
+      ) {
+        if (activePiece.rot !== targetTrajectoryPlan.rot) {
+          layer2RoyEmitNeedleButton("ROTATE");
+        } else if (activePiece.col < targetTrajectoryPlan.col) {
+          layer2RoyEmitNeedleButton("RIGHT");
+        } else if (activePiece.col > targetTrajectoryPlan.col) {
+          layer2RoyEmitNeedleButton("LEFT");
+        }
+      }
+      const alphaDivider = dynamicAlphaDivider();
+      if (globalStep % alphaDivider === 0) {
+        runAlphaGravityStep();
+      }
+      updateMetrics();
+      drawAll();
+    }
+
+    function dualClockMasterTick() {
+      if (clockPaused) return;
+      if (mode === "IDLE" && !demoFrozen) return;
+      if (demoFrozen) return;
+
+      runDualClockEngine();
+    }
+
+    function updateCausalDiagnosticsPanel() {
+      els.causalWHeight.textContent = causalWeights.height.toFixed(3);
+      els.causalWHoles.textContent = causalWeights.holes.toFixed(3);
+      els.causalWBumpiness.textContent = causalWeights.bumpiness.toFixed(3);
+      els.causalWLines.textContent = causalWeights.lines.toFixed(3);
+
+      autoPaintDelta(els.causalDHeight, causalWeightDeltas.height);
+      autoPaintDelta(els.causalDHoles, causalWeightDeltas.holes);
+      autoPaintDelta(els.causalDBumpiness, causalWeightDeltas.bumpiness);
+      autoPaintDelta(els.causalDLines, causalWeightDeltas.lines);
+
+      els.causalLiveHoles.textContent = String(countHoles(board));
+      els.causalLiveHeight.textContent = String(aggregateHeight(board));
+      els.causalLiveBumpiness.textContent = String(surfaceBumpiness(board));
+      
+      let linesCount90 = 0;
+      for (let r = 0; r < ROWS; r++) {
+        let filled = 0;
+        for (let c = 0; c < COLS; c++) { if (board[r][c]) filled++; }
+        if (filled >= COLS - 1) linesCount90++;
+      }
+      els.causalLiveNearLines.textContent = String(linesCount90);
+    }
+
+    function autoPaintDelta(el, val) {
+      const sign = val > 0 ? "+" : "";
+      el.textContent = `(Δ: ${sign}${val.toFixed(3)})`;
+      el.classList.remove("positive", "negative");
+      if (val > 0) el.classList.add("positive");
+      else if (val < 0) el.classList.add("negative");
+    }
+
+    function updateMetrics() {
+      els.status.textContent = mode;
+      els.entropy.textContent = matrixEntropyH().toFixed(4) + " bits";
+      els.compression.textContent = "82.37%";
+      els.vfe.textContent = mode === "ACTIVE_MINIMIZATION" ? currentVFE.toFixed(3) : "—";
+      
+      let l2Count = 0;
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) { if (layer2Granite[r][c]) l2Count++; }
+      }
+      els.l2.textContent = String(l2Count);
+      els.energy.textContent = energyPool.toFixed(1);
+      els.classic.textContent = String(classicScore);
+      els.lines.textContent = String(totalLinesCleared);
+      els.clockRatio.textContent = `${dynamicAlphaDivider()}:1 (Gamma/Alpha)`;
+      els.metabolicEff.textContent = "—";
+      updateCausalDiagnosticsPanel();
+    }
+
+    function drawBoard() {
+      boardCtx.fillStyle = "#000000";
+      boardCtx.fillRect(0, 0, els.boardCanvas.width, els.boardCanvas.height);
+      boardCtx.save();
+      boardCtx.translate(0.5, 0.5);
+      const gridW = COLS * BLOCK_SIZE;
+      const gridH = ROWS * BLOCK_SIZE;
+      boardCtx.strokeStyle = "#1e293b";
+      boardCtx.lineWidth = 1;
+      boardCtx.beginPath();
+      for (let c = 0; c <= COLS; c++) {
+        const x = c * BLOCK_SIZE;
+        boardCtx.moveTo(x, 0);
+        boardCtx.lineTo(x, gridH);
+      }
+      for (let r = 0; r <= ROWS; r++) {
+        const y = r * BLOCK_SIZE;
+        boardCtx.moveTo(0, y);
+        boardCtx.lineTo(gridW, y);
+      }
+      boardCtx.stroke();
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const x = c * BLOCK_SIZE;
+          const y = r * BLOCK_SIZE;
+          const cell = board[r][c];
+          if (cell) {
+            const flash = lineFlashTicks > 0 && flashRows.includes(r);
+            const granite = layer2Granite[r][c];
+            boardCtx.fillStyle = flash || granite ? "#a855f7" : SHAPE_COLORS[cell] || "#64748b";
+            boardCtx.fillRect(x + 1, y + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+          }
+        }
+      }
+      if (activePiece) {
+        const { row, col, matrix, key } = activePiece;
+        for (let r = 0; r < 4; r++) {
+          for (let c = 0; c < 4; c++) {
+            if (matrix[r][c]) {
+              const br = row + r;
+              const bc = col + c;
+              if (br >= 0 && br < ROWS && bc >= 0 && bc < COLS) {
+                boardCtx.fillStyle = SHAPE_COLORS[key];
+                boardCtx.fillRect(bc * BLOCK_SIZE + 1, br * BLOCK_SIZE + 1, BLOCK_SIZE - 2, BLOCK_SIZE - 2);
+              }
+            }
+          }
+        }
+      }
+      boardCtx.restore();
+      if (lineFlashTicks > 0) lineFlashTicks--;
+    }
+
+    function drawPreview() {
+      previewCtx.fillStyle = "#0f172a";
+      previewCtx.fillRect(0, 0, els.previewCanvas.width, els.previewCanvas.height);
+
+      previewCtx.strokeStyle = "#38bdf8";
+      previewCtx.lineWidth = 2;
+      previewCtx.strokeRect(0, 0, els.previewCanvas.width, els.previewCanvas.height);
+
+      if (!nextShapeKey) return;
+
+      const matrix = shapeAtRotation(nextShapeKey, 0);
+
+      const PREV_BLOCK_SIZE = 24;
+      const START_X = 27;
+      const START_Y = 11;
+
+      for (let r = 0; r < 2; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (matrix[r][c]) {
+            const px = START_X + c * PREV_BLOCK_SIZE;
+            const py = START_Y + r * PREV_BLOCK_SIZE;
+
+            previewCtx.fillStyle = SHAPE_COLORS[nextShapeKey];
+            previewCtx.fillRect(px + 1, py + 1, PREV_BLOCK_SIZE - 2, PREV_BLOCK_SIZE - 2);
+          }
+        }
+      }
+    }
+
+    function drawAgentMirror() {
+      const ctx = agentCtx;
+      const w = els.agentCanvas.width;
+      const h = els.agentCanvas.height;
+      const gridW = COLS * BLOCK_SIZE;
+      const gridH = ROWS * BLOCK_SIZE;
+      if (w !== gridW || h !== gridH) {
+        console.warn(
+          `[AgentMirror] Canvas ${w}x${h} vs grid ${gridW}x${gridH} (BLOCK_SIZE=${BLOCK_SIZE}) — check dual-crystal layout.`
+        );
+      }
+
+      const MONOLITH_CYAN = "6, 182, 212";
+      const PASSIVE_SILHOUETTE = "rgba(226, 232, 240, 0.24)";
+      const T2_LASER_STROKE = "rgba(168, 85, 247, 0.92)";
+      const T1_LASER_STROKE = "rgba(6, 182, 212, 0.88)";
+
+      const enlightenmentScale =
+        1 + Math.min(totalLinesCleared / Math.max(1, TARGET_DEMO_LINES_CLEARED), 1.5) * 0.28;
+
+      function monolithRowAlpha(row) {
+        const stabilityFactor = row / Math.max(1, ROWS - 1);
+        const baseAlpha = 0.15 + stabilityFactor * 0.7;
+        return Math.min(0.95, baseAlpha * enlightenmentScale);
+      }
+
+      function paintMonolithKnowledge() {
+        for (let r = 0; r < ROWS; r++) {
+          const a = monolithRowAlpha(r);
+          for (let c = 0; c < COLS; c++) {
+            const occupied = cellFilled(board[r][c]);
+            if (occupied) {
+              fillMirrorCell(ctx, c, r, `rgba(${MONOLITH_CYAN}, ${a.toFixed(3)})`);
+            }
+          }
+        }
+      }
+
+      function paintPassiveSilhouetteAt(col, row) {
+        fillMirrorCell(ctx, col, row, PASSIVE_SILHOUETTE);
+      }
+
+      function strokeLaserCell(col, row, strokeStyle, lineWidth) {
+        const x = col * BLOCK_SIZE;
+        const y = row * BLOCK_SIZE;
+        const inset = 2;
+        ctx.save();
+        ctx.strokeStyle = strokeStyle;
+        ctx.lineWidth = lineWidth;
+        ctx.strokeRect(x + inset, y + inset, BLOCK_SIZE - inset * 2, BLOCK_SIZE - inset * 2);
+        ctx.restore();
+      }
+
+      function resolveBestT2Projection(simBoard1, a2Key) {
+        let bestVfe = Infinity;
+        let best = null;
+        for (let rot = 0; rot < 4; rot++) {
+          for (let col = -3; col < COLS; col++) {
+            const simBoard2Raw = simulatePlacementOnBoard(simBoard1, a2Key, rot, col);
+            if (!simBoard2Raw) continue;
+            const simBoard2 = purgeFullRowsFromVirtualBoard(simBoard2Raw);
+            const vfe2 = computeVFE(simBoard2);
+            if (vfe2 < bestVfe) {
+              bestVfe = vfe2;
+              best = { rot, col, simBoard2 };
+            }
+          }
+        }
+        return best;
+      }
+
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.save();
+      ctx.translate(0.5, 0.5);
+      ctx.globalAlpha = AGENT_MIRROR_ALPHA.grid;
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let c = 0; c <= COLS; c++) {
+        const x = c * BLOCK_SIZE;
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, gridH);
+      }
+      for (let r = 0; r <= ROWS; r++) {
+        const y = r * BLOCK_SIZE;
+        ctx.moveTo(0, y);
+        ctx.lineTo(gridW, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+      ctx.globalAlpha = 1;
+
+      const agentGlassCol = els.agentCanvas.closest(".agent-glass");
+
+      if (mode === "DEMO_ABSORPTION") {
+        if (agentGlassCol) agentGlassCol.classList.remove("veto-active");
+
+        paintMonolithKnowledge();
+
+        for (const cellKey of pieceTrajectoryTrace) {
+          const sep = cellKey.indexOf(",");
+          const br = Number(cellKey.slice(0, sep));
+          const bc = Number(cellKey.slice(sep + 1));
+          if (br >= 0 && br < ROWS && bc >= 0 && bc < COLS) {
+            paintPassiveSilhouetteAt(bc, br);
+          }
+        }
+
+        if (activePiece) {
+          const { row, col, matrix } = activePiece;
+          for (let pr = 0; pr < 4; pr++) {
+            for (let pc = 0; pc < 4; pc++) {
+              if (!matrix[pr][pc]) continue;
+              const br = row + pr;
+              const bc = col + pc;
+              if (br >= 0 && br < ROWS && bc >= 0 && bc < COLS) {
+                paintPassiveSilhouetteAt(bc, br);
+              }
+            }
+          }
+        }
+
+        syncAgentMirrorStatus();
+        return;
+      }
+
+      if (mode === "ACTIVE_MINIMIZATION") {
+        paintMonolithKnowledge();
+
+        for (const cellKey of pieceTrajectoryTrace) {
+          const sep = cellKey.indexOf(",");
+          const br = Number(cellKey.slice(0, sep));
+          const bc = Number(cellKey.slice(sep + 1));
+          if (br >= 0 && br < ROWS && bc >= 0 && bc < COLS) {
+            paintPassiveSilhouetteAt(bc, br);
+          }
+        }
+
+        if (activePiece) {
+          const { row, col, matrix } = activePiece;
+          for (let pr = 0; pr < 4; pr++) {
+            for (let pc = 0; pc < 4; pc++) {
+              if (!matrix[pr][pc]) continue;
+              const br = row + pr;
+              const bc = col + pc;
+              if (br >= 0 && br < ROWS && bc >= 0 && bc < COLS) {
+                paintPassiveSilhouetteAt(bc, br);
+              }
+            }
+          }
+        }
+
+        const vetoActive =
+          targetTrajectoryPlan && targetTrajectoryPlan.veto === true;
+        if (agentGlassCol) {
+          agentGlassCol.classList.toggle("veto-active", vetoActive);
+        }
+
+        if (activePiece && targetTrajectoryPlan && !vetoActive) {
+          const key = activePiece.key;
+          const { col, rot } = targetTrajectoryPlan;
+          const matrix = shapeAtRotation(key, rot);
+          const simBoard1 = simulatePlacement(key, rot, col);
+
+          const landingRow = landingRowOnBoard(board, matrix, col);
+          const CYAN_INTENT_FILL = "rgba(6, 182, 212, 0.40)";
+          const CYAN_HORIZON_STROKE = "rgba(6, 182, 212, 0.85)";
+
+          if (landingRow !== null) {
+            for (let pr = 0; pr < 4; pr++) {
+              for (let pc = 0; pc < 4; pc++) {
+                if (!matrix[pr][pc]) continue;
+                const br = landingRow + pr;
+                const bc = col + pc;
+                if (br >= 0 && br < ROWS && bc >= 0 && bc < COLS) {
+                  fillMirrorCell(ctx, bc, br, CYAN_INTENT_FILL);
+                }
+              }
+            }
+          }
+
+          if (simBoard1) {
+            const t2 = resolveBestT2Projection(simBoard1, nextShapeKey);
+            if (t2) {
+              const t2Matrix = shapeAtRotation(nextShapeKey, t2.rot);
+              const t2Landing = landingRowOnBoard(board, t2Matrix, t2.col);
+              if (t2Landing !== null) {
+                for (let pr = 0; pr < 4; pr++) {
+                  for (let pc = 0; pc < 4; pc++) {
+                    if (!t2Matrix[pr][pc]) continue;
+                    const br = t2Landing + pr;
+                    const bc = t2.col + pc;
+                    // Pure layout viewport guard: ensure strokes fall inside the 10x20 visible grid boundaries
+                    if (br >= 0 && br < ROWS && bc >= 0 && bc < COLS) {
+                      strokeLaserCell(bc, br, CYAN_HORIZON_STROKE, 2);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        syncAgentMirrorStatus();
+        return;
+      }
+
+      if (agentGlassCol) agentGlassCol.classList.remove("veto-active");
+      paintMonolithKnowledge();
+      syncAgentMirrorStatus();
+    }
+
+    function drawAll() {
+      drawBoard();
+      drawAgentMirror();
+      drawPreview();
+    }
+
+    function syncGravityClockLabel() {
+      /* Gamma clock fixed at GAMMA_INTERVAL_MS; clock ratio shown in telemetry panel. */
+    }
+
+    function startGravityClock() {
+      stopGravityClock();
+      syncGravityClockLabel();
+      gravityTimer = setInterval(dualClockMasterTick, GAMMA_INTERVAL_MS);
+    }
+
+    function stopGravityClock() {
+      if (gravityTimer !== null) { clearInterval(gravityTimer); gravityTimer = null; }
+    }
+
+    function finishDemoAbsorption() {
+      demoFrozen = true;
+      mode = "IDLE";
+      stopGravityClock();
+      appendLog("Demo target satisfied (5 rows captured) — Ready for autonomous minimization");
+      els.btnActive.disabled = false;
+      els.btnDemo.disabled = false;
+      els.phase.textContent = "Demo complete — board frozen · active transfer unlocked";
+      syncGravityClockLabel();
+      updateMetrics();
+      drawAll();
+    }
+
+    function resetCrystal() {
+      stopGravityClock();
+      board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+      layer2Granite = Array.from({ length: ROWS }, () => Array(COLS).fill(false));
+      energyPool = 5000.0;
+      mode = "IDLE";
+
+      causalWeights = cloneCausalBaseline();
+      causalWeightDeltas = { height: 0.0, holes: 0.0, bumpiness: 0.0, lines: 0.0 };
+
+      currentVFE = 0;
+      totalLinesCleared = 0;
+      classicScore = 0;
+      demoFrozen = false;
+      activePiece = null;
+      targetTrajectoryPlan = null;
+      environmentTargetPlan = null;
+      pieceTrajectoryTrace = new Set();
+      vetoLogLatch = false;
+      globalStep = 0;
+      nextShapeKey = SHAPE_KEYS[Math.floor(Math.random() * SHAPE_KEYS.length)];
+      clockPaused = false;
+      els.log.innerHTML = "";
+      appendLog("[Reset] Substrate cleared · causal weights reset to baseline anchors.");
+      els.btnDemo.disabled = false;
+      els.btnActive.disabled = demoFrozen ? false : true;
+      syncGravityClockLabel();
+      updateMetrics();
+      drawAll();
+    }
+
+    function startDemo() {
+      if (demoFrozen) return;
+      activePiece = null;
+      targetTrajectoryPlan = null;
+      environmentTargetPlan = null;
+      causalWeights = cloneCausalBaseline();
+      causalWeightDeltas = { height: 0.0, holes: 0.0, bumpiness: 0.0, lines: 0.0 };
+      mode = "DEMO_ABSORPTION";
+      globalStep = 0;
+      els.btnDemo.disabled = true;
+      els.btnActive.disabled = true;
+      appendLog("[Phase 1] DEMO_ABSORPTION — environment auto-player · Layer-1 button conduit active.");
+      els.phase.textContent = "Demo absorption — external environment drives blue button matrix";
+      startGravityClock();
+    }
+
+    function startActive() {
+      activePiece = null;
+      targetTrajectoryPlan = null;
+
+      // UNBLOCKING INVARIANT: Clear demo-freeze states to open execution channels for Layer-2 Actuators
+      demoFrozen = false;
+      clockPaused = false;
+
+      mode = "ACTIVE_MINIMIZATION";
+      globalStep = 0;
+      els.btnActive.disabled = true;
+      els.btnDemo.disabled = true;
+      appendLog("[Phase 2] ROY CORE: Autonomous VFE active minimization engaged.");
+      els.phase.textContent = "Active minimization — learned VFE needle + HHM compression corridor";
+      syncGravityClockLabel();
+      startGravityClock();
+    }
+
+    els.metaScale.addEventListener("input", () => {
+      metabolicScale = Number(els.metaScale.value);
+      els.metaVal.textContent = metabolicScale.toFixed(2);
+    });
+    els.btnReset.addEventListener("click", resetCrystal);
+    els.btnDemo.addEventListener("click", startDemo);
+    els.btnActive.addEventListener("click", startActive);
+    els.btnPause.addEventListener("click", () => {
+      clockPaused = !clockPaused;
+      appendLog(clockPaused ? "[Clock] Gravity paused" : "[Clock] Gravity resumed");
+    });
+
+    layer1BindButtonMatrix("LEFT", els.gLeft);
+    layer1BindButtonMatrix("RIGHT", els.gRight);
+    layer1BindButtonMatrix("ROTATE", els.gRot);
+    layer1BindButtonMatrix("DROP", els.gDrop);
+
+    layer2BindNeedleConduit("LEFT", els.nLeft, els.gLeft);
+    layer2BindNeedleConduit("RIGHT", els.nRight, els.gRight);
+    layer2BindNeedleConduit("ROTATE", els.nRot, els.gRot);
+    layer2BindNeedleConduit("DROP", els.nDrop, els.gDrop);
+
+    // causalWeights anchor at baseline; resetCrystal and startDemo restore CAUSAL_BASELINE_ANCHORS.
+    hhm = new HierarchicalHippocampalMap({ logger: () => {} });
+    resetCrystal();
+  </script>
+</body>
+</html>
