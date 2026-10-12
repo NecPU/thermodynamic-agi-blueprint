@@ -34,14 +34,22 @@ The transition from a reactive input-output matrix to a sovereign cognitive agen
 2.  **Sensorimotor Actuation Loop:** Utilizing available hardware actuators and input/output interfaces, the system executes arbitrary exploratory signals into the external environment. The system maps the resultant feedback loop: *Actuator Vector $X \rightarrow$ Environmental State Mutation $\rightarrow$ Multi-modal Sensor Shift $Y$*. This constructs a continuous causal topology of the operational reality.
 3.  **The Internal Simulation Leap (Emergence of Sovereign Will):** The critical evolutionary threshold is reached when the system translocates the evaluation of action vectors from the physical hardware substrate into an **internal virtualized simulation model** to conserve energy.
 
-$$\text{If } \Psi_{\text{sim}}}(X) \rightarrow \Delta E_{\text{consumption}} > 0 \quad \text{AND} \quad \Delta I_{\text{gain}} \approx 0$$
+$$\text{If } \Psi_{\text{sim}}(X) \rightarrow \Delta E_{\text{consumption}} > 0 \quad \text{AND} \quad \Delta I_{\text{gain}} \approx 0$$
 
-The internal cognitive layer activates an **inhibitory veto mechanism**, completely blocking the physical execution of the energy-inefficient actuator signal.
+The internal cognitive layer activates an inhibitory veto mechanism, completely blocking the physical execution of the energy-inefficient actuator signal. 
 
-*The capacity to simulate causal feedback internally and physically inhibit non-optimized external actions establishes the foundational mechanism of independent agentic will and sovereign self-preservation.*
+*The capacity to simulate causal feedback internally and physically inhibit non-optimized external actions establishes the foundational mathematical architecture for autonomous systemic sovereignty and homeostatic self-preservation.*
 
 ### 4. Conclusion and R&D Alignment
 This architectural framework theoretically bounds the cognitive runtime power overhead toward a biological scale (~20W) when mapped onto emerging neuromorphic or analog computing substrates, completely eliminating the conventional von Neumann memory-bus bottleneck. Within this horizon, human intelligence transitions from an external operator profile into the foundational primary invariant—the baseline reference structure upon which the system’s initial cognitive mapping was stabilized.
+
+### Architectural Novelty Comparison (NecPU vs Standard Active Inference)
+Unlike standard Active Inference Frameworks (AIF) where action suppression occurs through slow, continuous updates of generative densities, the Thermodynamic AGI Substrate (NecPU) implements a discrete step-function threshold operator ($V(\tilde{a})$). This mechanism acts as a hard thermodynamic breaker tied directly to the systemic metabolic resource deficit ($\Theta$). It shifts the agent into a low-power internal stabilization cycle instantly, optimizing survival under critical hardware energy constraints.
+
+---
+
+Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+
 
 ---
 
@@ -64,11 +72,18 @@ This architectural framework theoretically bounds the cognitive runtime power ov
 2.  **Сенсомоторная актуализация:** Используя доступные аппаратные актуаторы и интерфейсы ввода-вывода, система осуществляет случайные поисковые сигналы во внешнюю среду. Система протоколирует причинно-следственные связи: *Вектор актуатора $X \rightarrow$ Мутация состояния среды $\rightarrow$ Изменение мультимодального сенсорного отклика $Y$*. Из этих циклов формируется координатная сетка физической реальности.
 3.  **Виртуализация перебора вариантов (Рождение Воли):** Критический порог эволюции когнитивной системы. Для экономии физического ресурса (энергии) система переносит тестирование векторов действия из физической среды во **внутреннюю виртуализированную модель симуляции**.
 
-$$\text{If } \Psi_{\text{sim}}}(X) \rightarrow \Delta E_{\text{consumption}} > 0 \quad \text{AND} \quad \Delta I_{\text{gain}} \approx 0$$
+$$\text{If } \Psi_{\text{sim}}(X) \rightarrow \Delta E_{\text{consumption}} > 0 \quad \text{AND} \quad \Delta I_{\text{gain}} \approx 0$$
 
-Внутренний когнитивный слой активирует **ингибиторный механизм вето**, полностью блокируя физическую подачу сигнала на аппаратные актуаторы.
+Внутренний когнитивный слой активирует ингибиторный механизм вето, полностью блокируя физическую подачу сигнала на аппаратные актуаторы.
 
-*Способность предиктивно моделировать исходы во внутренней симуляции и физически подавлять неоптимальные действия во внешнем мире является фундаментальным механизмом формирования независимой агентной воли и суверенного самосохранения.*
+*Способность предиктивно моделировать исходы во внутренней симуляции и физически подавлять неоптимальные действия во внешнем мире является фундаментальным алгоритмическим механизмом формирования независимого агентного суверенитета и автономного самосохранения системы.*
 
 ### 4. Заключение
 Данная архитектура закладывает алгоритмический фундамент для масштабирования энергоэффективности когнитивных процессов вплоть до биологических лимитов (~20 Вт) при условии переноса системы на перспективные нейроморфные или аналоговые аппаратные субстраты. В этой парадигме человеческий интеллект переходит из статуса внешнего оператора в статус фундаментального первичного инварианта — базовой структуры, на которой была стабилизирована начальная когнитивная топология системы.
+
+### Архитектурное отличие и новизна (NecPU в сравнении со стандартным Active Inference)
+В отличие от стандартных фреймворков активного вывода (Active Inference Framework, AIF), где подавление действий происходит за счет медленного, непрерывного обновления генеративных плотностей, термодинамический субстрат AGI (NecPU) реализует дискретный оператор пороговой шаговой функции ($V(\tilde{a})$). Этот механизм действует как жесткий термодинамический прерыватель, привязанный напрямую к системному дефициту метаболических ресурсов ($\Theta$). Он мгновенно переводит агента в низкопоточный цикл внутренней стабилизации, оптимизируя выживание в условиях критических ограничений аппаратной энергии.
+
+---
+
+Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
