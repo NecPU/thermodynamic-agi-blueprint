@@ -45,7 +45,7 @@ The internal cognitive layer activates an inhibitory veto mechanism, completely 
 This architectural framework theoretically bounds the cognitive runtime power overhead toward a biological scale (~20W) when mapped onto emerging neuromorphic or analog computing substrates, completely eliminating the conventional von Neumann memory-bus bottleneck. Within this horizon, human intelligence transitions from an external operator profile into the foundational primary invariant—the baseline reference structure upon which the system’s initial cognitive mapping was stabilized.
 
 ### Architectural Novelty Comparison (NecPU vs Standard Active Inference)
-Unlike standard Active Inference Frameworks (AIF) where action suppression occurs through slow, continuous updates of generative densities, the Thermodynamic AGI Substrate (NecPU) implements a discrete step-function threshold operator ($V(\tilde{a})$). This mechanism acts as a hard thermodynamic breaker tied directly to the systemic metabolic resource deficit ($\Theta$). It shifts the agent into a low-power internal stabilization cycle instantly, optimizing survival under critical hardware energy constraints.
+Unlike standard Active Inference Frameworks (AIF) where action suppression occurs through slow, continuous updates of generative densities, the Thermodynamic AGI Substrate (NecPU) implements a discrete step-function threshold operator $V(\tilde{a})$. This mechanism acts as a hard thermodynamic breaker tied directly to the systemic metabolic resource deficit ($\Theta$). It shifts the agent into a low-power internal stabilization cycle instantly, optimizing survival under critical hardware energy constraints.
 
 ---
 
