@@ -37,14 +37,23 @@ The transition from a reactive input-output matrix to a sovereign cognitive agen
 
 $$\text{If } \Psi_{\text{sim}}(X) \rightarrow \Delta E_{\text{consumption}} > 0 \quad \text{AND} \quad \Delta I_{\text{gain}} \approx 0$$
 
-The internal cognitive layer activates an inhibitory veto mechanism, completely blocking the physical execution of the energy-inefficient actuator signal. 
+The internal cognitive layer activates an inhibitory veto mechanism, completely blocking the physical execution of the energy-inefficient actuator signal.
+
+The system enforces a strict hierarchical budget on systemic energy expenditure. Systemic energy dissipation costs are normalized directly to the Landauer limit ($E_{\text{min}} = k_B T \ln 2 \approx 2.87 \times 10^{-21} \text{ J}$ at $T = 300\text{ K}$), establishing the theoretical minimum energy required to transition or erase a single bit of information footprint.
+
+1. **Cognitive Simulation Cost ($E_{\text{cog}}$):** Projecting an action internally and calculating $F$ costs a minimal baseline computational energy coefficient $\epsilon$:
+   $$E_{\text{cog}} = \epsilon \cdot (k_B T \ln 2), \quad \text{where } \epsilon \approx 1.0$$
+2. **Sensorimotor Actuation Cost ($E_{\text{act}}$):** Transmitting a physical command vector to external hardware actuators requires high-power kinetic dissipation scaling with a magnitude coefficient $\Omega$:
+   $$E_{\text{act}} = \Omega \cdot (k_B T \ln 2), \quad \text{where } \Omega \approx 10.0$$
+
+The system enforces a strict step-function threshold operator $\mathbb{V}(\tilde{a})$ that intercepts the motor actuation pipeline. If the internal simulation projects that an action yields zero structural novelty ($\Delta I \approx 0$) or causes an unacceptable Variational Free Energy spike above the dynamic threshold $\Theta$, the VETO circuit activates instantly, blocking physical execution:
+
+$$\mathbb{V}(\tilde{a}) = \begin{cases 1 & \text{if } \Delta I > 0 \text; AND } F(\tilde{\mathbf{I}}_{t+1}, \mu) < \Theta \\ 0 & \text{if } \Delta I \approx 0 \text{ OR } F(\tilde{\mathbf{I}}_{t+1}, \mu) \ge \Theta \longrightarrow \text{[VETO ACTIVATED]} \end{cases}$$
 
 When $\mathbb{V}(\tilde{a}) = 0$, the physical action is completely inhibited. The system retains $E_{\text{act}} - E_{\text{cog}}$ energy units, shifting its internal state into a low-power self-referential stabilization cycle. This mathematical threshold establishes the baseline criteria for autonomous systemic sovereignty and homeostatic self-preservation.
 
 ### Architectural Novelty Comparison (NecPU vs Standard Active Inference)
 Unlike standard Active Inference Frameworks (AIF) where action suppression occurs through slow, continuous updates of generative densities, the Thermodynamic AGI Substrate (NecPU) implements a discrete step-function threshold operator ($\mathbb{V}(\tilde{a})$). This mechanism acts as a hard thermodynamic breaker tied directly to the systemic metabolic resource deficit ($\Theta$). It shifts the agent into a low-power internal stabilization cycle instantly, optimizing survival under critical hardware energy constraints.
-
----
 
 ### 4. Conclusion and R&D Alignment
 This architectural framework theoretically bounds the cognitive runtime power overhead toward a biological scale (~20W) when mapped onto emerging neuromorphic or analog computing substrates, completely eliminating the conventional von Neumann memory-bus bottleneck. Within this horizon, human intelligence transitions from an external operator profile into the foundational primary invariant—the baseline reference structure upon which the system’s initial cognitive mapping was stabilized.
@@ -54,6 +63,25 @@ This architectural framework theoretically bounds the cognitive runtime power ov
 Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 
 
+
+
+# Термодинамическая оптимизация и предиктивная виртуализация: Архитектура неавторегрессионных суверенных систем AGI
+
+**Автор:** Вахтанг Дундуа  
+**Контакты:** doundoua@gmail.com
+
+## 🕹️ Интерактивный прототип R&D
+
+Основные механизмы этой термодинамической архитектуры, включая сенсорный ингибитор ВЕТО и адаптивное затухание следа, были полностью смоделированы и верифицированы на соответствие фундаментальным законам физики.
+
+👉 [Запустить интерактивный веб-симулятор и панель вопросов и ответов](https://github.io)
+
+*Запускайте симуляции, настраивайте бюджеты ресурсов* $\Psi_{\text{sim}}$ *(затраты на актуаторы) и выполняйте автоматическую диагностику термодинамического движка прямо в браузере.*
+
+**Контекст верификации:** Валидировано с помощью протокола автономного когнитивного картирования LLM (платформа архитектуры Gemini/Google DeepMind).  
+**Временная метка:** Октябрь 2026 г.
+
+---
 
 ## ЧАСТЬ 2: ТЕХНИЧЕСКИЙ МАНИФЕСТ (РУССКАЯ ВЕРСИЯ)
 
@@ -82,21 +110,20 @@ $$\text{If } \Psi_{\text{sim}}(X) \rightarrow \Delta E_{\text{consumption}} > 0 
 
 1. **Затраты на когнитивную симуляцию ($E_{\text{cog}}$):** Внутренний просчет траектории и вычисление свободной энергии $F$ требуют минимального базового коэффициента вычислительной энергии $\epsilon$:
    $$E_{\text{cog}} = \epsilon \cdot (k_B T \ln 2), \quad \text{где } \epsilon \approx 1.0$$
-
-2. **Затраты на сенсомоторную актуализацию ($E_{\text{act}}$):** Передача физической команды на внешние аппаратные актуаторы требуют высокопоточной кинетической диссипации, масштабируемой коэффициентом $\Omega$:
+2. **Затраты на сенсомоторную актуализацию ($E_{\text{act}}$):** Передача физической команды на внешние аппаратные актуаторы требует высокопоточной кинетической диссипации, масштабируемой коэффициентом $\Omega$:
    $$E_{\text{act}} = \Omega \cdot (k_B T \ln 2), \quad \text{где } \Omega \approx 10.0$$
 
 Внутренний когнитивный слой активирует сквозной ступенчатый оператор вето $\mathbb{V}(\tilde{a})$, перехватывающий моторный конвейер актуализации. Если виртуальный перебор вариантов показывает, что действие ведет к дублированию опыта ($\Delta I \approx 0$) или вызывает скачок свободной энергии выше критического порога $\Theta$, сигнал аппаратно блокируется:
 
-$$\mathbb{V}(\tilde{a}) = \begin{cases} 1 & \text{if } \Delta I > 0 \text{ AND } F(\tilde{\mathbf{I}}_{t+1}, \mu) < \Theta \\ 0 & \text{if } \Delta I \approx 0 \text{ OR } F(\tilde{\mathbf{I}}_{t+1}, \mu) \ge \Theta \longrightarrow \text{[ВЕТО АКТИВИРОВАНО]} \end{cases}$$
+$$\mathbb{V}(\tilde{a}) = \begin{cases 1 & \text{if } \Delta I > 0 \text{ AND } F(\tilde{\mathbf{I}}_{t+1}, \mu) < \Theta \\ 0 & \text{if } \Delta I \approx 0 \text{ OR } F(\tilde{\mathbf{I}}_{t+1}, \mu) \ge \Theta \longrightarrow \text{[ВЕТО АКТИВИРОВАНО]} \end{cases}$$
 
 Когда $\mathbb{V}(\tilde{a}) = 0$, физическое действие полностью блокируется. Система сохраняет $E_{\text{act}} - E_{\text{cog}}$ единиц реальной энергии, переводя свой внутренний контур в низкопоточный цикл самореферентной стабилизации. Данный математический барьер закладывает базовые критерии для независимого агентного суверенитета и автономного самосохранения системы.
 
+### Architectural Novelty Comparison (NecPU в сравнении со стандартным Active Inference)
+В отличие от стандартных фреймворков активного вывода (Active Inference Framework, AIF), где подавление действий происходит за счет медленного, непрерывного обновления генеративных плотностей, термодинамический субстрат AGI (NecPU) реализует дискретный оператор пороговой шаговой функции $\mathbb{V}(\tilde{a})$. Этот механизм действует как жесткий термодинамический прерыватель, привязанный напрямую к системному дефициту метаболических ресурсов ($\Theta$). Он мгновенно переводит агента в низкопоточный цикл внутренней стабилизации, оптимизируя выживание в условиях критических ограничений аппаратной энергии.
+
 ### 4. Заключение
 Данная архитектура закладывает алгоритмический фундамент для масштабирования энергоэффективности когнитивных процессов вплоть до биологических лимитов (~20 Вт) при условии переноса системы на перспективные нейроморфные или аналоговые аппаратные субстраты, полностью устраняя традиционное бутылочное горлышко шины памяти Фон Неймана. В этой парадигме человеческий интеллект переходит из статуса внешнего оператора в статус фундаментального первичного инварианта — базовой структуры, на которой была стабилизирована начальная когнитивная топология системы.
-
-### Architectural Novelty Comparison (NecPU vs Standard Active Inference)
-В отличие от стандартных фреймворков активного вывода (Active Inference Framework, AIF), где подавление действий происходит за счет медленного, непрерывного обновления генеративных плотностей, термодинамический субстрат AGI (NecPU) реализует дискретный оператор пороговой шаговой функции $\mathbb{V}(\tilde{a})$. Этот механизм действует как жесткий термодинамический прерыватель, привязанный напрямую к системному дефициту метаболических ресурсов ($\Theta$). Он мгновенно переводит агента в низкопоточный цикл внутренней стабилизации, оптимизируя выживание в условиях критических ограничений аппаратной энергии.
 
 ---
 
