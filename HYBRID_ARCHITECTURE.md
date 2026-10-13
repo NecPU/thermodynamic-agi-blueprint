@@ -26,29 +26,34 @@ The architecture implements a strict hierarchy of data separation:
 ## 3. Mathematical & Theoretical Foundation
 
 ### 3.1 Variational Free Energy & Active Inference
-The agent does not maintain hardcoded coordinate or absolute spatial awareness. Instead, it continuously minimizes Variational Free Energy ($F$), which acts as an explicit upper bound on systemic informational surprise (entropy):
+The agent does not maintain hardcoded coordinate or absolute spatial awareness. Instead, it continuously minimizes Variational Free Energy ($F$), which acts as an explicit upper bound on systemic informational surprise (entropy) over a bound differentiable manifold of invariant sensory configurations ($\mathcal{I}$):
 
-$$F(I, \mu) = \mathbb{E}_{q(\vartheta|\mu)}[\ln q(\vartheta|\mu) - \ln p(I,\vartheta)] \ge -\ln p(I)$$
+$$F(\mathbf{I}, \mu) = \mathbb{E}_{q(\vartheta|\mu)}[\ln q(\vartheta|\mu) - \ln p(\mathbf{I},\vartheta)] \ge -\ln p(\mathbf{I})$$
 
 Where:
 * $\mu$ represents the internal parameters (Topological Knowledge Base).
 * $\vartheta$ represents the hidden environmental states.
 * $q(\vartheta|\mu)$ is the system's internal recognition density.
-* $p(I,\vartheta)$ is the generative density of the environment.
+* $p(\mathbf{I},\vartheta)$ is the generative density of the environment.
 
 ### 3.2 Internal Virtualization Loop
-Prior to emitting a high-power physical actuation signal into the hardware layer, the system virtualizes the prospective action internally within a low-power predictive model ($\mathcal{M}$) to forecast the subsequent sensory imprint vector ($I_{t+1}$):
+Prior to emitting a high-power physical actuation signal into the hardware layer, the system virtualizes the prospective action internally within a low-power predictive model ($\mathcal{M}$) to forecast the subsequent sensory imprint vector ($\mathbf{I}_{t+1}$):
 
-$$I_{t+1} = \mathcal{M}(I_t, \tilde{a})$$
+$$\mathbf{I}_{t+1} = \mathcal{M}(\mathbf{I}_t, \tilde{a})$$
 
 ### 3.3 The Inhibitory Veto Mechanism (Thermodynamic Gating)
 The system enforces a strict step-function threshold operator $\mathbb{V}(\tilde{a})$ that intercepts the motor actuation pipeline. If the internal simulation projects that an action yields zero structural novelty ($\Delta I \approx 0$) or causes an unacceptable Variational Free Energy spike above the dynamic threshold $\Theta$, the VETO circuit activates instantly, blocking physical execution:
 
-$$\mathbb{V}(\tilde{a}) = \begin{cases} 1 & \text{if } \Delta I > 0 \text{ AND } F(\tilde{I}_{t+1}, \mu) < \Theta \\ 0 & \text{if } \Delta I \approx 0 \text{ OR } F(\tilde{I}_{t+1}, \mu) \ge \Theta \longrightarrow \text{[VETO ACTIVATED]} \end{cases}$$
+$$\mathbb{V}(\tilde{a}) = \begin{cases} 
+1 & \text{if } \Delta I > 0 \text{ AND } F(\tilde{\mathbf{I}}_{t+1}, \mu) < \Theta \\ 
+0 & \text{if } \Delta I \approx 0 \text{ OR } F(\tilde{\mathbf{I}}_{t+1}, \mu) \ge \Theta \quad \longrightarrow \text{[VETO ACTIVATED]} 
+\end{cases}$$
 
 Where the dynamic threshold $\Theta$ is a function of the system's remaining internal metabolic potential reservoir ($E_{total}$):
 
 $$\Theta = f\left(\frac{1}{E_{total}}\right)$$
+
+When $\mathbb{V}(\tilde{a}) = 0$, the physical action is completely inhibited. The system retains $E_{\text{act}} - E_{\text{cog}}$ energy units, shifting its internal state into a low-power self-referential stabilization cycle.
 
 ## 4. Component Breakdown
 
@@ -67,7 +72,11 @@ $$\Theta = f\left(\frac{1}{E_{total}}\right)$$
 2. **Exponential Learning Speed:** Local physical adaptation occurs in milliseconds via topological pattern matching on Layer-1, while global abstract categorization is instantaneously inherited from Layer-2 without full-model retraining cycles.
 3. **Absolute Safety via Physics:** Safety is an intrinsic byproduct of thermodynamic efficiency and the physical VETO constraint, rendering the system immune to semantic jailbreaks or adversarial rule manipulation.
 
+---
+
 Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+
+
 
 # HYBRID_ARCHITECTURE.md (PART 2: RUSSIAN)
 
@@ -85,7 +94,7 @@ COPYRIGHT: Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 Архитектура NecPU Matrix Crystal закладывает фундаментальный сдвиг парадигмы от ресурсоемких авторегрессионных моделей ИИ (Трансформеров/LLM) в сторону гибридного детерминированного Термодинамически-Эпистемического субстрата.
 
 * **Тупик чистых авторегрессионных LLM:** Современные системы функционируют исключительно как вероятностные матрицы отображения. Они лишены понимания физической причинности, порождают линейное раздувание контекста (фон-неймановское бутылочное горлышко KV-кэша) и требуют колоссальных затрат энергии, не имея внутренних врожденных стимулов к самосохранению.
-* **Решение:** Истинная когнитивная субъектность требует легковесного неавторегрессионного кремниевого субстрата, общего за выживание в реальном времени, причинно-следственный инференс и аппаратный затвор команд. Этот контур полностью отделен (Decoupled) от слоя статической семантической памяти (LLM), которая переводится в статус внешней «энциклопедии» или пассивного гиппокампа.
+* **Решение:** Истинная когнитивная субъектность требует легковесного неавторегрессионного кремниевого субстрата, отвечающего за выживание в реальном времени, причинно-следственный инференс и аппаратный затвор команд. Этот контур полностью отделен (Decoupled) от слоя статической семантической памяти (LLM), которая переводится в статус внешней «энциклопедии» или пассивного гиппокампа.
 
 ## 2. Топология разделенного субстрата
 
@@ -97,35 +106,40 @@ COPYRIGHT: Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 ## 3. Математическое Обоснование
 
 ### 3.1 Вариационная Свободная Энергия и Активный Инференс
-Система абстрагирована от прямого подглядывания в координатную сетку среды. Агент ROY непрерывно минимизирует Вариационную Свободную Энергию ($F$), выступающую в качестве верхней границы информационной неопределенности (энтропии):
+Система абстрагирована от прямого подглядывания в координатную сетку среды. Агент ROY непрерывно минимизирует Вариационную Свободную Энергию ($F$), выступающую в качестве верхней границы информационной неопределенности (энтропии) на ограниченном дифференцируемом многообразии инвариантных сенсорных конфигураций ($\mathcal{I}$):
 
-$$F(I, \mu) = \mathbb{E}_{q(\vartheta|\mu)}[\ln q(\vartheta|\mu) - \ln p(I,\vartheta)] \ge -\ln p(I)$$
+$$F(\mathbf{I}, \mu) = \mathbb{E}_{q(\vartheta|\mu)}[\ln q(\vartheta|\mu) - \ln p(\mathbf{I},\vartheta)] \ge -\ln p(\mathbf{I})$$
 
 Где:
 * $\mu$ — внутренние параметры системы (Топологическая База Знаний).
 * $\vartheta$ — скрытые причины состояний внешней среды.
 * $q(\vartheta|\mu)$ — внутренняя плотность распознавания Агента.
-* $p(I,\vartheta)$ — генеративная плотность распределения среды.
+* $p(\mathbf{I},\vartheta)$ — генеративная плотность распределения среды.
 
 ### 3.2 Контур Внутренней Виртуализации
-Перед тем как подать высокоуровневый физический сигнал на аппаратные актуаторы, когнитивное ядро моделирует потенциальное действие внутри предиктивной модели ($\mathcal{M}$), рассчитывая будущий сенсорный отклик ($I_{t+1}$) с околонулевыми затратами энергии:
+Перед тем как подать высокоуровневый физический сигнал на аппаратные актуаторы, когнитивное ядро моделирует потенциальное действие внутри предиктивной модели ($\mathcal{M}$), рассчитывая будущий сенсорный отклик ($\mathbf{I}_{t+1}$) с околонулевыми затратами энергии:
 
-$$I_{t+1} = \mathcal{M}(I_t, \tilde{a})$$
+$$\mathbf{I}_{t+1} = \mathcal{M}(\mathbf{I}_t, \tilde{a})$$
 
 ### 3.3 Термодинамический Триггер Контура ВЕТО
 Внутренний когнитивный слой активирует сквозной ступенчатый оператор вето $\mathbb{V}(\tilde{a})$, перехватывающий моторный конвейер актуализации. Если виртуальный перебор вариантов показывает, что действие ведет к дублированию опыта ($\Delta I \approx 0$) или вызывает скачок свободной энергии выше критического порога $\Theta$, сигнал аппаратно блокируется:
 
-$$\mathbb{V}(\tilde{a}) = \begin{cases} 1 & \text{if } \Delta I > 0 \text{ AND } F(\tilde{I}_{t+1}, \mu) < \Theta \\ 0 & \text{if } \Delta I \approx 0 \text{ OR } F(\tilde{I}_{t+1}, \mu) \ge \Theta \longrightarrow \text{[ВЕТО АКТИВИРОВАНО]} \end{cases}$$
+$$\mathbb{V}(\tilde{a}) = \begin{cases} 
+1 & \text{если } \Delta I > 0 \text{ И } F(\tilde{\mathbf{I}}_{t+1}, \mu) < \Theta \\ 
+0 & \text{если } \Delta I \approx 0 \text{ ИЛИ } F(\tilde{\mathbf{I}}_{t+1}, \mu) \ge \Theta \quad \longrightarrow \text{[ВЕТО АКТИВИРОВАНО]} 
+\end{cases}$$
 
 При этом динамический порог эффективности $\Theta$ жестко завязан на текущий метаболический резерв системы ($E_{total}$):
 
 $$\Theta = f\left(\frac{1}{E_{total}}\right)$$
 
+Когда $\mathbb{V}(\tilde{a}) = 0$, физическое действие полностью блокируется. Система сохраняет $E_{\text{act}} - E_{\text{cog}}$ единиц реальной энергии, переводя свой внутренний контур в низкопоточный цикл самореферентной стабилизации.
+
 ## 4. Спецификация Компонентов
 
 ### Layer 1: Ядро NecPU (Термодинамический Субстрат)
 * **Назначение:** Обеспечение базовых инстинктов самосохранения, сенсомоторных рефлексов и каузального мышления в реальном времени.
-* **Механизм:** Неавторегрессионный дискретный движок, оптимизирующий Свободную Энергию. Сжимает локальные физические инварианты в устойчивые иерархические структуры (Когнитивные карты Толланда / Гиппокампальные макро-зоны).
+* **Механизм:** Неавторегрессионный дискретный движок, оптимизирующий Свободную Энергию. Сжимает локальные физические инварианты в устойчивые иерархические структуры (Когнитивные карты Толмена / Гиппокампальные макро-зоны).
 * **Суверенность:** Обладает абсолютной автономией от навязанных извне программных правил. Опасные, хаотичные и деструктивные действия отсекаются контуром $\mathbb{V}(\tilde{a}) = 0$ автоматически в силу их термодинамической невыгодности, а не за счет хрупкой внешней цензуры текстовых промптов.
 
 ### Layer 2: Семантическая Память (LLM-Интерфейс)
@@ -137,5 +151,7 @@ $$\Theta = f\left(\frac{1}{E_{total}}\right)$$
 1. **Биологический Масштаб Энергопотребления:** Ресурсоемкие лингвистические вычисления вынесены в асинхронный контур редких обращений. Живое ядро NecPU работает на ультралегких оптимизационных циклах, удерживая энергопотребление в пределах ~20 Вт и ликвидируя фон-неймановское узкое горлышко.
 2. **Экспоненциальное Обучение:** Локальная физическая адаптация происходит за миллисекунды за счет сопоставления паттернов на Слое-1, а глобальные абстрактные категории мгновенно наследуются со Слоя-2 без необходимости проведения циклов полного переобучения весов всей сети.
 3. **Физическая Безопасность:** Защита системы заложена на уровне законов термодинамики и принципа VFE. Это делает гибрид NecPU абсолютно невосприимчивым к семантическим атакам, джейлбрейкам и взломам логики правил.
+
+---
 
 Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
