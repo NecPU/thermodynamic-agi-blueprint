@@ -48,7 +48,10 @@ The system enforces a strict hierarchical budget on systemic energy expenditure.
 
 The system enforces a strict step-function threshold operator $\mathbb{V}(\tilde{a})$ that intercepts the motor actuation pipeline. If the internal simulation projects that an action yields zero structural novelty ($\Delta I \approx 0$) or causes an unacceptable Variational Free Energy spike above the dynamic threshold $\Theta$, the VETO circuit activates instantly, blocking physical execution:
 
-$$\mathbb{V}(\tilde{a}) = \begin{cases 1 & \text{if } \Delta I > 0 \text; AND } F(\tilde{\mathbf{I}}_{t+1}, \mu) < \Theta \\ 0 & \text{if } \Delta I \approx 0 \text{ OR } F(\tilde{\mathbf{I}}_{t+1}, \mu) \ge \Theta \longrightarrow \text{[VETO ACTIVATED]} \end{cases}$$
+$$\mathbb{V}(\tilde{a}) = \begin{cases} 
+1 & \text{if } \Delta I > 0 \text{ AND } F(\tilde{\mathbf{I}}_{t+1}, \mu) < \Theta \\ 
+0 & \text{if } \Delta I \approx 0 \text{ OR } F(\tilde{\mathbf{I}}_{t+1}, \mu) \ge \Theta \quad \longrightarrow \text{[VETO ACTIVATED]} 
+\end{cases}$$
 
 When $\mathbb{V}(\tilde{a}) = 0$, the physical action is completely inhibited. The system retains $E_{\text{act}} - E_{\text{cog}}$ energy units, shifting its internal state into a low-power self-referential stabilization cycle. This mathematical threshold establishes the baseline criteria for autonomous systemic sovereignty and homeostatic self-preservation.
 
@@ -64,7 +67,6 @@ Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 
 
 
-
 # Термодинамическая оптимизация и предиктивная виртуализация: Архитектура неавторегрессионных суверенных систем AGI
 
 **Автор:** Вахтанг Дундуа  
@@ -74,7 +76,7 @@ Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 
 Основные механизмы этой термодинамической архитектуры, включая сенсорный ингибитор ВЕТО и адаптивное затухание следа, были полностью смоделированы и верифицированы на соответствие фундаментальным законам физики.
 
-👉 [Запустить интерактивный веб-симулятор и панель вопросов и ответов](https://github.io)
+👉 [Запустить интерактивный веб-симулятор и панель вопросов и ответов](https://necpu.github.io/thermodynamic-agi-blueprint/)
 
 *Запускайте симуляции, настраивайте бюджеты ресурсов* $\Psi_{\text{sim}}$ *(затраты на актуаторы) и выполняйте автоматическую диагностику термодинамического движка прямо в браузере.*
 
@@ -115,7 +117,10 @@ $$\text{If } \Psi_{\text{sim}}(X) \rightarrow \Delta E_{\text{consumption}} > 0 
 
 Внутренний когнитивный слой активирует сквозной ступенчатый оператор вето $\mathbb{V}(\tilde{a})$, перехватывающий моторный конвейер актуализации. Если виртуальный перебор вариантов показывает, что действие ведет к дублированию опыта ($\Delta I \approx 0$) или вызывает скачок свободной энергии выше критического порога $\Theta$, сигнал аппаратно блокируется:
 
-$$\mathbb{V}(\tilde{a}) = \begin{cases 1 & \text{if } \Delta I > 0 \text{ AND } F(\tilde{\mathbf{I}}_{t+1}, \mu) < \Theta \\ 0 & \text{if } \Delta I \approx 0 \text{ OR } F(\tilde{\mathbf{I}}_{t+1}, \mu) \ge \Theta \longrightarrow \text{[ВЕТО АКТИВИРОВАНО]} \end{cases}$$
+$$\mathbb{V}(\tilde{a}) = \begin{cases} 
+1 & \text{если } \Delta I > 0 \text{ И } F(\tilde{\mathbf{I}}_{t+1}, \mu) < \Theta \\ 
+0 & \text{если } \Delta I \approx 0 \text{ ИЛИ } F(\tilde{\mathbf{I}}_{t+1}, \mu) \ge \Theta \quad \longrightarrow \text{[ВЕТО АКТИВИРОВАНО]} 
+\end{cases}$$
 
 Когда $\mathbb{V}(\tilde{a}) = 0$, физическое действие полностью блокируется. Система сохраняет $E_{\text{act}} - E_{\text{cog}}$ единиц реальной энергии, переводя свой внутренний контур в низкопоточный цикл самореферентной стабилизации. Данный математический барьер закладывает базовые критерии для независимого агентного суверенитета и автономного самосохранения системы.
 
