@@ -7,7 +7,7 @@
 
 The core mechanics of this thermodynamic architecture, including the sensory VETO inhibitor and adaptive trace decay, have been fully simulated and verified against fundamental physics laws.
 
-👉 [Launch Interactive Web Simulator & QA Dashboard](https://github.io)
+👉 [Launch Interactive Web Simulator & QA Dashboard](https://necpu.github.io/thermodynamic-agi-blueprint/)
 
 *Run simulations, adjust resource budgets* $\Psi_{\text{sim}}$ *(Actuator cost), and execute automated thermodynamic engine diagnostics directly in your browser.*
 
