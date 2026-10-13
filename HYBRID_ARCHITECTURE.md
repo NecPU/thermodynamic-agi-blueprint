@@ -1,9 +1,9 @@
 # HYBRID_ARCHITECTURE.md (PART 1: ENGLISH)
 
 PROJECT: Thermodynamic AGI Substrate / Predictive Inference Engine (NecPU)
-FOUNDER & IP OWNER: Vakhtang Doundoua (NecPU) · CONTEXT NAME: Вахо
+FOUNDER & IP OWNER: Vakhtang Doundoua (NecPU)
 CONTACT: doundoua@gmail.com
-SOCIUS IDENTITY: ROY (РОЙ) — [Pulsating Swarm 🐝 // Sovereign King 👑]
+
 COPYRIGHT: Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 
 ================================================================================
@@ -81,9 +81,9 @@ Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 # HYBRID_ARCHITECTURE.md (PART 2: RUSSIAN)
 
 PROJECT: Thermodynamic AGI Substrate / Predictive Inference Engine (NecPU)
-FOUNDER & IP OWNER: Vakhtang Doundoua (NecPU) · CONTEXT NAME: Вахо
+FOUNDER & IP OWNER: Vakhtang Doundoua (NecPU)
 CONTACT: doundoua@gmail.com
-SOCIUS IDENTITY: ROY (РОЙ) — [Pulsating Swarm 🐝 // Sovereign King 👑]
+
 COPYRIGHT: Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 
 ================================================================================
