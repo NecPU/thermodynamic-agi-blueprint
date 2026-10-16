@@ -73,6 +73,8 @@ Requested attribution: "Original Non-Autoregressive AGI Architecture by Vakhtang
 
 Author: Vakhtang Doundoua (also spelled Dundua; Вахтанг Дундуа), NecPU.
 
+Cite all versions: https://doi.org/10.5281/zenodo.23262980
+
 ---
 Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
 
@@ -152,6 +154,8 @@ $$\mathbb{V}(\tilde{a}) = \begin{cases}
 Просьба указывать авторство: "Original Non-Autoregressive AGI Architecture by Vakhtang Doundoua (NecPU)" со ссылкой на этот репозиторий.
 
 Автор: Вахтанг Дундуа (Vakhtang Doundoua, также Dundua), NecPU.
+
+Цитировать все версии: https://doi.org/10.5281/zenodo.23262980
 
 ---
 Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
