@@ -27,4 +27,4 @@
 
 *[RU] Академические верификационные датасеты и базовые теоретические уравнения сохранены внутри соответствующих подкаталогов версий.*
 
-© 2026 Vakhtang Doundoua (NecPU). All rights reserved. / Все права защищены.
+© 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE. / Все права защищены.

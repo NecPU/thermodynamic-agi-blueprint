@@ -21,4 +21,4 @@
 
 *[RU] Неизменяемое теоретическое ядро, уравнения и главная академическая документация заблокированы для защиты и сохранения авторских прав в основной ветке `main`.*
 
-© 2026 Vakhtang Doundoua (NecPU). All rights reserved. / Все права защищены.
+© 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE. / Все права защищены.

@@ -41,7 +41,7 @@ The integration of the `Hardware Saturation Watchdog` completely eliminated the 
 Phase V10.7.0 confirms that single-agent thermodynamic quantum diffusion allows a compact swarm of 6 units to flawlessly discover and compress an arbitrary topology without the metabolic overhead of retaining shared context histories. Eliminating the autoregressive tax enabled the NecPU chip to achieve absolute core saturation in just 126 tocks, turning a chaotic environment into a self-organizing, closed computational crystal network.
 
 ---
-*Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.*
+*Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.*
 
 ***
 
@@ -88,4 +88,4 @@ Phase V10.7.0 confirms that single-agent thermodynamic quantum diffusion allows 
 Фаза V10.7.0 подтверждает, что модель одиночной термодинамической квантовой диффузии позволяет компактному рою из 6 частиц безошибочно выявлять и сжимать энтропию произвольного объекта без затрат на удержание контекстной истории. Ликвидация авторегрессионного налога позволила чипу NecPU достичь абсолютного Core Saturation всего за 126 тактов, превратив хаотичную среду в замкнутую, самоорганизующуюся вычислительную сеть.
 
 ---
-*Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.*
+*Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.*

@@ -41,7 +41,7 @@ During the CEW event, Agent-1’s zero-entropy validation of the dead-end at $(5
 Phase V6 confirms that multi-agent thermodynamic synchronization allows individual low-power units to achieve high collective precision. The shared macro-map paradigm functions as an efficient "Society of Minds", reducing joint variational free energy with near-zero data overhead.
 
 ---
-*Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.*
+*Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.*
 
 
 
@@ -88,4 +88,4 @@ Phase V6 confirms that multi-agent thermodynamic synchronization allows individu
 Фаза V6 подтверждает, что многоагентная термодинамическая синхронизация позволяет отдельным низкопотребляющим узлам достигать высокой коллективной точности. Парадигма общего макро-картирования функционирует как эффективное «Общество Разумов», сокращая совместную вариационную свободную энергию с практически нулевыми накладными расходами на передачу данных.
 
 ---
-*Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.*
+*Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.*

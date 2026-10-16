@@ -86,7 +86,7 @@ Phase V5 successfully proves that a neuromorphic substrate can autonomously scal
 Фаза V5 успешно доказывает, что нейроморфный субстрат способен автономно масштабировать пространственные графы в микро-макро когнитивные иерархии. За счет ментального «перешагивания» через сжатые макро-зоны, система сохраняет инвариантную стоимость шага O(1), полностью ликвидируя вычислительный взрыв, свойственный авторегрессионным моделям.
 
 ---
-*Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.*
+*Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.*
 
 ---
-*Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.*
+*Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.*

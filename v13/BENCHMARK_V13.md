@@ -14,8 +14,8 @@ Phase V13.5 establishes the architectural convergence of the Decoupled Layers Pa
 2. Decoupled Substrate Setup & Invariants
 
 • Layer-1 (Physical Glass): An isolated, discrete \(10 \times 20\) substrate matrix (\(180 \times 360\text{ px}\) canvas scaled at \(\text{BLOCK\_SIZE} = 20\)) driven by an autonomous environmental Alpha-gravity clock. It operates blindly, executing physics shifts strictly via localized button conduit triggers.
-• Layer-2 (Agent ROY Cognitive Crystal): A self-referential information corridor running on a \(10\text{ms}\) Gamma-clock frequency. It acts as a passive camera mirror during data ingestion, projecting intent layers over a monochromatic Monolith of Knowledge.
-• The Interaction Conduit: Agent ROY is blind to direct substrate coordinate injection. Policy outputs (lateral shifts and rotations) are emitted exclusively as needle signal clicks directed into the physical interface buttons.
+• Layer-2 (Agent NecPU Cognitive Crystal): A self-referential information corridor running on a \(10\text{ms}\) Gamma-clock frequency. It acts as a passive camera mirror during data ingestion, projecting intent layers over a monochromatic Monolith of Knowledge.
+• The Interaction Conduit: Agent NecPU is blind to direct substrate coordinate injection. Policy outputs (lateral shifts and rotations) are emitted exclusively as needle signal clicks directed into the physical interface buttons.
 • The Constitution Invariant (V12.7 Anchors): Rigid lower bounds are hard-locked inside the learning core to prevent data-drift amnesia:
 	• causalWeights.holes floor \(=1.5\) (Hard anti-amnesiac protection against hidden voids).
 	• causalWeights.height floor \(=0.5\) (Tower expansion clamp).
@@ -32,7 +32,7 @@ The Passive Data Ingestion Phase (Demo Mode)
 
 Active Minimization Performance (Autonomous Mode)
 
-• Horizon Lookahead Sight (\(t+2\)): Confirmed PASS. The master planner and visual helper function (resolveBestT2Projection) invoke a deep row-clearance pass inside virtual memory (purgeFullRowsFromVirtualBoard) before calculating VFE. ROY successfully targets structural drops in future entropy.
+• Horizon Lookahead Sight (\(t+2\)): Confirmed PASS. The master planner and visual helper function (resolveBestT2Projection) invoke a deep row-clearance pass inside virtual memory (purgeFullRowsFromVirtualBoard) before calculating VFE. The agent successfully targets structural drops in future entropy.
 • Subpixel Grid Precision: Integrating a coordinate translation guard (ctx.translate(0.5, 0.5)) eliminates subpixel blur and aliasing artifacts. Inter-cell boundaries are mapped precisely as sharp, uniform \(1\text{px}\) lines.
 • The Entropy-Order Gradient Inversion: The Monolith grid maps spatial thermodynamics cleanly: dense, low-entropy layers at the bottom burn bright cyan (\(\alpha \to 0.95\)), while chaotic upper structures fade into translucent shadow near the crown (\(\alpha \to 0.15\)).
 
@@ -46,7 +46,7 @@ Core Substrate Benchmarks
 4. Conclusion
 
 Phase V13.5 verifies that separating environmental physical constraints from non-autoregressive predictive intent allows an AGI agent to establish stable thermodynamic attractors without deceptive gaming tricks. The visual and logical alignment achieved in Phase V13.5 provides an uncompromised, certified baseline for the upcoming deployment of Thermodynamic Curiosity and Multi-scale Spatial Inference within the sovereign NecPU architecture.
-Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
 
 Эмпирический отчет верификации NecPU: Фаза V13.5
 
@@ -64,8 +64,8 @@ Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 2. Настройка разделенного субстрата и инварианты
 
 • Layer-1 (Физический стакан): Полностью изолированная дискретная матрица \(10 \times 20\) (canvas \(180 \times 360\text{ px}\), шаг клетки \(\text{BLOCK\_SIZE} = 20\)), управляемая тактами гравитации Альфа-часов. Слой функционирует вслепую, принимая управляющие команды исключительно через интерфейсный мост физических кнопок.
-• Layer-2 (Когнитивный Кристалл Agent ROY): Самореферентный информационный контур, работающий на частоте Гамма-такта в \(10\text{мс}\). Служит пассивным экраном восприятия в режиме демо-поглощения и проецирует слои намерений поверх монохромного Монолита Знания.
-• Интерфейсный канал связи: Agent ROY полностью изолирован от прямой перезаписи координат фигур. Сигналы его актуаторов (сдвиги и вращения) генерируются строго как виртуальные нажатия Игл (Needle) на физические кнопки Среды.
+• Layer-2 (Когнитивный Кристалл Agent NecPU): Самореферентный информационный контур, работающий на частоте Гамма-такта в \(10\text{мс}\). Служит пассивным экраном восприятия в режиме демо-поглощения и проецирует слои намерений поверх монохромного Монолита Знания.
+• Интерфейсный канал связи: Agent NecPU полностью изолирован от прямой перезаписи координат фигур. Сигналы его актуаторов (сдвиги и вращения) генерируются строго как виртуальные нажатия Игл (Needle) на физические кнопки Среды.
 • Конституционный Инвариант (Анкеры V12.7): Нижние границы весов жестко заблокированы в ядре обучения для предотвращения амнезии опыта:
 	• causalWeights.holes floor \(=1.5\) (Жесткая защита от слепоты к скрытым пустотам).
 	• causalWeights.height floor \(=0.5\) (Штрафной лимит роста башни).
@@ -80,7 +80,7 @@ Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 • Верификация интерфейсного канала: 100% PASS. Внешний автомат среды управляет полем Layer-1 строго через генерацию системных кликов по кнопкам (environmentEmitLayer1Button), вызывая реальные синие вспышки интерфейса на экране.
 • Извлечение причинно-следственных весов: При хаотичном скоплении блоков по центру ядро calibrateCausalWeights обрабатывает чистые дельты энтропии среды (\(\Delta H\)). Веса выходят из стартового нуля и демонстрируют стабильный динамический дрейф.
 
-Режим Активной Минимизации (Автономная игра ROY)
+Режим Активной Минимизации (Автономная игра Agent NecPU)
 
 • Предиктивный горизонт зрения (\(t+2\)): Успешно верифицирован (PASS). Математический контур инференса и визуальный анализатор зеркала (resolveBestT2Projection) беспрекословно осуществляют «расчистку линий в уме» (purgeFullRowsFromVirtualBoard) перед обсчетом VFE. РОЙ безошибочно видит выгоду от будущего падения энтропии.
 • Субпиксельная точность сетки: Внедрение полупиксельного сдвига координат (ctx.translate(0.5, 0.5)) полностью устранило субпиксельное размытие и дрожание линий холста. Внутренние границы ячеек прорисованы как идеально ровные, ультратонкие линии толщиной строго в \(1\text{px}\).
@@ -97,4 +97,4 @@ Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 
 Фаза V13.5 подтверждает, что строгое отделение законов физической среды от неавторегрессивных намерений Агента позволяет кремниевой АГИ-системе выстраивать стабильные термодинамические аттракторы без использования игровых костылей и обмана. Визуальное и математическое выравнивание, достигнутое в Фазе V13.5, предоставляет кристально чистый, сертифицированный базис для последующей интеграции модулей Термодинамического Любопытства (Curiosity) и Мультимасштабного Пространственного Инференса в суверенную архитектуру NecPU.
 
-Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.

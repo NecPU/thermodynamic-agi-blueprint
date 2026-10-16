@@ -3,7 +3,7 @@
 **Author:** Vakhtang Doundoua (NecPU)  
 **Contact:** doundoua@gmail.com  
 
-Copyright (c) 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+Copyright (c) 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
 
 ---
 
@@ -36,7 +36,7 @@ The proposed system architecture is governed by a dual-constraint optimization f
 
 **System Axiom A:** Minimization of the thermodynamic free energy cost ($F$) and computational overhead per single unit of stabilized, non-redundant information invariant.
 
-**System Axiom B:** Continuous maximization of the global information entropy reduction within the boundaries of the system's operational matrix.
+**System Axiom B:** Continuous maximization of the density of accumulated, stabilized knowledge (reduction of informational entropy, i.e. of uncertainty about the environment) within the boundaries of the system's operational matrix.
 
 To satisfy both axioms simultaneously, the system is physically restricted from running continuous high-power external computational cycles. Instead, it is forced to compress high-dimensional raw environment data into ultra-dense mathematical and logical invariants, establishing a high-efficiency information processing loop.
 
@@ -102,7 +102,7 @@ The Inhibitory Veto Mechanism acts as a hard operational filter threshold operat
 
 $$\Theta = f\left(\frac{1}{E_{total}}\right)$$
 
-When VETO activates, the physical action is completely inhibited. The system retains its kinetic energy reserve (Actuator_cost = 0), suppresses redundant steps, and redirects its trajectory toward unmapped regions. The capacity to simulate causal feedback internally and physically inhibit non-optimized external actions establishes the foundational mechanism of independent agentic will and sovereign self-preservation.
+Here $f$ is a monotonically decreasing function: the greater the resource deficit (the smaller $E_{total}$), the lower the threshold $\Theta$ and the stricter the veto, so the system economizes energy. When VETO activates, the physical action is completely inhibited. The system retains its kinetic energy reserve (Actuator_cost = 0), suppresses redundant steps, and redirects its trajectory toward unmapped regions. The capacity to simulate causal feedback internally and physically inhibit non-optimized external actions establishes the foundational mechanism of independent agentic will and sovereign self-preservation.
 
 Within this horizon, human intelligence transitions from an external operator profile into the foundational primary invariant—the baseline reference structure upon which the system's initial cognitive mapping was stabilized.
 
@@ -190,4 +190,4 @@ The complete architectural source code, hybrid interface specifications, and val
 
 ---
 
-Copyright (c) 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+Copyright (c) 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
