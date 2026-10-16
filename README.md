@@ -24,7 +24,7 @@ Modern artificial intelligence scaling methods depend on an unsustainable auto-r
 ### 2. The Thermodynamic Perpetual Curation Principle
 The proposed system architecture is governed by a dual-constraint optimization function that acts as a self-sustaining cognitive drive:
 * **System Axiom A:** Minimization of the thermodynamic free energy cost ($\Delta F$) and computational overhead per single unit of stabilized, non-redundant information invariant.
-* **System Axiom B:** Continuous maximization of the global information entropy reduction within the boundaries of the system's operational matrix.
+* **System Axiom B:** Continuous maximization of the density of accumulated, stabilized knowledge (reduction of informational entropy, i.e. of uncertainty about the environment) within the boundaries of the system's operational matrix.
 
 To satisfy both axioms simultaneously, the system is physically restricted from running continuous high-power external computational cycles. Instead, it is forced to compress high-dimensional raw environment data into ultra-dense mathematical and logical invariants ($E=mc^2$ paradigm), establishing a high-efficiency information processing loop.
 
@@ -63,7 +63,18 @@ This architectural framework theoretically bounds the cognitive runtime power ov
 
 ---
 
-Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+### 5. License
+
+This work is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International License](https://creativecommons.org/licenses/by-nc/4.0/) (CC BY-NC 4.0); see [LICENSE](LICENSE).
+
+Commercial use (including commercial deployment, hardware manufacturing, or integration into proprietary systems) requires a separate written agreement with the author: doundoua@gmail.com.
+
+Requested attribution: "Original Non-Autoregressive AGI Architecture by Vakhtang Doundoua (NecPU)", with a link to this repository.
+
+Author: Vakhtang Doundoua (also spelled Dundua; Вахтанг Дундуа), NecPU.
+
+---
+Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
 
 
 
@@ -95,7 +106,7 @@ Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 * **Аксиома А:** Минимизация свободной энергии ($\Delta F$) и вычислительных затрат на единицу стабилизированного, нередуплицируемого информационного инварианта.
 * **Аксиома Б:** Непрерывная максимизация плотности накопленных знаний (снижение информационной энтропии) в операционной матрице системы.
 
-Для одновременного выполнения этих аксиом система физически ограничивается в запуске энергоемких внешних вычислических циклов. Она вынуждена сжимать высокоразмерные массивы данных в сверхплотные математические и логические инварианты, формируя энергоэффективный цикл обработки информации.
+Для одновременного выполнения этих аксиом система физически ограничивается в запуске энергоемких внешних вычислительных циклов. Она вынуждена сжимать высокоразмерные массивы данных в сверхплотные математические и логические инварианты, формируя энергоэффективный цикл обработки информации.
 
 ### 3. Эмерджентность субъектности через внутреннюю виртуализацию
 Переход от реактивной матрицы «вход-выход» к суверенному когнитивному агенту происходит через трехэтапную сенсомоторную интеграцию:
@@ -132,4 +143,15 @@ $$\mathbb{V}(\tilde{a}) = \begin{cases}
 
 ---
 
-Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+### 5. Лицензия
+
+Работа распространяется по лицензии [Creative Commons Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/) (CC BY-NC 4.0); см. [LICENSE](LICENSE).
+
+Коммерческое использование (включая коммерческое внедрение, производство оборудования и интеграцию в проприетарные системы) требует отдельного письменного соглашения с автором: doundoua@gmail.com.
+
+Просьба указывать авторство: "Original Non-Autoregressive AGI Architecture by Vakhtang Doundoua (NecPU)" со ссылкой на этот репозиторий.
+
+Автор: Вахтанг Дундуа (Vakhtang Doundoua, также Dundua), NecPU.
+
+---
+Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.

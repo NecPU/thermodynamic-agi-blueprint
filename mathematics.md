@@ -64,7 +64,7 @@ Where $\Theta$ is the dynamic thermodynamic efficiency coefficient determined by
 
 $$\Theta = f\left(\frac{1}{E_{\text{total}}}\right)$$
 
-When $\mathbb{V}(\tilde{a}) = 0$, the physical action is completely inhibited. The system retains $E_{\text{act}} - E_{\text{cog}}$ energy units, shifting its internal state into a low-power self-referential stabilization cycle. This mathematical threshold establishes the baseline criteria for autonomous systemic sovereignty and free-willed preservation.
+Here $f$ is a monotonically decreasing function: the greater the resource deficit (the smaller $E_{\text{total}}$), the lower the threshold $\Theta$ and the stricter the veto, so the system economizes energy. When $\mathbb{V}(\tilde{a}) = 0$, the physical action is completely inhibited. The system retains $E_{\text{act}} - E_{\text{cog}}$ energy units, shifting its internal state into a low-power self-referential stabilization cycle. This mathematical threshold establishes the baseline criteria for autonomous systemic sovereignty and free-willed preservation.
 
 ### Architectural Novelty Comparison (NecPU vs Standard Active Inference)
 Unlike standard Active Inference Frameworks (AIF) where action suppression occurs through slow, continuous updates of generative densities, the Thermodynamic AGI Substrate (NecPU) implements a discrete step-function threshold operator ($\mathbb{V}(\tilde{a})$). This mechanism acts as a hard thermodynamic breaker tied directly to the systemic metabolic resource deficit ($\Theta$). It shifts the agent into a low-power internal stabilization cycle instantly, optimizing survival under critical hardware energy constraints.
@@ -73,16 +73,16 @@ Unlike standard Active Inference Frameworks (AIF) where action suppression occur
 
 ## References
 
-1. **Frith, C., & Friston, K. (2010).** *The free-energy principle: a unified brain theory?* Nature Reviews Neuroscience, 11(2), 127-138. 
+1. **Friston, K. (2010).** *The free-energy principle: a unified brain theory?* Nature Reviews Neuroscience, 11(2), 127-138. 
    *(Обоснование Раздела 2: Принцип минимизации вариационной свободной энергии F, декомпозиция на Complexity и Accuracy).*
 2. **Libet, B. (1985).** *Unconscious cerebral initiative and the role of conscious will in voluntary action.* Behavioral and Brain Sciences, 8(4), 529-566.
-   *(Обоснование Раздела 3: Concept "свободного вето" как основы сознательного выбора и торможения неоптимальных моторных команд).*
+   *(Обоснование Раздела 3: Концепция "свободного вето" как основы сознательного выбора и торможения неоптимальных моторных команд).*
 3. **Friston, K., FitzGerald, T., Rigoli, F., Schwartenbeck, P., & Pezzulo, G. (2017).** *Active inference: a process theory.* Neural Computation, 29(1), 1-49.
    *(Обоснование Раздела 1.1: Математика предиктивного моделирования исходов до совершения физического действия).*
 
 ---
 
-Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
 
 
 # Математическая формализация термодинамической архитектуры AGI (NecPU)
@@ -131,7 +131,7 @@ $$\tilde{\mathbf{I}}_{t+1} \in \mathcal{K} \implies \Delta I \approx 0$$
 
 ## 3. Ингибиторный механизм ВЕТО (Термодинамический триггер)
 
-Система накладывает строгий иерархический бюджет на внутреннее метаболическое энергопотребление. Пусть $E_{\text{total}}$ представляет собой общий остаточный метаболический потенциал субстрата. Затраты на диссипацию энергии нормированы напрямую относительно **предела Ландауэра** ($E_{\text{min}} = k_B T \ln 2 \approx 2.87 \times 10^{-21} \text{ Дж}$ при температере $T = 300\text{ К}$), задающего теоретический минимум энергии, необходимый для изменения или стирания одного бита информации.
+Система накладывает строгий иерархический бюджет на внутреннее метаболическое энергопотребление. Пусть $E_{\text{total}}$ представляет собой общий остаточный метаболический потенциал субстрата. Затраты на диссипацию энергии нормированы напрямую относительно **предела Ландауэра** ($E_{\text{min}} = k_B T \ln 2 \approx 2.87 \times 10^{-21} \text{ Дж}$ при температуре $T = 300\text{ К}$), задающего теоретический минимум энергии, необходимый для изменения или стирания одного бита информации.
 
 1. **Затраты на когнитивную симуляцию ($E_{\text{cog}}$):** Внутренний просчет траектории и вычисление свободной энергии $F$ требуют минимального базового коэффициента вычислительной энергии $\epsilon$:
    $$E_{\text{cog}} = \epsilon \cdot (k_B T \ln 2), \quad \text{где } \epsilon \approx 1.0$$
@@ -151,7 +151,7 @@ $$\mathbb{V}(\tilde{a}) = \begin{cases}
 
 $$\Theta = f\left(\frac{1}{E_{\text{total}}}\right)$$
 
-Когда $\mathbb{V}(\tilde{a}) = 0$, физическое действие полностью блокируется. Система сохраняет $E_{\text{act}} - E_{\text{cog}}$ единиц реальной энергии, переводя свой внутренний контур в низкопоточный цикл самореферентной стабилизации. Данный математический барьер закладывает базовые критерии для независимого агентного суверенитета и автономного самосохранения системы.
+Здесь $f$ — монотонно убывающая функция: чем больше дефицит ресурсов (чем меньше $E_{\text{total}}$), тем ниже порог $\Theta$ и тем строже ВЕТО, то есть система экономит энергию. Когда $\mathbb{V}(\tilde{a}) = 0$, физическое действие полностью блокируется. Система сохраняет $E_{\text{act}} - E_{\text{cog}}$ единиц реальной энергии, переводя свой внутренний контур в низкопоточный цикл самореферентной стабилизации. Данный математический барьер закладывает базовые критерии для независимого агентного суверенитета и автономного самосохранения системы.
 
 ### Архитектурное отличие и новизна (NecPU в сравнении со стандартным Active Inference)
 В отличие от стандартных фреймворков активного вывода (Active Inference Framework, AIF), где подавление действий происходит за счет медленного, непрерывного обновления генеративных плотностей, термодинамический субстрат AGI (NecPU) реализует дискретный оператор пороговой шаговой функции ($\mathbb{V}(\tilde{a})$). Этот механизм действует как жесткий термодинамический прерыватель, привязанный напрямую к системному дефициту метаболических ресурсов ($\Theta$). Он мгновенно переводит агента в низкопоточный цикл внутренней стабилизации, оптимизируя выживание в условиях критических ограничений аппаратной энергии.
@@ -160,7 +160,7 @@ $$\Theta = f\left(\frac{1}{E_{\text{total}}}\right)$$
 
 ## Литература
 
-1. **Frith, C., & Friston, K. (2010).** *The free-energy principle: a unified brain theory?* Nature Reviews Neuroscience, 11(2), 127-138. 
+1. **Friston, K. (2010).** *The free-energy principle: a unified brain theory?* Nature Reviews Neuroscience, 11(2), 127-138. 
    *(Обоснование Раздела 2: Принцип минимизации вариационной свободной энергии F, декомпозиция на Complexity и Accuracy).*
 2. **Libet, B. (1985).** *Unconscious cerebral initiative and the role of conscious will in voluntary action.* Behavioral and Brain Sciences, 8(4), 529-566.
    *(Обоснование Раздела 3: Концепция "свободного вето" как основы сознательного выбора и торможения неоптимальных моторных команд).*
@@ -169,4 +169,4 @@ $$\Theta = f\left(\frac{1}{E_{\text{total}}}\right)$$
 
 ---
 
-Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.

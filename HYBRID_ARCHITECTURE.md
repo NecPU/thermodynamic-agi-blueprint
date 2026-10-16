@@ -4,7 +4,7 @@ PROJECT: Thermodynamic AGI Substrate / Predictive Inference Engine (NecPU)
 FOUNDER & IP OWNER: Vakhtang Doundoua (NecPU)
 CONTACT: doundoua@gmail.com
 
-COPYRIGHT: Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+COPYRIGHT: Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
 
 ================================================================================
 TECHNICAL SPECIFICATION
@@ -53,7 +53,7 @@ Where the dynamic threshold $\Theta$ is a function of the system's remaining int
 
 $$\Theta = f\left(\frac{1}{E_{total}}\right)$$
 
-When $\mathbb{V}(\tilde{a}) = 0$, the physical action is completely inhibited. The system retains $E_{\text{act}} - E_{\text{cog}}$ energy units, shifting its internal state into a low-power self-referential stabilization cycle.
+Here $f$ is a monotonically decreasing function: the greater the resource deficit (the smaller $E_{total}$), the lower the threshold $\Theta$ and the stricter the veto, so the system economizes energy. When $\mathbb{V}(\tilde{a}) = 0$, the physical action is completely inhibited. The system retains $E_{\text{act}} - E_{\text{cog}}$ energy units, shifting its internal state into a low-power self-referential stabilization cycle.
 
 ## 4. Component Breakdown
 
@@ -74,7 +74,7 @@ When $\mathbb{V}(\tilde{a}) = 0$, the physical action is completely inhibited. T
 
 ---
 
-Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
 
 
 
@@ -84,7 +84,7 @@ PROJECT: Thermodynamic AGI Substrate / Predictive Inference Engine (NecPU)
 FOUNDER & IP OWNER: Vakhtang Doundoua (NecPU)
 CONTACT: doundoua@gmail.com
 
-COPYRIGHT: Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+COPYRIGHT: Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
 
 ================================================================================
 ТЕХНИЧЕСКИЙ МАНИФЕСТ
@@ -106,7 +106,7 @@ COPYRIGHT: Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
 ## 3. Математическое Обоснование
 
 ### 3.1 Вариационная Свободная Энергия и Активный Инференс
-Система абстрагирована от прямого подглядывания в координатную сетку среды. Агент ROY непрерывно минимизирует Вариационную Свободную Энергию ($F$), выступающую в качестве верхней границы информационной неопределенности (энтропии) на ограниченном дифференцируемом многообразии инвариантных сенсорных конфигураций ($\mathcal{I}$):
+Система абстрагирована от прямого подглядывания в координатную сетку среды. Агент непрерывно минимизирует Вариационную Свободную Энергию ($F$), выступающую в качестве верхней границы информационной неопределенности (энтропии) на ограниченном дифференцируемом многообразии инвариантных сенсорных конфигураций ($\mathcal{I}$):
 
 $$F(\mathbf{I}, \mu) = \mathbb{E}_{q(\vartheta|\mu)}[\ln q(\vartheta|\mu) - \ln p(\mathbf{I},\vartheta)] \ge -\ln p(\mathbf{I})$$
 
@@ -133,7 +133,7 @@ $$\mathbb{V}(\tilde{a}) = \begin{cases}
 
 $$\Theta = f\left(\frac{1}{E_{total}}\right)$$
 
-Когда $\mathbb{V}(\tilde{a}) = 0$, физическое действие полностью блокируется. Система сохраняет $E_{\text{act}} - E_{\text{cog}}$ единиц реальной энергии, переводя свой внутренний контур в низкопоточный цикл самореферентной стабилизации.
+Здесь $f$ — монотонно убывающая функция: чем больше дефицит ресурсов (чем меньше $E_{total}$), тем ниже порог $\Theta$ и тем строже ВЕТО, то есть система экономит энергию. Когда $\mathbb{V}(\tilde{a}) = 0$, физическое действие полностью блокируется. Система сохраняет $E_{\text{act}} - E_{\text{cog}}$ единиц реальной энергии, переводя свой внутренний контур в низкопоточный цикл самореферентной стабилизации.
 
 ## 4. Спецификация Компонентов
 
@@ -154,4 +154,4 @@ $$\Theta = f\left(\frac{1}{E_{total}}\right)$$
 
 ---
 
-Copyright © 2026 Vakhtang Doundoua (NecPU). All rights reserved.
+Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
