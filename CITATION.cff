@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "Thermodynamic Optimization and Predictive Virtualization: An Architecture for Non-Autoregressive Sovereign AGI Systems"
+authors:
+  - family-names: Dundua
+    given-names: Vakhtang
+    alias: NecPU
+    email: doundoua@gmail.com
+abstract: "A theoretical architecture (thermodynamic accounting of cost normalised to the Landauer limit, internal simulation of actions, and an inhibitory VETO gated by the energy budget) together with a research simulator that implements it only partially and in simplified form."
+license: CC-BY-NC-4.0
+repository-code: "https://github.com/NecPU/thermodynamic-agi-blueprint"
+url: "https://necpu.github.io/thermodynamic-agi-blueprint/"
+keywords:
+  - thermodynamics
+  - free energy principle
+  - active inference
+  - inhibitory VETO
+  - energy-constrained cognition
