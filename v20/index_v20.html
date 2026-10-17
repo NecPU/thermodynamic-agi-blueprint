@@ -1,0 +1,3103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="author" content="Vakhtang Doundoua (NecPU)">
+  <meta name="copyright" content="Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NecPU Phase 20.21 — Unified Spatio-Temporal Kernel &amp; Unified RAF</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #141c2f;
+      --border: #38bdf8;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #22d3ee;
+      --warn: #fbbf24;
+      --veto: #f87171;
+    }
+    * { box-sizing: border-box; }
+    html { height: 100%; }
+    /* The page scrolls: the first screen (.app) is exactly the former fixed 100vh layout; the guide follows below. */
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      padding: 6px 10px;
+      gap: 8px;
+    }
+    /* Two columns: English on the left, Russian on the right; stacked on narrow screens. */
+    .bi {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+    .bi > div { min-width: 0; }
+    .bi-head { border-bottom: 1px solid #243049; margin-bottom: 4px; }
+    @media (max-width: 1000px) {
+      .bi { grid-template-columns: 1fr; gap: 0; }
+    }
+    .guide {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px 14px 48px;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .guide h2 {
+      margin: 22px 0 8px;
+      font-size: 0.85rem;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+    }
+    .guide h2:first-child { margin-top: 0; }
+    .guide p { margin: 6px 0; color: var(--muted); }
+    .guide ul { margin: 6px 0; padding-left: 20px; color: var(--muted); }
+    .guide li { margin: 3px 0; }
+    .guide b, .guide .k { color: var(--text); }
+    .guide table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-size: 0.74rem;
+    }
+    .guide th, .guide td {
+      border: 1px solid #243049;
+      padding: 5px 8px;
+      text-align: left;
+      vertical-align: top;
+      color: var(--muted);
+    }
+    .guide th { color: var(--accent); background: var(--panel); }
+    .guide td:first-child { color: var(--text); }
+    .guide .tag { color: var(--warn); font-family: ui-monospace, monospace; font-size: 0.7rem; }
+    .page-header {
+      flex-shrink: 0;
+    }
+    h1 {
+      margin: 0 0 2px;
+      font-size: 0.92rem;
+      color: var(--border);
+    }
+    .subtitle {
+      margin: 0 0 2px;
+      font-size: 0.66rem;
+      color: var(--muted);
+      line-height: 1.25;
+    }
+    .signoff {
+      margin: 0;
+      font-size: 0.62rem;
+      color: var(--muted);
+    }
+    .dual-monitors {
+      flex-shrink: 0;
+      display: grid;
+      grid-template-columns: 536px 536px;
+      gap: 12px;
+      justify-content: center;
+      align-items: start;
+    }
+    .monitor-column h2 {
+      margin: 0 0 6px;
+      min-height: 2.4em;
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      line-height: 1.2;
+    }
+    .monitor-wrap {
+      border: 2px solid #1e3a5f;
+      border-radius: 8px;
+      padding: 6px;
+      background: #050810;
+      box-shadow: 0 0 24px rgba(56, 189, 248, 0.15);
+      width: 536px;
+      height: 456px;
+    }
+    #environment-canvas,
+    #entropy-preview {
+      display: block;
+      width: 520px;
+      height: 440px;
+      image-rendering: pixelated;
+    }
+    #environment-canvas { cursor: default; }
+    .secondary-deck {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      overflow: hidden;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid #243049;
+      border-radius: 8px;
+      padding: 8px 10px;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel h2 {
+      margin: 0 0 6px;
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 0.03em;
+      flex-shrink: 0;
+    }
+    .metrics {
+      font-family: ui-monospace, monospace;
+      font-size: 0.72rem;
+      line-height: 1.55;
+      /* Rows that do not fit the panel scroll inside it instead of being clipped. */
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .metrics .row { display: flex; justify-content: space-between; gap: 8px; }
+    .metrics .val { color: var(--accent); }
+    button {
+      background: #1e293b;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      margin: 2px 4px 2px 0;
+    }
+    button:hover:not(:disabled) { background: #334155; }
+    button.primary { border-color: var(--accent); color: var(--accent); }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .log {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      font-size: 0.65rem;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+      line-height: 1.45;
+    }
+    .hint {
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 8px;
+      line-height: 1.35;
+    }
+    kbd {
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-size: 0.65rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+  <header class="page-header">
+    <h1>NecPU Cognitive Core — Phase 20.21 — Unified Spatio-Temporal Kernel</h1>
+    <p class="subtitle">Agent NecPU — one pixel world model for display and planning, inhibitory VETO, persistent WebGL readback, time-normalized gates.</p>
+    <p class="signoff">Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE. &nbsp;·&nbsp; Scroll down for the simulator guide ↓</p>
+  </header>
+
+  <section class="dual-monitors" aria-label="Primary dual monitor row">
+    <div class="monitor-column">
+      <h2>EXTERNAL SENSORY ENVIRONMENT (MONITOR)</h2>
+      <div class="monitor-wrap">
+        <canvas id="environment-canvas" width="520" height="440" tabindex="0" aria-label="External sensory environment monitor"></canvas>
+      </div>
+    </div>
+    <div class="monitor-column">
+      <h2>NecPU COGNITIVE CORE — LAYER-2 SENSOR ARRAY</h2>
+      <div class="monitor-wrap">
+        <canvas id="entropy-preview" width="520" height="440" aria-label="Agent NecPU Layer-2 primary visual sensor array"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section class="secondary-deck" aria-label="Secondary control and telemetry deck">
+    <div class="panel">
+      <h2>MARKOV BLANKET CONTROLS</h2>
+      <button type="button" id="btn-demo-start" class="primary">Start Passive DEMO</button>
+      <button type="button" id="btn-agent-start" disabled>Start Agent NecPU</button>
+      <button type="button" id="btn-agent-stop">Stop cognitive loop</button>
+      <button type="button" id="btn-env-reset">Reset environment</button>
+      <p class="hint">
+        Manual override: focus left monitor — <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>Space</kbd>.
+      </p>
+    </div>
+    <div class="panel">
+      <h2>THERMODYNAMIC METRICS (LAYER C)</h2>
+      <div class="metrics" id="metrics"></div>
+    </div>
+    <div class="panel">
+      <h2>EVENT LOG (OBSERVER)</h2>
+      <div class="log" id="event-log"></div>
+    </div>
+  </section>
+  </div>
+
+  <section class="guide" id="guide" aria-label="Simulator guide / Руководство по симулятору">
+    <div class="bi bi-head">
+      <div lang="en"><h2>SIMULATOR GUIDE</h2></div>
+      <div lang="ru"><h2>РУКОВОДСТВО ПО СИМУЛЯТОРУ</h2></div>
+    </div>
+    <div class="bi">
+      <div lang="en">
+        <p>
+          A research simulator of the thermodynamic-AGI blueprint: an agent (<b>Agent NecPU</b>) that plays a falling-block puzzle
+          environment using only pixels, with an inhibitory VETO on its own motor commands. It runs as ordinary JavaScript
+          on a normal CPU. It is a <b>simulation</b>: the energy budget is modeled, and nothing here claims to be a true AGI.
+          Every number below is tagged where it matters:
+          <span class="tag">[MEASURED]</span> real timing from <code>performance.now()</code>,
+          <span class="tag">[PIXELS]</span> derived from the screen image,
+          <span class="tag">[MODEL]</span> simulated accounting (not real consumption).
+        </p>
+      </div>
+      <div lang="ru">
+        <p>
+          Исследовательский симулятор чертежа термодинамического AGI: агент (<b>Agent NecPU</b>) играет в игровую
+          среду-головоломку с падающими блоками, используя только пиксели, с ингибиторным VETO на собственные моторные команды. Работает как обычный
+          JavaScript на обычном процессоре. Это <b>симуляция</b>: энергетический бюджет модельный, и ничто здесь не
+          заявляется как настоящий AGI. Важные числа помечены:
+          <span class="tag">[MEASURED]</span> реальное время из <code>performance.now()</code>,
+          <span class="tag">[PIXELS]</span> получено из изображения экрана,
+          <span class="tag">[MODEL]</span> смоделированный учёт (не реальное потребление).
+        </p>
+      </div>
+    </div>
+
+    <div class="bi">
+      <div lang="en">
+        <h2>WHAT IS ON THE SCREEN</h2>
+        <ul>
+          <li><b>Left monitor — Layer A, the environment.</b> The game itself (the “outside world”). Click it to give it keyboard focus.</li>
+          <li><b>Right monitor — Layer-2 sensor array.</b> What the agent builds from the pixels of the left monitor: structure (static, blue grid), changed pixels (amber), aged “ink” for recently moved pixels.</li>
+          <li><b>Layer B — Markov blanket.</b> A WebGL readback of the left monitor’s pixels, and the only channel through which motor commands (LEFT, RIGHT, ROTATE, SOFT_DOWN) reach the game. The agent never reads or writes the game state directly.</li>
+          <li><b>Layer C — the NecPU core.</b> The pixel world model, body tracker, NEXT-piece vision, planner, VETO and the modeled energy metabolism. Its readouts are in the metrics panel.</li>
+        </ul>
+      </div>
+      <div lang="ru">
+        <h2>ЧТО НА ЭКРАНЕ</h2>
+        <ul>
+          <li><b>Левый монитор — Layer A, окружение.</b> Сама игра («внешний мир»). Щёлкните по нему, чтобы дать ему фокус клавиатуры.</li>
+          <li><b>Правый монитор — Layer-2 sensor array.</b> То, что агент строит из пикселей левого монитора: структура (неподвижное, синяя сетка), изменившиеся пиксели (янтарные), «выцветающие чернила» для недавно сдвинувшихся пикселей.</li>
+          <li><b>Layer B — Markov blanket.</b> Считывание пикселей левого монитора через WebGL и единственный канал, по которому моторные команды (LEFT, RIGHT, ROTATE, SOFT_DOWN) попадают в игру. Агент никогда не читает и не пишет состояние игры напрямую.</li>
+          <li><b>Layer C — ядро NecPU.</b> Пиксельная модель мира, трекер тела, зрение NEXT-фигуры, планировщик, VETO и модельный энергетический метаболизм. Показания — в панели метрик.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="bi">
+      <div lang="en">
+        <h2>BUTTONS</h2>
+        <table>
+          <tr><th>Button</th><th>What it does</th></tr>
+          <tr><td>Start Passive DEMO</td><td>Starts passive observation. <b>The game is played by Layer A’s built-in heuristic (not by the agent)</b> at a 175 ms gravity period; the agent only watches, builds its pixel model and measures gravity. Motor output is suspended. The agent unlocks after at least 10 s of observation <b>and</b> 10 line erasures seen in the pixels (row “Passive Observation”).</td></tr>
+          <tr><td>Start Agent NecPU</td><td>Disabled until the demo has unlocked it. Switches the demo heuristic OFF, sets the 200 ms gravity period, resets the agent’s world model, refills E_flux to 1.0, and lets the agent plan and issue motor commands. When the board is lost, it is reset automatically and a new generation starts.</td></tr>
+          <tr><td>Stop cognitive loop</td><td>Stops the demo or the agent (phase becomes idle) and switches the heuristic off. Pieces then only fall under gravity, nobody steers them, until game over.</td></tr>
+          <tr><td>Reset environment</td><td>Clears the board, score and lines and spawns a new piece. It does <b>not</b> change the phase: a running agent keeps playing. The agent’s world model is not reset and the generation counter is not incremented (only a game over during agent play does that).</td></tr>
+          <tr><td>Keyboard</td><td>Click the left monitor first, then <kbd>←</kbd> <kbd>→</kbd> move, <kbd>↑</kbd> rotate, <kbd>↓</kbd> soft drop, <kbd>Space</kbd> hard drop. Manual input is outside the agent and can disturb its measurements.</td></tr>
+        </table>
+      </div>
+      <div lang="ru">
+        <h2>КНОПКИ</h2>
+        <table>
+          <tr><th>Кнопка</th><th>Что делает</th></tr>
+          <tr><td>Start Passive DEMO</td><td>Запускает пассивное наблюдение. <b>Играет встроенная эвристика Layer A (не агент)</b> с периодом гравитации 175 мс; агент только наблюдает, строит пиксельную модель и измеряет гравитацию. Моторный выход приостановлен. Агент разблокируется после минимум 10 с наблюдения <b>и</b> 10 стираний линий, увиденных по пикселям (строка «Passive Observation»).</td></tr>
+          <tr><td>Start Agent NecPU</td><td>Заблокирована, пока демо её не разблокирует. Выключает демо-эвристику, ставит период гравитации 200 мс, сбрасывает модель мира агента, возвращает E_flux к 1.0 и разрешает агенту планировать и выдавать моторные команды. При проигрыше стакан сбрасывается автоматически и начинается новое поколение.</td></tr>
+          <tr><td>Stop cognitive loop</td><td>Останавливает демо или агента (фаза становится idle) и выключает эвристику. Дальше фигуры просто падают под действием гравитации, никто ими не управляет, до проигрыша.</td></tr>
+          <tr><td>Reset environment</td><td>Очищает стакан, счёт и линии и создаёт новую фигуру. Фазу <b>не</b> меняет: работающий агент продолжает играть. Модель мира агента не сбрасывается, счётчик поколений не увеличивается (это происходит только при проигрыше во время игры агента).</td></tr>
+          <tr><td>Клавиатура</td><td>Сначала щёлкните по левому монитору, затем <kbd>←</kbd> <kbd>→</kbd> движение, <kbd>↑</kbd> поворот, <kbd>↓</kbd> мягкое падение, <kbd>Space</kbd> жёсткое падение. Ручной ввод находится вне агента и может исказить его измерения.</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="bi">
+      <div lang="en">
+        <h2>MODES AND WHO PLAYS</h2>
+        <table>
+          <tr><th>Phase (row “Cognitive Phase”)</th><th>Environment driver</th><th>Agent</th></tr>
+          <tr><td>— (idle)</td><td>None — gravity only</td><td>Off</td></tr>
+          <tr><td>Passive Epistemic Curation</td><td>Layer A demo heuristic</td><td>Observes, learns pixel model and gravity; no motor output</td></tr>
+          <tr><td>Agent NecPU Actuation</td><td>Agent NecPU (heuristic OFF)</td><td>Plans and acts; VETO and energy gating active</td></tr>
+        </table>
+        <p>The row <b>Environment driver</b> in the metrics panel shows this at all times, so you can always tell whether the demo or the agent is placing the pieces.</p>
+      </div>
+      <div lang="ru">
+        <h2>РЕЖИМЫ И КТО ИГРАЕТ</h2>
+        <table>
+          <tr><th>Фаза (строка «Cognitive Phase»)</th><th>Environment driver</th><th>Агент</th></tr>
+          <tr><td>— (idle)</td><td>None — gravity only</td><td>Выключен</td></tr>
+          <tr><td>Passive Epistemic Curation</td><td>Layer A demo heuristic</td><td>Наблюдает, учит пиксельную модель и гравитацию; моторного выхода нет</td></tr>
+          <tr><td>Agent NecPU Actuation</td><td>Agent NecPU (heuristic OFF)</td><td>Планирует и действует; VETO и энергетические пороги активны</td></tr>
+        </table>
+        <p>Строка <b>Environment driver</b> в панели метрик всегда показывает это, поэтому всегда видно, кто ставит фигуры: демо или агент.</p>
+      </div>
+    </div>
+
+    <div class="bi">
+      <div lang="en">
+        <h2>METRICS (THERMODYNAMIC METRICS PANEL)</h2>
+        <table>
+          <tr><th>Row</th><th>Meaning</th><th>Where it is meaningful</th></tr>
+          <tr><td>Cognitive Phase</td><td>Current phase of the loop.</td><td>All</td></tr>
+          <tr><td>Environment driver</td><td>Who or what steers the pieces: nothing, the demo heuristic, or the agent.</td><td>All</td></tr>
+          <tr><td>Static Pixel Share <span class="tag">[PIXELS]</span></td><td>Share of the whole sensor frame whose pixels did not change this frame.</td><td>Passive, Agent</td></tr>
+          <tr><td>Passive Observation</td><td>Simulated observation time versus its 10 s target, and the line erasures seen in the pixels (needs 10).</td><td>Passive (stays at its last value once the agent runs)</td></tr>
+          <tr><td>Kernel Status</td><td>Mapping invariants, stabilized (agent unlocked), or core active.</td><td>All</td></tr>
+          <tr><td>E_flux (normalized) <span class="tag">[MODEL]</span></td><td>Modeled energy reserve, 0 to 1. Grows with a fixed income per millisecond and is drained by the modeled work of each frame. Below 0.6 the deep sequence search is switched off (reflex mode).</td><td>Agent (in the demo it stays near 1)</td></tr>
+          <tr><td>Frame metabolic ops <span class="tag">[MODEL]</span></td><td>Modeled operations billed for the last frame: baseline, sensor pixels, and the planner work actually executed (transitions, outcome evaluations, NEXT placements).</td><td>All; planner part only in Agent</td></tr>
+          <tr><td>Landauer-floor power <span class="tag">[MODEL]</span></td><td>The thermodynamic lower bound, k<sub>B</sub>T ln2 per modeled op at an assumed 300 K, divided by the reference frame time. <b>Not</b> the real power of your CPU; it is many orders of magnitude lower.</td><td>All</td></tr>
+          <tr><td>Measured CPU sense / plan <span class="tag">[MEASURED]</span></td><td>Real time per frame spent sensing and planning, in ms (moving average).</td><td>Sense: all. Plan: Agent</td></tr>
+          <tr><td>Observed gravity period <span class="tag">[PIXELS]</span></td><td>The fall period the agent has measured from the pixel track of the falling piece (median of clean one-row descents; its own soft drops are excluded). About 175 ms in the demo and 200 ms for the agent.</td><td>Passive, Agent</td></tr>
+          <tr><td>Variational F (ROI avg) <span class="tag">[PIXELS]</span></td><td>Mean squared pixel prediction error inside the board area, normalized to 0..1: a sensory-surprise proxy. It is <b>not</b> the layout free energy the planner minimizes, and a full variational free energy is not computed.</td><td>Passive, Agent</td></tr>
+          <tr><td>Dynamic / static cells <span class="tag">[PIXELS]</span></td><td>Cells of the falling body versus cells of the settled stack, as seen in the pixel model.</td><td>Passive, Agent</td></tr>
+          <tr><td>Last motor signal</td><td>The last motor command, a VETO(...) marker, a hold (no policy beats inaction), or the idle reason.</td><td>Agent (“motor suspended” in the demo)</td></tr>
+          <tr><td>Landauer ΔS≥k<sub>B</sub> ln 2</td><td>The constant k<sub>B</sub> ln2 in J/K, the minimum entropy per erased bit.</td><td>Reference constant</td></tr>
+          <tr><td>Generation Count</td><td>Number of completed generations: a game over during agent play restarts the board and keeps the world model.</td><td>Agent</td></tr>
+          <tr><td>Spatial Memory Density <span class="tag">[PIXELS]</span></td><td>Share of board pixels the agent has confirmed as stable structure. Below 15% the planner uses the reflex path only (Granite Fallback).</td><td>Passive, Agent</td></tr>
+          <tr><td>Spatial Surprise Delta</td><td>Frame-to-frame change of the pixel prediction error.</td><td>Passive, Agent</td></tr>
+          <tr><td>Lifetime Baseline Status</td><td>Simulated lifetime of the current generation versus the previous one.</td><td>Agent</td></tr>
+          <tr><td>Active Planning Depth</td><td>Deep (policy sequences), Reflex (single command), Reflex (Granite Fallback), or an idle reason such as calibrating gravity.</td><td>Agent</td></tr>
+          <tr><td>Predicted Terminal Free Energy</td><td>The planner’s predicted change in layout free energy for the best acting policy, relative to doing nothing. Negative means improvement.</td><td>Agent</td></tr>
+          <tr><td>Next Invariant Vision <span class="tag">[PIXELS]</span></td><td>The NEXT piece recognized from its pixel shape (no palette lookup), or a dash.</td><td>Passive, Agent</td></tr>
+          <tr><td>Sequential Path Status</td><td>Which planning path is running (sequence planner, reflex, Granite Fallback).</td><td>Agent</td></tr>
+        </table>
+      </div>
+      <div lang="ru">
+        <h2>МЕТРИКИ (THERMODYNAMIC METRICS PANEL)</h2>
+        <table>
+          <tr><th>Строка</th><th>Смысл</th><th>Где имеет смысл</th></tr>
+          <tr><td>Cognitive Phase</td><td>Текущая фаза цикла.</td><td>Все режимы</td></tr>
+          <tr><td>Environment driver</td><td>Кто или что управляет фигурами: никто, демо-эвристика или агент.</td><td>Все режимы</td></tr>
+          <tr><td>Static Pixel Share <span class="tag">[PIXELS]</span></td><td>Доля пикселей всего сенсорного кадра, не изменившихся в этом кадре.</td><td>Passive, Agent</td></tr>
+          <tr><td>Passive Observation</td><td>Симулированное время наблюдения относительно цели в 10 с и число стираний линий, замеченных по пикселям (нужно 10).</td><td>Passive (после запуска агента остаётся на последнем значении)</td></tr>
+          <tr><td>Kernel Status</td><td>Mapping invariants, stabilized (агент разблокирован) или core active.</td><td>Все режимы</td></tr>
+          <tr><td>E_flux (normalized) <span class="tag">[MODEL]</span></td><td>Модельный запас энергии от 0 до 1. Растёт с фиксированным притоком в миллисекунду и расходуется на модельную работу каждого кадра. Ниже 0.6 глубокий поиск последовательностей отключается (режим рефлекса).</td><td>Agent (в демо остаётся около 1)</td></tr>
+          <tr><td>Frame metabolic ops <span class="tag">[MODEL]</span></td><td>Модельные операции, начисленные за последний кадр: базовые, сенсорные пиксели и реально выполненная работа планировщика (переходы, оценки исходов, размещения NEXT).</td><td>Все режимы; часть планировщика только в Agent</td></tr>
+          <tr><td>Landauer-floor power <span class="tag">[MODEL]</span></td><td>Термодинамическая нижняя граница: k<sub>B</sub>T ln2 на модельную операцию при допущенных 300 K, делённая на время опорного кадра. <b>Не</b> реальная мощность вашего процессора: она на много порядков ниже.</td><td>Все режимы</td></tr>
+          <tr><td>Measured CPU sense / plan <span class="tag">[MEASURED]</span></td><td>Реальное время кадра, потраченное на восприятие и планирование, в мс (скользящее среднее).</td><td>Sense: все режимы. Plan: Agent</td></tr>
+          <tr><td>Observed gravity period <span class="tag">[PIXELS]</span></td><td>Период падения, измеренный агентом по пиксельному треку падающей фигуры (медиана чистых спусков на один ряд; собственные мягкие падения исключаются). Около 175 мс в демо и 200 мс у агента.</td><td>Passive, Agent</td></tr>
+          <tr><td>Variational F (ROI avg) <span class="tag">[PIXELS]</span></td><td>Средняя квадратичная ошибка предсказания пикселей в области стакана, нормированная на 0..1: показатель сенсорного удивления. Это <b>не</b> свободная энергия раскладки, которую минимизирует планировщик, и полная вариационная свободная энергия не вычисляется.</td><td>Passive, Agent</td></tr>
+          <tr><td>Dynamic / static cells <span class="tag">[PIXELS]</span></td><td>Клетки падающего тела и клетки осевшей кучи, как они видны в пиксельной модели.</td><td>Passive, Agent</td></tr>
+          <tr><td>Last motor signal</td><td>Последняя моторная команда, метка VETO(...), ожидание (ни одна политика не лучше бездействия) или причина простоя.</td><td>Agent («motor suspended» в демо)</td></tr>
+          <tr><td>Landauer ΔS≥k<sub>B</sub> ln 2</td><td>Константа k<sub>B</sub> ln2 в Дж/К, минимальная энтропия на один стёртый бит.</td><td>Справочная константа</td></tr>
+          <tr><td>Generation Count</td><td>Число завершённых поколений: проигрыш во время игры агента перезапускает стакан и сохраняет модель мира.</td><td>Agent</td></tr>
+          <tr><td>Spatial Memory Density <span class="tag">[PIXELS]</span></td><td>Доля пикселей стакана, подтверждённых агентом как устойчивая структура. Ниже 15% планировщик использует только путь рефлекса (Granite Fallback).</td><td>Passive, Agent</td></tr>
+          <tr><td>Spatial Surprise Delta</td><td>Изменение ошибки предсказания пикселей от кадра к кадру.</td><td>Passive, Agent</td></tr>
+          <tr><td>Lifetime Baseline Status</td><td>Симулированное время жизни текущего поколения в сравнении с предыдущим.</td><td>Agent</td></tr>
+          <tr><td>Active Planning Depth</td><td>Deep (policy sequences), Reflex (single command), Reflex (Granite Fallback) или причина простоя, например calibrating gravity.</td><td>Agent</td></tr>
+          <tr><td>Predicted Terminal Free Energy</td><td>Предсказанное планировщиком изменение свободной энергии раскладки для лучшей действующей политики относительно бездействия. Отрицательное значение означает улучшение.</td><td>Agent</td></tr>
+          <tr><td>Next Invariant Vision <span class="tag">[PIXELS]</span></td><td>NEXT-фигура, распознанная по форме пикселей (без обращения к палитре), или прочерк.</td><td>Passive, Agent</td></tr>
+          <tr><td>Sequential Path Status</td><td>Какой путь планирования работает (sequence planner, reflex, Granite Fallback).</td><td>Agent</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="bi">
+      <div lang="en">
+        <h2>HOW THE AGENT DECIDES (IN SHORT)</h2>
+        <ul>
+          <li>A <b>policy</b> is a sequence of motor commands issued on motor ticks (150 ms). The agent simulates policies in its own pixel-derived model, using the observed gravity period and phase, until the piece lands (time-to-contact horizon).</li>
+          <li>Only the <b>terminal outcome</b> of a policy is scored: layout free energy F = (sealed voids)/10 + w·(stack potential energy), where w is a chosen weight. The agent compares each acting policy with <b>doing nothing</b>; equal outcomes are broken by fewer commands.</li>
+          <li><b>VETO:</b> if the best acting policy is harmful (its F change reaches the threshold Θ<sub>t</sub>, which shrinks when energy is low), the motor command is suppressed and the next plan skips the deep search. If nothing beats inaction, the agent simply holds.</li>
+          <li><b>Known limits of the model:</b> pieces rotate about their centroid (no wall kicks), there is no lock-delay slide, and the preference (voids, height) is a designer-chosen prior, not learned. The energy numbers are modeled, so lower energy changes behavior only through the gates above.</li>
+        </ul>
+      </div>
+      <div lang="ru">
+        <h2>КАК АГЕНТ ПРИНИМАЕТ РЕШЕНИЯ (КРАТКО)</h2>
+        <ul>
+          <li><b>Политика</b> — это последовательность моторных команд, выдаваемых на моторных тактах (150 мс). Агент симулирует политики в собственной модели, построенной из пикселей, используя наблюдаемый период и фазу гравитации, пока фигура не приземлится (горизонт времени до контакта).</li>
+          <li>Оценивается только <b>терминальный исход</b> политики: свободная энергия раскладки F = (запертые пустоты)/10 + w·(потенциальная энергия стека), где w — выбранный вес. Агент сравнивает каждую действующую политику с <b>бездействием</b>; при равных исходах выигрывает политика с меньшим числом команд.</li>
+          <li><b>VETO:</b> если лучшая действующая политика вредна (изменение её F достигает порога Θ<sub>t</sub>, который сжимается при низкой энергии), моторная команда подавляется, а следующий план пропускает глубокий поиск. Если ничто не лучше бездействия, агент просто ждёт.</li>
+          <li><b>Известные ограничения модели:</b> фигуры вращаются вокруг центроида (без wall kicks), нет скольжения при lock delay, а предпочтение (пустоты, высота) — выбранный разработчиком приор, а не обученное. Энергия модельная, поэтому низкая энергия меняет поведение только через перечисленные пороги.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="bi bi-head">
+      <div lang="en"><h2>ASSUMPTIONS OF THIS IMPLEMENTATION RELATIVE TO THE THEORY</h2></div>
+      <div lang="ru"><h2>ДОПУЩЕНИЯ ЭТОЙ РЕАЛИЗАЦИИ ОТНОСИТЕЛЬНО ТЕОРИИ</h2></div>
+    </div>
+    <div class="bi">
+      <div lang="en">
+        <p>
+          The blueprint (<code>README.md</code>, <code>mathematics.md</code>) is a general theory. This simulator is one
+          small, concrete instance of it, so it has to make choices the theory leaves open, and it simplifies some parts.
+          The table lists them openly. <b>Status</b>: <i>Instantiated</i> = implemented as the theory describes;
+          <i>Simplified</i> = a reduced stand-in; <i>Modeled</i> = simulated accounting, not real; <i>Not tested</i> = out of scope here.
+        </p>
+        <table>
+          <tr><th>Theory</th><th>In this simulator</th><th>Status</th></tr>
+          <tr><td>Multimodal imprint vector I<sub>t</sub></td><td>One modality only: the optical image of the game (pixels). One modality is a special case of the vector; other modalities are not simulated.</td><td>Simplified</td></tr>
+          <tr><td>Generative world model M(I<sub>t</sub>, ã)</td><td>A hand-built latent model of the game mechanics (gravity at the observed period and phase, line collapse, rotation about the centroid, no wall kicks), driven by the pixel-derived map. It is given by the designer as a prior, not learned.</td><td>Simplified</td></tr>
+          <tr><td>Hebbian imprinting of recurring patterns</td><td>Partial: the pixel model confirms stable structure over time, the gravity period is estimated from observation, the NEXT piece is recognized from its shape. Learning of preferences and of the transition model is not implemented.</td><td>Simplified</td></tr>
+          <tr><td>Variational free energy F</td><td>Not computed in full. The planner uses a layout free energy F = (sealed voids)/10 + w·(stack height energy), a declared task-specific prior preference. A separate pixel prediction error is shown as “Variational F (ROI avg)”. The rule “act only if F &lt; Θ<sub>t</sub>” is preserved.</td><td>Simplified</td></tr>
+          <tr><td>Information gain ΔI &gt; 0</td><td>Replaced by “act only if the best policy beats inaction (ΔF &lt; 0)”. The world is fully observable, so there is almost nothing hidden to learn about (except the NEXT piece); an explicit epistemic term is not implemented.</td><td>Simplified</td></tr>
+          <tr><td>Energy E<sub>total</sub>, costs ε (simulate) and Ω (act)</td><td>A modeled reserve E_flux with a fixed income and billed ops for the planner work actually executed; real CPU time is measured separately. In this game acting costs nothing physically, so the saving made by the veto is modeled, not demonstrated.</td><td>Modeled</td></tr>
+          <tr><td>Θ = f(1/E<sub>total</sub>)</td><td>The theory leaves f open. The simulator uses a Θ<sub>t</sub> that shrinks when energy is low (more restrictive when starving); low energy also switches off the deep search.</td><td>Instantiated (a choice of f)</td></tr>
+          <tr><td>Sensorimotor loop: explore, map X → Y</td><td>The motor repertoire (4 commands) and its effects are given by the transition model; there is no random exploration phase, passive observation replaces it. The agent acts only through the Markov blanket (Layer B).</td><td>Simplified</td></tr>
+          <tr><td>Internal simulation and inhibitory VETO</td><td>Implemented end to end: policies are simulated internally and a harmful best policy is suppressed; there is no override path.</td><td>Instantiated</td></tr>
+          <tr><td>Hardware independence, about 20 W</td><td>Not tested: it runs on an ordinary CPU; the Landauer figure is a model lower bound.</td><td>Not tested</td></tr>
+          <tr><td>Scale, dimensionality, emergence of will</td><td>Not tested: a 10×20 board and a body of at most 4 cells. The simulator does not claim the emergence of will, intelligence or AGI.</td><td>Not tested</td></tr>
+        </table>
+      </div>
+      <div lang="ru">
+        <p>
+          Чертёж (<code>README.md</code>, <code>mathematics.md</code>) — общая теория. Этот симулятор — один небольшой
+          конкретный её пример, поэтому ему приходится делать выбор там, где теория оставляет его открытым, и упрощать
+          некоторые части. Таблица перечисляет их открыто. <b>Статус</b>: <i>Реализовано</i> = сделано так, как описывает
+          теория; <i>Упрощено</i> = урезанная замена; <i>Модельное</i> = симулированный учёт, не реальный;
+          <i>Не проверяется</i> = вне рамок этого симулятора.
+        </p>
+        <table>
+          <tr><th>Теория</th><th>В этом симуляторе</th><th>Статус</th></tr>
+          <tr><td>Мультимодальный вектор импринта I<sub>t</sub></td><td>Одна модальность: оптическое изображение игры (пиксели). Одна модальность — частный случай вектора; другие модальности не симулируются.</td><td>Упрощено</td></tr>
+          <tr><td>Генеративная модель мира M(I<sub>t</sub>, ã)</td><td>Вручную построенная латентная модель механики игры (гравитация с наблюдаемым периодом и фазой, схлопывание линий, вращение вокруг центроида, без wall kicks), работающая на карте, полученной из пикселей. Задана разработчиком как приор, не обучена.</td><td>Упрощено</td></tr>
+          <tr><td>Хеббовский импринтинг повторяющихся паттернов</td><td>Частично: пиксельная модель со временем подтверждает устойчивую структуру, период гравитации оценивается по наблюдению, NEXT-фигура распознаётся по форме. Обучение предпочтений и модели переходов не реализовано.</td><td>Упрощено</td></tr>
+          <tr><td>Вариационная свободная энергия F</td><td>Не вычисляется полностью. Планировщик использует свободную энергию раскладки F = (запертые пустоты)/10 + w·(энергия высоты стека) — объявленное предпочтение-приор, специфичное для задачи. Отдельная ошибка предсказания пикселей показана как «Variational F (ROI avg)». Правило «действовать только если F &lt; Θ<sub>t</sub>» сохранено.</td><td>Упрощено</td></tr>
+          <tr><td>Информационный прирост ΔI &gt; 0</td><td>Заменён правилом «действовать только если лучшая политика лучше бездействия (ΔF &lt; 0)». Мир полностью наблюдаем, поэтому скрытого для изучения почти нет (кроме NEXT-фигуры); явного эпистемического члена нет.</td><td>Упрощено</td></tr>
+          <tr><td>Энергия E<sub>total</sub>, затраты ε (симуляция) и Ω (действие)</td><td>Модельный запас E_flux с фиксированным притоком и начислением операций за реально выполненную работу планировщика; реальное время процессора измеряется отдельно. В этой игре действие физически ничего не стоит, поэтому экономия от вето моделируется, а не демонстрируется.</td><td>Модельное</td></tr>
+          <tr><td>Θ = f(1/E<sub>total</sub>)</td><td>Теория оставляет f открытой. Симулятор использует Θ<sub>t</sub>, который сжимается при низкой энергии (при голоде ограничительнее); низкая энергия также отключает глубокий поиск.</td><td>Реализовано (выбор f)</td></tr>
+          <tr><td>Сенсомоторный цикл: исследовать, строить карту X → Y</td><td>Моторный репертуар (4 команды) и его эффекты заданы моделью переходов; случайной фазы исследования нет, её заменяет пассивное наблюдение. Агент действует только через Markov blanket (Layer B).</td><td>Упрощено</td></tr>
+          <tr><td>Внутренняя симуляция и ингибиторное VETO</td><td>Реализовано целиком: политики симулируются внутри, а вредная лучшая политика подавляется; пути обхода нет.</td><td>Реализовано</td></tr>
+          <tr><td>Независимость от носителя, около 20 Вт</td><td>Не проверяется: работает на обычном процессоре; число Ландауэра — модельная нижняя граница.</td><td>Не проверяется</td></tr>
+          <tr><td>Масштаб, размерность, возникновение воли</td><td>Не проверяется: поле 10×20 и тело не более 4 клеток. Симулятор не заявляет возникновения воли, интеллекта или AGI.</td><td>Не проверяется</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="bi">
+      <div lang="en">
+        <h2>DOES THIS BREAK THE CONCEPT?</h2>
+        <p>
+          No. The simulator is a minimal instance of the mechanisms of the blueprint: internal simulation of actions, an
+          inhibitory VETO, energy-gated depth of planning, and a sensorimotor boundary (the Markov blanket), in a toy
+          world. The simplifications <b>narrow what is demonstrated</b>; they do not contradict the axioms. The theory fixes
+          the structure of the decision (simulate first, suppress what does not pay), not a particular surprise measure,
+          world model or environment.
+        </p>
+        <ul>
+          <li><b>What it can show:</b> the mechanism works end to end, from pixels only, with honest accounting.</li>
+          <li><b>What it cannot show:</b> energy saving on real actuators, emergent agency, scaling with dimensionality, a learned preference, hardware independence.</li>
+          <li><b>What would be a real violation, and is absent:</b> the agent has no access to the game state (only pixels), acts only through the blanket, has no board or palette oracle, and measured, pixel-derived and modeled quantities are labelled separately.</li>
+        </ul>
+      </div>
+      <div lang="ru">
+        <h2>НАРУШАЕТ ЛИ ЭТО КОНЦЕПЦИЮ?</h2>
+        <p>
+          Нет. Симулятор — минимальный пример механизмов чертежа: внутренняя симуляция действий, ингибиторное VETO,
+          зависимость глубины планирования от энергии и сенсомоторная граница (Markov blanket) в игрушечном мире.
+          Упрощения <b>сужают то, что демонстрируется</b>, но не противоречат аксиомам. Теория фиксирует структуру
+          решения (сначала симулировать, подавлять то, что не окупается), а не конкретную меру удивления, модель мира
+          или среду.
+        </p>
+        <ul>
+          <li><b>Что он может показать:</b> механизм работает целиком, только по пикселям, с честным учётом.</li>
+          <li><b>Чего он показать не может:</b> экономию энергии на реальных актуаторах, возникновение агентности, масштабирование с размерностью, обученное предпочтение, независимость от носителя.</li>
+          <li><b>Что было бы настоящим нарушением и отсутствует:</b> у агента нет доступа к состоянию игры (только пиксели), он действует только через blanket, у него нет оракула поля или палитры, а измеренные, полученные из пикселей и модельные величины помечены отдельно.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <script>
+/**
+ * Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
+ * © 2026 NecPU Core Architecture. Licensed under CC BY-NC 4.0 — see LICENSE.
+ * Proprietary and Confidential.
+ *
+ * Conceptual Priority & Timestamp registered by:
+ * "Thermodynamic Optimization and Predictive Virtualization: An Architecture for Non-Autoregressive Sovereign AGI Systems"
+ * Author/IP Owner: NecPU (GitHub Discussions / Closed Depository).
+ *
+ * This architecture implements the Free Energy Principle (FEP) with a Discrete-Event VETO Cascade
+ * optimized under Landauer's Thermodynamic Limit (\Delta S >= k_B ln 2).
+ */
+
+(function bootstrapPhase20() {
+  'use strict';
+
+  /** Boltzmann constant (J/K). Landauer bound: k_B·T·ln2 joules per erased bit; k_B·ln2 (J/K) is its entropy form. */
+  const K_B = 1.380649e-23;
+  const LANDAUER_DS_MIN = K_B * Math.LN2;
+
+  const CANVAS_W = 520;
+  const CANVAS_H = 440;
+  const COLS = 10;
+  const ROWS = 20;
+  const CELL = 18;
+  const BOARD_W = COLS * CELL;
+  const BOARD_H = ROWS * CELL;
+  const PREVIEW_SIZE = 90;
+  const CLUSTER_GAP = 20;
+
+  const CLUSTER_W = BOARD_W + CLUSTER_GAP + PREVIEW_SIZE;
+  const ORIGIN_X = Math.floor((CANVAS_W - CLUSTER_W) / 2);
+  const ORIGIN_Y = Math.floor((CANVAS_H - BOARD_H) / 2);
+
+  const COLORS = {
+    I: '#22d3ee', O: '#fbbf24', T: '#a855f7', S: '#22c55e',
+    Z: '#ef4444', J: '#3b82f6', L: '#f97316'
+  };
+
+  const SHAPES = {
+    I: [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]],
+    O: [[1, 1], [1, 1]],
+    T: [[0, 1, 0], [1, 1, 1], [0, 0, 0]],
+    S: [[0, 1, 1], [1, 1, 0], [0, 0, 0]],
+    Z: [[1, 1, 0], [0, 1, 1], [0, 0, 0]],
+    J: [[1, 0, 0], [1, 1, 1], [0, 0, 0]],
+    L: [[0, 0, 1], [1, 1, 1], [0, 0, 0]]
+  };
+
+  const KEY_MAP = {
+    ArrowLeft: 'LEFT',
+    ArrowRight: 'RIGHT',
+    ArrowUp: 'ROTATE',
+    ArrowDown: 'SOFT_DOWN',
+    ' ': 'DROP',
+    Space: 'DROP'
+  };
+
+  /* ==========================================================================
+   * Layer A — External Environment (Game Grid). No exports of game state.
+   * ========================================================================== */
+  function createGameGridEnvironment(canvas, onGameOver) {
+    const ctx = canvas.getContext('2d', { alpha: false });
+    let grid = createEmptyGrid();
+    let current = null;
+    let nextPiece = randomPiece();
+    let dropAccumulator = 0;
+    let dropIntervalMs = 800;
+    let lockTimerMs = 0;
+    const LOCK_DELAY_MS = 500;
+    let running = true;
+    let isGameOver = false;
+    let score = 0;
+    let lines = 0;
+    let wallpaper = null;
+    /** Demo-mode switch — owned by the orchestrator through setPassiveMode(); never touched by Layer C. */
+    let passiveMode = false;
+
+    function createEmptyGrid() {
+      return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+    }
+
+    function randomPiece() {
+      const keys = Object.keys(SHAPES);
+      const type = keys[Math.floor(Math.random() * keys.length)];
+      return {
+        type,
+        matrix: SHAPES[type].map(row => row.slice()),
+        x: Math.floor(COLS / 2) - 2,
+        y: -1
+      };
+    }
+
+    function rotateMatrix(m) {
+      const n = m.length;
+      const res = Array.from({ length: n }, () => Array(n).fill(0));
+      for (let y = 0; y < n; y++) {
+        for (let x = 0; x < n; x++) res[x][n - 1 - y] = m[y][x];
+      }
+      return res;
+    }
+
+    function collides(piece, offX, offY, matrix) {
+      const m = matrix || piece.matrix;
+      for (let y = 0; y < m.length; y++) {
+        for (let x = 0; x < m[y].length; x++) {
+          if (!m[y][x]) continue;
+          const gx = piece.x + x + offX;
+          const gy = piece.y + y + offY;
+          if (gx < 0 || gx >= COLS || gy >= ROWS) return true;
+          if (gy >= 0 && grid[gy][gx]) return true;
+        }
+      }
+      return false;
+    }
+
+    function mergePiece() {
+      const m = current.matrix;
+      for (let y = 0; y < m.length; y++) {
+        for (let x = 0; x < m[y].length; x++) {
+          if (!m[y][x]) continue;
+          const gy = current.y + y;
+          const gx = current.x + x;
+          if (gy >= 0 && gy < ROWS && gx >= 0 && gx < COLS) {
+            grid[gy][gx] = current.type;
+          }
+        }
+      }
+    }
+
+    function clearLines() {
+      let cleared = 0;
+      for (let y = ROWS - 1; y >= 0; y--) {
+        if (grid[y].every(cell => cell)) {
+          grid.splice(y, 1);
+          grid.unshift(Array(COLS).fill(null));
+          cleared++;
+          y++;
+        }
+      }
+      if (cleared) {
+        lines += cleared;
+        score += [0, 100, 300, 500, 800][cleared] || 800;
+      }
+      return cleared;
+    }
+
+    const PASSIVE_DROP_INTERVAL_MS = 175;
+    /** Stage 2 uses responsive pacing aligned with passive baseline (no 800ms slow-motion cliff). */
+    const NORMAL_DROP_INTERVAL_MS = 200;
+
+    function cloneGridState(g) {
+      return g.map(row => row.slice());
+    }
+
+    function collidesOnGrid(g, matrix, px, py) {
+      for (let y = 0; y < matrix.length; y++) {
+        for (let x = 0; x < matrix[y].length; x++) {
+          if (!matrix[y][x]) continue;
+          const gx = px + x;
+          const gy = py + y;
+          if (gx < 0 || gx >= COLS || gy >= ROWS) return true;
+          if (gy >= 0 && g[gy][gx]) return true;
+        }
+      }
+      return false;
+    }
+
+    function stampMatrixOnGrid(g, matrix, px, py, type) {
+      for (let y = 0; y < matrix.length; y++) {
+        for (let x = 0; x < matrix[y].length; x++) {
+          if (!matrix[y][x]) continue;
+          const gy = py + y;
+          const gx = px + x;
+          if (gy >= 0 && gy < ROWS && gx >= 0 && gx < COLS) g[gy][gx] = type;
+        }
+      }
+    }
+
+    function findLandingRow(g, matrix, px) {
+      let py = -matrix.length;
+      while (!collidesOnGrid(g, matrix, px, py + 1)) py++;
+      return py;
+    }
+
+    function columnHeights(g) {
+      const heights = Array(COLS).fill(0);
+      for (let x = 0; x < COLS; x++) {
+        for (let y = 0; y < ROWS; y++) {
+          if (g[y][x]) {
+            heights[x] = ROWS - y;
+            break;
+          }
+        }
+      }
+      return heights;
+    }
+
+    function countHoles(g) {
+      let holes = 0;
+      for (let x = 0; x < COLS; x++) {
+        let sealed = false;
+        for (let y = 0; y < ROWS; y++) {
+          if (g[y][x]) sealed = true;
+          else if (sealed) holes++;
+        }
+      }
+      return holes;
+    }
+
+    function surfaceBumpiness(g) {
+      const h = columnHeights(g);
+      let bump = 0;
+      for (let x = 0; x < COLS - 1; x++) bump += Math.abs(h[x] - h[x + 1]);
+      return bump;
+    }
+
+    function countFullLines(g) {
+      let full = 0;
+      for (let y = 0; y < ROWS; y++) {
+        if (g[y].every(cell => cell)) full++;
+      }
+      return full;
+    }
+
+    function rotationVariants(matrix) {
+      const variants = [];
+      let m = matrix.map(row => row.slice());
+      for (let i = 0; i < 4; i++) {
+        const key = JSON.stringify(m);
+        if (!variants.some(v => JSON.stringify(v) === key)) {
+          variants.push(m.map(row => row.slice()));
+        }
+        m = rotateMatrix(m);
+      }
+      return variants;
+    }
+
+    function scorePlacement(g, matrix, px, type) {
+      const landingY = findLandingRow(g, matrix, px);
+      if (landingY < -matrix.length + 1) return -Infinity;
+      const trial = cloneGridState(g);
+      stampMatrixOnGrid(trial, matrix, px, landingY, type);
+      const holes = countHoles(trial);
+      const bump = surfaceBumpiness(trial);
+      const clears = countFullLines(trial);
+      return clears * 1200 - holes * 55 - bump * 4;
+    }
+
+    /** Stage-1 competent solver: pick rotation/column minimizing holes & bump, maximizing clears. */
+    function applyPassiveHeuristicPlacement() {
+      if (!passiveMode || !current) return;
+      let bestScore = -Infinity;
+      let bestMatrix = current.matrix.map(row => row.slice());
+      let bestX = current.x;
+      const variants = rotationVariants(current.matrix);
+      for (const matrix of variants) {
+        for (let px = -2; px < COLS; px++) {
+          const score = scorePlacement(grid, matrix, px, current.type);
+          if (score > bestScore) {
+            bestScore = score;
+            bestMatrix = matrix.map(row => row.slice());
+            bestX = px;
+          }
+        }
+      }
+      current.matrix = bestMatrix;
+      current.x = bestX;
+      current.y = -1;
+    }
+
+    function spawnPiece() {
+      current = nextPiece;
+      nextPiece = randomPiece();
+      current.x = Math.floor(COLS / 2) - 2;
+      current.y = -1;
+      lockTimerMs = 0;
+      if (passiveMode) {
+        applyPassiveHeuristicPlacement();
+      }
+      if (collides(current, 0, 0)) {
+        isGameOver = true;
+        current = null;
+        if (typeof onGameOver === 'function') onGameOver();
+        return;
+      }
+    }
+
+    function hardDrop() {
+      if (isGameOver || !current) return;
+      while (!collides(current, 0, 1)) current.y++;
+      lockTimerMs = LOCK_DELAY_MS;
+      mergePiece();
+      clearLines();
+      spawnPiece();
+    }
+
+    function tryMove(dx, dy) {
+      if (!current) return false;
+      if (!collides(current, dx, dy)) {
+        current.x += dx;
+        current.y += dy;
+        /** Do not reset lock delay while grounded — prevents lateral AIF from infinite slide. */
+        if (dy === 0 && !collides(current, 0, 1)) {
+          lockTimerMs = 0;
+        }
+        return true;
+      }
+      return false;
+    }
+
+    function tryRotate() {
+      if (!current) return false;
+      const rotated = rotateMatrix(current.matrix);
+      const kicks = [0, -1, 1, -2, 2];
+      for (const k of kicks) {
+        if (!collides(current, k, 0, rotated)) {
+          current.matrix = rotated;
+          current.x += k;
+          if (!collides(current, 0, 1)) {
+            lockTimerMs = 0;
+          }
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function handleAction(action) {
+      if (isGameOver || !running || !current) return;
+      switch (action) {
+        case 'LEFT': tryMove(-1, 0); break;
+        case 'RIGHT': tryMove(1, 0); break;
+        case 'ROTATE': tryRotate(); break;
+        case 'SOFT_DOWN':
+          if (!tryMove(0, 1)) lockTimerMs += 16;
+          break;
+        case 'DROP': hardDrop(); break;
+        default: break;
+      }
+    }
+
+    function onKeyDown(ev) {
+      const action = KEY_MAP[ev.key];
+      if (!action) return;
+      ev.preventDefault();
+      handleAction(action);
+    }
+
+    function buildWallpaper() {
+      const off = document.createElement('canvas');
+      off.width = CANVAS_W;
+      off.height = CANVAS_H;
+      const g = off.getContext('2d');
+      const grd = g.createLinearGradient(0, 0, CANVAS_W, CANVAS_H);
+      grd.addColorStop(0, '#1a1f35');
+      grd.addColorStop(0.5, '#0f1424');
+      grd.addColorStop(1, '#252040');
+      g.fillStyle = grd;
+      g.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      g.strokeStyle = 'rgba(56, 189, 248, 0.25)';
+      g.lineWidth = 2;
+      g.strokeRect(ORIGIN_X - 18, ORIGIN_Y - 18, CLUSTER_W + 36, BOARD_H + 36);
+
+      g.fillStyle = 'rgba(148, 163, 184, 0.85)';
+      /* Credits live in the free right margin (x > board cluster frame), top-right, so they never overlap
+       * the board, the NEXT preview or the SCORE/LINES line. */
+      g.font = '9px Segoe UI, system-ui, sans-serif';
+      g.textAlign = 'right';
+      const creditX = CANVAS_W - 8;
+      const creditLines = [
+        '© 2026 NecPU Core',
+        'Architecture',
+        'Phase 20.21 Monitor',
+        '',
+        'Thermodynamic',
+        'Optimization and',
+        'Predictive',
+        'Virtualization',
+        '',
+        'Environment Layer A',
+        'no agent coupling'
+      ];
+      for (let i = 0; i < creditLines.length; i++) g.fillText(creditLines[i], creditX, ORIGIN_Y + 4 + i * 12);
+      g.textAlign = 'left';
+
+      g.fillStyle = 'rgba(34, 211, 238, 0.9)';
+      g.font = '600 13px Segoe UI, system-ui, sans-serif';
+      g.fillText('NecPU GAME GRID', ORIGIN_X, ORIGIN_Y - 28);
+
+      g.fillStyle = 'rgba(148, 163, 184, 0.7)';
+      g.font = '10px Segoe UI, system-ui, sans-serif';
+      g.fillText('NEXT', ORIGIN_X + BOARD_W + CLUSTER_GAP, ORIGIN_Y + 12);
+
+      wallpaper = g.getImageData(0, 0, CANVAS_W, CANVAS_H);
+    }
+
+    function drawCell(x, y, color, alpha) {
+      if (alpha === undefined) alpha = 1;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, CELL - 1, CELL - 1);
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.6)';
+      ctx.strokeRect(x, y, CELL - 1, CELL - 1);
+      ctx.globalAlpha = 1;
+    }
+
+    function drawBoard() {
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+          const t = grid[y][x];
+          if (t) {
+            drawCell(ORIGIN_X + x * CELL, ORIGIN_Y + y * CELL, COLORS[t]);
+          } else {
+            ctx.fillStyle = 'rgba(30, 41, 59, 0.55)';
+            ctx.fillRect(ORIGIN_X + x * CELL, ORIGIN_Y + y * CELL, CELL - 1, CELL - 1);
+          }
+        }
+      }
+    }
+
+    function drawPiece(piece, ox, oy) {
+      const m = piece.matrix;
+      for (let y = 0; y < m.length; y++) {
+        for (let x = 0; x < m[y].length; x++) {
+          if (!m[y][x]) continue;
+          drawCell(ox + (piece.x + x) * CELL, oy + (piece.y + y) * CELL, COLORS[piece.type]);
+        }
+      }
+    }
+
+    function drawPreview() {
+      const px = ORIGIN_X + BOARD_W + CLUSTER_GAP;
+      const py = ORIGIN_Y + 24;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+      ctx.fillRect(px, py, PREVIEW_SIZE, PREVIEW_SIZE);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+      ctx.strokeRect(px, py, PREVIEW_SIZE, PREVIEW_SIZE);
+      if (!nextPiece) return;
+      const m = nextPiece.matrix;
+      const color = COLORS[nextPiece.type];
+      const bw = m[0].length * CELL;
+      const bh = m.length * CELL;
+      const sx = px + (PREVIEW_SIZE - bw) / 2;
+      const sy = py + (PREVIEW_SIZE - bh) / 2;
+      for (let y = 0; y < m.length; y++) {
+        for (let x = 0; x < m[y].length; x++) {
+          if (m[y][x]) drawCell(sx + x * CELL, sy + y * CELL, color);
+        }
+      }
+    }
+
+    function drawHud() {
+      ctx.fillStyle = 'rgba(226, 232, 240, 0.85)';
+      ctx.font = '11px ui-monospace, monospace';
+      ctx.fillText(`SCORE ${score}`, ORIGIN_X, ORIGIN_Y + BOARD_H + 22);
+      ctx.fillText(`LINES ${lines}`, ORIGIN_X + 120, ORIGIN_Y + BOARD_H + 22);
+    }
+
+    function render() {
+      if (wallpaper) ctx.putImageData(wallpaper, 0, 0);
+      else buildWallpaper();
+      drawBoard();
+      if (current) drawPiece(current, ORIGIN_X, ORIGIN_Y);
+      drawPreview();
+      drawHud();
+    }
+
+    function update(dtMs) {
+      if (isGameOver) return;
+      if (!running || !current) return;
+      dropIntervalMs = passiveMode ? PASSIVE_DROP_INTERVAL_MS : NORMAL_DROP_INTERVAL_MS;
+      dropAccumulator += dtMs;
+      while (dropAccumulator >= dropIntervalMs) {
+        dropAccumulator -= dropIntervalMs;
+        if (!tryMove(0, 1)) {
+          lockTimerMs += dropIntervalMs;
+        } else {
+          lockTimerMs = 0;
+        }
+      }
+      if (current && collides(current, 0, 1)) {
+        lockTimerMs += dtMs;
+        if (lockTimerMs >= LOCK_DELAY_MS) {
+          mergePiece();
+          clearLines();
+          spawnPiece();
+        }
+      } else if (current) {
+        lockTimerMs = 0;
+      }
+    }
+
+    function reset() {
+      isGameOver = false;
+      grid = createEmptyGrid();
+      score = 0;
+      lines = 0;
+      nextPiece = randomPiece();
+      spawnPiece();
+      dropAccumulator = 0;
+      lockTimerMs = 0;
+      buildWallpaper();
+    }
+
+    function start() {
+      canvas.addEventListener('keydown', onKeyDown);
+      if (!current) reset();
+    }
+
+    function stop() {
+      running = false;
+      canvas.removeEventListener('keydown', onKeyDown);
+    }
+
+    function resume() {
+      running = true;
+    }
+
+    /** Public surface for Layer B only: render tick + action injection (no state reads). */
+    return {
+      start,
+      stop,
+      resume,
+      reset,
+      render,
+      update,
+      applyMotorSignal(action) { handleAction(action); },
+      setPassiveMode(on) { passiveMode = !!on; },
+      focusEnvironment() { canvas.focus(); }
+    };
+  }
+
+  /* ==========================================================================
+   * Layer B — Markov Blanket (sensory capture + motor actualization)
+   * ========================================================================== */
+  /**
+   * Layer B — Markov Blanket (RAF-synchronous WebGL readback + direct motor ingress).
+   * One persistent WebGLTexture + one persistent Framebuffer are allocated at boot (and only again
+   * after a context-restore event). The hot path performs texSubImage2D + readPixels in place into a
+   * pre-allocated Uint8Array that aliases the ImageData backing store: zero JS allocations per frame,
+   * zero GL object churn, no getImageData fallback.
+   * Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
+   */
+  function createMarkovBlanket(canvas, environment) {
+    const sensoryBacking = new Uint8ClampedArray(CANVAS_W * CANVAS_H * 4);
+    const sensoryFrameBuffer = new ImageData(sensoryBacking, CANVAS_W, CANVAS_H);
+    /** Uint8Array alias of the same ArrayBuffer — gl.readPixels writes straight into the sensory frame. */
+    const readbackView = new Uint8Array(sensoryBacking.buffer);
+
+    const captureGlCanvas = document.createElement('canvas');
+    captureGlCanvas.width = CANVAS_W;
+    captureGlCanvas.height = CANVAS_H;
+    const gl = captureGlCanvas.getContext('webgl', {
+      alpha: false,
+      antialias: false,
+      depth: false,
+      stencil: false,
+      preserveDrawingBuffer: false
+    });
+
+    let captureTexture = null;
+    let captureFbo = null;
+    let operational = false;
+    let faultReason = 'WebGL unavailable';
+
+    /** Boot-time (and context-restore) allocation — never called from captureFrame(). */
+    function allocateCaptureResources() {
+      if (!gl || gl.isContextLost()) {
+        operational = false;
+        faultReason = 'WebGL context unavailable';
+        return false;
+      }
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+      gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+
+      captureTexture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, captureTexture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      /* Storage MUST exist before the FBO attachment, otherwise the framebuffer is INCOMPLETE_ATTACHMENT. */
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, CANVAS_W, CANVAS_H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+
+      captureFbo = gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, captureFbo);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, captureTexture, 0);
+      const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+      operational = status === gl.FRAMEBUFFER_COMPLETE;
+      faultReason = operational ? '' : 'Framebuffer incomplete (0x' + status.toString(16) + ')';
+      return operational;
+    }
+
+    captureGlCanvas.addEventListener('webglcontextlost', (ev) => {
+      ev.preventDefault();
+      operational = false;
+      faultReason = 'WebGL context lost';
+    });
+    captureGlCanvas.addEventListener('webglcontextrestored', () => {
+      allocateCaptureResources();
+    });
+    allocateCaptureResources();
+
+    const VALID_MOTOR_SIGNALS = {
+      LEFT: 1,
+      RIGHT: 1,
+      ROTATE: 1,
+      SOFT_DOWN: 1,
+      DROP: 1
+    };
+
+    /**
+     * Zero-allocation sensory capture. Returns the shared ImageData, or null when Layer B is offline
+     * (there is intentionally no 2D getImageData fallback on the hot path).
+     * Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
+     */
+    function captureFrame() {
+      if (!operational) return null;
+      gl.bindTexture(gl.TEXTURE_2D, captureTexture);
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, captureFbo);
+      gl.readPixels(0, 0, CANVAS_W, CANVAS_H, gl.RGBA, gl.UNSIGNED_BYTE, readbackView);
+      return sensoryFrameBuffer;
+    }
+
+    /** Direct programmatic motor ingress (autonomous path — no KeyboardEvent synthesis). */
+    function actualizeMotorCommand(signal) {
+      if (!VALID_MOTOR_SIGNALS[signal]) return false;
+      environment.applyMotorSignal(signal);
+      return true;
+    }
+
+    return {
+      actualizeMotorCommand,
+      captureFrame,
+      isOperational() { return operational; },
+      faultReason() { return faultReason; }
+    };
+  }
+
+  /* ==========================================================================
+   * Layer C — NecPU Core Kernel (unified pixel world model, body tracker, latent policy, VETO)
+   * Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
+   *
+   * SCOPE: a software simulation of the architecture on a conventional silicon CPU. It is not an AGI
+   * and not a measurement of physical power. Energy (E_flux, ops, Landauer-floor power) is a MODEL —
+   * a simulation inside the simulation. It is only physically meaningful to the extent that the
+   * modeled work corresponds to work the CPU really performs.
+   *
+   * PROVENANCE OF CONSTANTS — every constant below is one of:
+   *   [PRIOR]       innate knowledge the agent is built with (declared, not learned)
+   *   [CALIBRATION] fitted to the sensor/rendering of this particular environment
+   *   [TUNED]       chosen by the designer; no derivation exists
+   *   [MODEL]       parameter of the simulated energy accounting
+   *
+   * INNATE PRIORS (what the agent knows without observing it):
+   *   - Pieces are tetrominoes: 7 shapes / 19 orientations (TETROMINO_TOPOLOGY), a live body has <= 4 cells.
+   *   - New pieces appear in the top L2_SPAWN_ROWS rows of the board; gravity points down; full rows vanish.
+   *   - The board is a 10x20 grid at fixed pixel coordinates (sensor calibration, see geometry below).
+   *   - Preferred outcome (prior preference C): few gravity-sealed voids and a low stack. Layout free energy
+   *     F = S + w·U, S = holes / COLS (disorder: a sealed void is priced as one row it blocks), U = sum of
+   *     heights of occupied cells (gravitational potential energy, normalised). The scales are [TUNED]. The agent's
+   *     quantity is F(terminal outcome of a policy) - F(outcome of inaction).
+   *   - Actions: LEFT, RIGHT, ROTATE, SOFT_DOWN (motor repertoire); a policy is a SEQUENCE of them over a
+   *     time-to-contact horizon. At equal F the policy with fewer commands wins (minimum dissipation).
+   *   - A latent copy of the game's mechanics (gravity at the OBSERVED period and phase, line collapse,
+   *     rotation about the centroid, no wall kicks, no lock-delay slide) is used as the transition model.
+   *     It is a hand-built model, not a learned one; where it differs from Layer A (kicks, lock delay)
+   *     the plan can be wrong.
+   * OBSERVED, NOT ASSUMED: the gravity period is estimated from the pixel-derived body track (median of
+   * clean one-row descents; own SOFT_DOWN excluded) and the settle window = SETTLE_PERIODS x period.
+   * L2_PIXEL_CONFIRM_MS / L2_BODY_CRYSTALLIZE_MS (fitted to the 175-200 ms gravity of Layer A) are only
+   * bootstrap values until >= GRAVITY_MIN_SAMPLES samples exist. After an abrupt switch to a much slower
+   * gravity a falling piece can briefly crystallize until the median catches up.
+   * CPU cost is MEASURED with performance.now() (sense and plan, EMA) and shown next to the modeled ops.
+   * ========================================================================== */
+  function createNecPUCore(markovBlanket, ui) {
+    /* ------------------------------------------------------------------ constants */
+    /** [CALIBRATION] temporal change gate: fraction of a full channel swing treated as "changed". */
+    const XI = 0.005;
+    /** Temporal change gate on the 0..765 channel-sum plane (XI of a full 3×255 swing). */
+    const TEMPORAL_DELTA_SUM = XI * 3 * 255;
+    /** [TUNED] passive observation time and observed line erasures required before actuation unlocks. */
+    const STABLE_TIME_TARGET_MS = 10000;
+    const DEMO_LINES_REQUIRED = 10;
+    const E_MAX = 1.0;
+    /** [TUNED] energy level above which the deep sequence search is allowed (below it: single-command reflex). */
+    const E_FLUX_DEEP_PLANNING = 0.6;
+    /** [TUNED] minimum interval between motor commands (agent actuation latency). */
+    const MOTOR_REFRACTORY_MS = 150;
+    const AUTONOMOUS_METABOLISM_GUARD_MS = 80;
+    const POLICY_LOG_INTERVAL_MS = 500;
+    const VETO_LOG_INTERVAL_MS = 500;
+    const LATENT_CELLS = COLS * ROWS;
+    const SENSORY_PIXEL_COUNT = CANVAS_W * CANVAS_H;
+
+    /** [CALIBRATION] Monochrome sensing gates — luminance polarity of the glass (bright mass on a dark void). */
+    const L2_MASS_LUM_GATE = 72;
+    const L2_MASS_SUM_GATE = L2_MASS_LUM_GATE * 3;
+    const L2_RIDGE_SUM_MIN = 14 * 3;
+    /** [CALIBRATION] Time-normalized gates (ms of simulated clock — refresh-rate invariant; fitted to Layer A gravity). */
+    /** Bootstrap values only: used until the gravity period has been observed from pixels (see below). */
+    const L2_PIXEL_CONFIRM_MS = 300;
+    const L2_BODY_CRYSTALLIZE_MS = 320;
+    /**
+     * [MEASURED] Gravity is observed, not assumed: the median interval between clean one-row descents of the
+     * tracked body. Once known, the settle window (pixel confirmation and body crystallization) is
+     * SETTLE_PERIODS × period — a body that has not stepped for 1.5 periods is not falling any more.
+     * [TUNED] SETTLE_PERIODS, GRAVITY_SAMPLE_WINDOW, GRAVITY_MIN_SAMPLES.
+     */
+    const SETTLE_PERIODS = 1.5;
+    const GRAVITY_SAMPLE_WINDOW = 5;
+    const GRAVITY_MIN_SAMPLES = 3;
+    /** Smoothing of measured per-frame CPU times (performance.now()). */
+    const MEASURE_EMA_ALPHA = 0.1;
+    const L2_INK_COOL_MS = 300;
+    const L2_PREVIEW_LOCK_MS = 120;
+    const L2_PIXEL_AGE_CAP_MS = 60000;
+    /** [CALIBRATION] Cell occupancy quorum: mass pixels (of 17×17) required to call a 10×20 cell occupied.
+     *  [PRIOR] L2_SPAWN_ROWS / L2_SPAWN_MIN_CELLS: where and how large a newly appearing body is.
+     *  [PRIOR] L2_CLEAR_SPAWN_SLACK: a line erasure is a full row followed by a >= (COLS - slack) cell occupancy collapse. */
+    const L2_CELL_OCC_QUORUM = 150;
+    const L2_SPAWN_ROWS = 2;
+    const L2_SPAWN_MIN_CELLS = 2;
+    const L2_CLEAR_SPAWN_SLACK = 6;
+
+    /** Monochrome cognitive palette — Layer-2 never copies Layer A RGB. */
+    const L2_SPACE_VOID_R = 9;
+    const L2_SPACE_VOID_G = 13;
+    const L2_SPACE_VOID_B = 22;
+    const L2_GRID_CYBER_R = 2;
+    const L2_GRID_CYBER_G = 132;
+    const L2_GRID_CYBER_B = 199;
+    const L2_AMBER_R = 245;
+    const L2_AMBER_G = 158;
+    const L2_AMBER_B = 11;
+    const L2_AMBER_ALPHA_Q8 = 128;
+    const L2_DULL_ORANGE_R = 150;
+    const L2_DULL_ORANGE_G = 78;
+    const L2_DULL_ORANGE_B = 8;
+    const L2_INK_LEVELS = 16;
+
+    /* Metabolism — [MODEL]: simulated energy accounting (a simulation inside the simulation). The ops costs
+     * below are assumed, not measured; they are the CPU work the agent is *modeled* to perform. */
+    const METABOLIC_BASELINE_OPS = 2000;
+    const METABOLIC_SENSOR_COST_PER_PIXEL = 12;
+    /* Modeled cost of planner work, billed from real counters of what the planner executed. */
+    const METABOLIC_OPS_PER_TRANSITION = 1;
+    const METABOLIC_OPS_PER_OUTCOME = 8;
+    const METABOLIC_OPS_PER_FUTURE_PLACEMENT = 6;
+    const METABOLIC_EFLUX_NORM = 1.0 / 2500000;
+    const METABOLIC_REFERENCE_FRAME_MS = 1000 / 60;
+    /**
+     * [TUNED] Homeostatic energy income (E_flux units per millisecond of simulated clock — refresh-rate
+     * invariant). It was chosen to cover the modeled cost of the intended scenario, so it is a design
+     * decision, not a derived quantity. Basis: a sensing frame with one live body (4 cells = 1156 px) bills
+     * about 2000 + 1156*12 = 15.9k ops = 3.8e-4 E_flux/ms (drain is dt-normalized, so this holds at any
+     * RAF rate), plus a deep planning pass every MOTOR_REFRACTORY_MS (measured in ops from real counters,
+     * ~0.5-1% of E_flux per pass). 5.0e-4/ms covers that with margin: a cleanly moving agent holds
+     * E_flux above E_FLUX_DEEP_PLANNING, while sensor-error bursts (thousands of dynamic pixels) or
+     * sustained heavy planning still outspend the income and fall back to reflex.
+     */
+    const METABOLIC_INCOME_PER_MS = 5.0e-4;
+    /** [TUNED] Veto threshold scales WITH energy: Theta_t = MIN * (1 + 2*E_flux) -> MIN when starved, 3*MIN when full. */
+    const THETA_T_MIN = 0.015;
+    /** [TUNED] Below this confirmed-pixel share of the board ROI the world model is not trusted: reflex-only (Granite Fallback). */
+    const GRANITE_FALLBACK_MEMORY_PCT = 15.0;
+    /**
+     * [MODEL] Landauer-floor accounting: assumed operating temperature and bit erasures per modeled op.
+     * Energy per op = k_B·T·ln2·bits (joules); power = frame energy / frame time (watts). This is the
+     * thermodynamic LOWER BOUND for the modeled work, not the real consumption of the host CPU.
+     */
+    const MODEL_TEMPERATURE_K = 300;
+    const MODEL_BIT_ERASURES_PER_OP = 1;
+    const MODEL_LANDAUER_J_PER_OP = LANDAUER_DS_MIN * MODEL_TEMPERATURE_K * MODEL_BIT_ERASURES_PER_OP;
+    /** [TUNED] weight of the NEXT-piece term in the policy rank. */
+    const VARIATIONAL_FUTURE_GAMMA = 1.0;
+    /**
+     * [TUNED] weight of the stack's gravitational potential energy U in the layout free energy
+     * F = S + w·U (S = void disorder). U is normalised by U_full, the potential energy of a completely
+     * filled board, so U is in [0,1]. The physical form of U is fixed (sum of heights); only w is chosen.
+     */
+    const LAYOUT_ENERGY_WEIGHT = 1.0;
+    const LAYOUT_U_FULL = COLS * ((ROWS * (ROWS + 1)) / 2);
+    /**
+     * [TUNED] void normaliser: one sealed void costs 1/COLS, i.e. it is priced as a row it keeps from
+     * being cleared (a row has COLS cells). A chosen scale, not a derived one; it fixes the exchange rate
+     * between voids (S) and stack height (U).
+     */
+    const LAYOUT_HOLE_NORM = COLS;
+
+    /* ------------------------------------------------------------------ geometry (sensor calibration) */
+    const boardPx0 = ORIGIN_X;
+    const boardPy0 = ORIGIN_Y;
+    const boardPx1 = ORIGIN_X + BOARD_W;
+    const boardPy1 = ORIGIN_Y + BOARD_H;
+    const NEXT_PREVIEW_PX = ORIGIN_X + BOARD_W + CLUSTER_GAP;
+    const NEXT_PREVIEW_PY = ORIGIN_Y + 24;
+    const L2_PREVIEW_X0 = NEXT_PREVIEW_PX + 2;
+    const L2_PREVIEW_X1 = NEXT_PREVIEW_PX + PREVIEW_SIZE - 3;
+    const L2_PREVIEW_Y0 = NEXT_PREVIEW_PY + 2;
+    const L2_PREVIEW_Y1 = NEXT_PREVIEW_PY + PREVIEW_SIZE - 3;
+
+    /** pixel column -> game column (or -1); pixel row -> game row * COLS (or -1). */
+    const colCell = new Int8Array(CANVAS_W).fill(-1);
+    const rowCellBase = new Int16Array(CANVAS_H).fill(-1);
+    for (let gx = 0; gx < COLS; gx++) {
+      for (let k = 0; k < CELL; k++) colCell[ORIGIN_X + gx * CELL + k] = gx;
+    }
+    for (let gy = 0; gy < ROWS; gy++) {
+      for (let k = 0; k < CELL; k++) rowCellBase[ORIGIN_Y + gy * CELL + k] = gy * COLS;
+    }
+
+    /** Functional monochrome gradient of screen coordinates (0..127 per axis) for structure tone. */
+    const l2GradientX = new Uint8Array(CANVAS_W);
+    const l2GradientY = new Uint8Array(CANVAS_H);
+    for (let gxi = 0; gxi < CANVAS_W; gxi++) l2GradientX[gxi] = ((gxi * 127) / (CANVAS_W - 1)) | 0;
+    for (let gyi = 0; gyi < CANVAS_H; gyi++) l2GradientY[gyi] = ((gyi * 127) / (CANVAS_H - 1)) | 0;
+    /** Boot-time granite-ink cooling table: index = ink level (1..L2_INK_LEVELS). */
+    const l2AgingInkRgb = new Uint8Array((L2_INK_LEVELS + 1) * 3);
+    const l2AgingInkWeightQ8 = new Uint16Array(L2_INK_LEVELS + 1);
+    for (let h = 1; h <= L2_INK_LEVELS; h++) {
+      const t = h / L2_INK_LEVELS;
+      const base = h * 3;
+      l2AgingInkRgb[base] = (L2_DULL_ORANGE_R + (L2_AMBER_R - L2_DULL_ORANGE_R) * t) | 0;
+      l2AgingInkRgb[base + 1] = (L2_DULL_ORANGE_G + (L2_AMBER_G - L2_DULL_ORANGE_G) * t) | 0;
+      l2AgingInkRgb[base + 2] = (L2_DULL_ORANGE_B + (L2_AMBER_B - L2_DULL_ORANGE_B) * t) | 0;
+      l2AgingInkWeightQ8[h] = (L2_AMBER_ALPHA_Q8 * t) | 0;
+    }
+    const L2_INK_LEVEL_SCALE = (L2_INK_LEVELS - 1) / L2_INK_COOL_MS;
+
+    /* ------------------------------------------------------------------ world-model buffers (boot allocation) */
+    const prevSumPlane = new Uint16Array(SENSORY_PIXEL_COUNT);
+    const modelSumPlane = new Uint16Array(SENSORY_PIXEL_COUNT);
+    const pixelAgeMs = new Float32Array(SENSORY_PIXEL_COUNT);
+    const pixelConfirmed = new Uint8Array(SENSORY_PIXEL_COUNT);
+    const pixelInkHeatMs = new Float32Array(SENSORY_PIXEL_COUNT);
+    const pixelDynamic = new Uint8Array(SENSORY_PIXEL_COUNT);
+    const diffMapSensorBacking = new Uint8ClampedArray(SENSORY_PIXEL_COUNT * 4);
+    const diffMapSensorImage = new ImageData(diffMapSensorBacking, CANVAS_W, CANVAS_H);
+    const entropyPreviewCtx = ui.entropyCanvas.getContext('2d', { alpha: false });
+
+    /** 10×20 pixel-derived cell planes. */
+    const cellNowMass = new Uint16Array(LATENT_CELLS);
+    const cellModelMass = new Uint16Array(LATENT_CELLS);
+    const occNow = new Uint8Array(LATENT_CELLS);
+    const occPrev = new Uint8Array(LATENT_CELLS);
+    const newlyOccupied = new Uint8Array(LATENT_CELLS);
+    const bodyCells = new Uint8Array(LATENT_CELLS);
+    const bodyPrevScratch = new Uint8Array(LATENT_CELLS);
+    const spawnSeedScratch = new Uint8Array(LATENT_CELLS);
+    const supportScratch = new Uint8Array(LATENT_CELLS);
+    const visitScratch = new Uint8Array(LATENT_CELLS);
+    const compScratch = new Uint8Array(LATENT_CELLS);
+    const floodStack = new Int16Array(LATENT_CELLS);
+    /** Planner inputs — the SAME planes the display is painted from. */
+    const latentSensorDynamicCell = new Uint8Array(LATENT_CELLS);
+    const latentGraniteFloor = new Uint8Array(LATENT_CELLS);
+
+    let worldModelSeeded = 0;
+    let bodyCount = 0;
+    let bodyMovingCount = 0;
+    let bodyIdleMs = 0;
+    let bodyChangedFlag = false;
+    let staticCellCount = 0;
+    let frameDtMs = 0;
+
+    /* Gravity observed from the pixel-derived body track (never read from the environment). */
+    const gravitySampleRing = new Float32Array(GRAVITY_SAMPLE_WINDOW);
+    const gravitySortScratch = new Float32Array(GRAVITY_SAMPLE_WINDOW);
+    let gravitySampleCount = 0;
+    let gravitySampleHead = 0;
+    let gravityPeriodMs = 0;
+    let gravityLastStepClockMs = -1;
+    let gravityIntervalDirty = true;
+    let ownDownPending = false;
+    let bodyClockMs = 0;
+    let pixelConfirmMs = L2_PIXEL_CONFIRM_MS;
+    let bodyCrystallizeMs = L2_BODY_CRYSTALLIZE_MS;
+
+    /* Measured CPU time per frame (EMA of performance.now() deltas), ms. */
+    let measuredSenseMsEma = 0;
+    let measuredPlanMsEma = 0;
+
+    /** NEXT preview — monochrome occupancy raster + template cross-correlation (no hue mapping). */
+    const latentNextPieceGrid = new Uint8Array(16);
+    const latentNextShapeTypeToken = new Uint8Array(1);
+    const previewCellIntensity = new Uint8Array(16);
+    let previewSignature = 0;
+    let previewHoldMs = 0;
+    let previewLockedSignature = -1;
+    let nextInvariantVisionLabel = '—';
+    const TETROMINO_LABELS = ['I-Block', 'O-Block', 'T-Block', 'S-Block', 'Z-Block', 'J-Block', 'L-Block'];
+    /** Free tetromino topologies (x,y cells in a 4×4 frame) — structural prior of the piece set, no colour. */
+    const TETROMINO_TOPOLOGY = [
+      [[0, 0], [1, 0], [2, 0], [3, 0]],
+      [[0, 0], [1, 0], [0, 1], [1, 1]],
+      [[1, 0], [0, 1], [1, 1], [2, 1]],
+      [[1, 0], [2, 0], [0, 1], [1, 1]],
+      [[0, 0], [1, 0], [1, 1], [2, 1]],
+      [[0, 0], [0, 1], [1, 1], [2, 1]],
+      [[2, 0], [0, 1], [1, 1], [2, 1]]
+    ];
+    const templateBits = new Uint16Array(32);
+    const templateShape = new Uint8Array(32);
+    let templateCount = 0;
+    (function buildTemplates() {
+      for (let si = 0; si < TETROMINO_TOPOLOGY.length; si++) {
+        let cells = TETROMINO_TOPOLOGY[si].map((c) => [c[0], c[1]]);
+        for (let rot = 0; rot < 4; rot++) {
+          let minX = 99;
+          let minY = 99;
+          for (let k = 0; k < cells.length; k++) {
+            if (cells[k][0] < minX) minX = cells[k][0];
+            if (cells[k][1] < minY) minY = cells[k][1];
+          }
+          let bits = 0;
+          for (let k = 0; k < cells.length; k++) {
+            bits |= 1 << ((cells[k][1] - minY) * 4 + (cells[k][0] - minX));
+          }
+          let dup = false;
+          for (let t = 0; t < templateCount; t++) {
+            if (templateBits[t] === bits) dup = true;
+          }
+          if (!dup && templateCount < templateBits.length) {
+            templateBits[templateCount] = bits;
+            templateShape[templateCount] = si;
+            templateCount++;
+          }
+          cells = cells.map((c) => [-c[1], c[0]]);
+        }
+      }
+    })();
+
+    function popcount16(x) {
+      let n = 0;
+      while (x) {
+        x &= x - 1;
+        n++;
+      }
+      return n;
+    }
+
+    /** Cross-correlation density (IoU) of an anchored 4×4 occupancy mask against every orientation template. */
+    function classifyOccupancyMask(bits) {
+      let bestIdx = -1;
+      let bestScore = 0;
+      for (let t = 0; t < templateCount; t++) {
+        const inter = popcount16(bits & templateBits[t]);
+        const union = popcount16(bits | templateBits[t]);
+        const score = union > 0 ? inter / union : 0;
+        if (score > bestScore) {
+          bestScore = score;
+          bestIdx = templateShape[t];
+        }
+      }
+      return bestScore >= 0.99 ? bestIdx : -1;
+    }
+
+    /* ------------------------------------------------------------------ cognitive state */
+    let cognitiveLoopActive = false;
+    let cognitivePhase = 'idle';
+    let kernelStabilized = false;
+    let E_flux = E_MAX;
+    let freeEnergy = 0;
+    let prevFreeEnergy = 0;
+    let spatialMemoryDensityPct = 0;
+    let spatialSurpriseDelta = 0;
+    let staticConvergencePct = 0;
+    let stableTimeMs = 0;
+    let demoLinesCleared = 0;
+    let lastAction = '—';
+    let lastActionTimestamp = 0;
+    let generationCount = 0;
+    let generationLifetimeMs = 0;
+    let prevGenerationLifetimeBaselineMs = 0;
+    let activePlanningDepthLabel = 'Reflex (single command)';
+    let sequentialPathStatusLabel = 'Reflex Path';
+    let predictedTerminalFreeEnergy = 0;
+    let autonomousMetabolismGuardMs = 0;
+    /** Evaluation-count mechanism (not a time gate): next planning pass skips the deep sequence search. */
+    let vetoKinematicBypassFrames = 0;
+    let metabolicActivePixelCount = 0;
+    let lastFrameMetabolicOps = 0;
+    /** Modeled Landauer-floor power of the last billed frame (W) — see MODEL_LANDAUER_J_PER_OP. */
+    let modeledFramePowerW = 0;
+    let policyLogClockMs = 0;
+    let lastPolicyLogSignatureCode = -1;
+    let vetoLogClockMs = VETO_LOG_INTERVAL_MS;
+
+    const l2FrameView = { dynamicEnergy: 0, freeEnergy: 0, predictionError: 0 };
+    /** Work actually executed by the planner this frame (real counters; billed in computeFrameMetabolicOps). */
+    const metabolicFrameView = {
+      planningDepth: 1,
+      transitions: 0,
+      outcomes: 0,
+      futurePlacements: 0
+    };
+    const policySimResult = { freeEnergy: 0 };
+    const vetoResultView = { allow: false, proposedAction: '' };
+    const policyChoiceView = {
+      idle: false,
+      act: false,
+      proposed: '',
+      veto: vetoResultView,
+      simState: policySimResult,
+      Theta_t: 0,
+      planningDepth: 1
+    };
+
+    const simMerged = new Uint8Array(LATENT_CELLS);
+    const simCleared = new Uint8Array(LATENT_CELLS);
+    const simProbe = new Uint8Array(LATENT_CELLS);
+
+    const observerMetricsPayload = {
+      forceFlush: false,
+      cognitivePhase: '—',
+      staticConvergencePct: 0,
+      kernelStatus: '',
+      stableTimeMs: 0,
+      stableTimeTargetMs: STABLE_TIME_TARGET_MS,
+      demoLinesCleared: 0,
+      demoLinesRequired: DEMO_LINES_REQUIRED,
+      E_flux: E_MAX,
+      freeEnergy: 0,
+      dynamicCells: 0,
+      staticCells: 0,
+      lastAction: '—',
+      landauer: LANDAUER_DS_MIN,
+      generationCount: 0,
+      spatialMemoryDensityPct: 0,
+      spatialSurpriseDelta: 0,
+      generationLifetimeMs: 0,
+      prevGenerationLifetimeBaselineMs: 0,
+      activePlanningDepthLabel: '',
+      predictedTerminalFreeEnergy: 0,
+      nextInvariantVisionLabel: '—',
+      sequentialPathStatusLabel: '',
+      frameMetabolicOps: 0,
+      modeledFramePowerW: 0,
+      measuredSenseMs: 0,
+      measuredPlanMs: 0,
+      observedGravityPeriodMs: 0,
+      gravitySamples: 0
+    };
+
+    function log(msg) {
+      ui.appendLog(msg);
+    }
+
+    /* ------------------------------------------------------------------ world model lifecycle */
+    function resetWorldModel() {
+      worldModelSeeded = 0;
+      prevSumPlane.fill(0);
+      modelSumPlane.fill(0);
+      pixelAgeMs.fill(0);
+      pixelConfirmed.fill(0);
+      pixelInkHeatMs.fill(0);
+      pixelDynamic.fill(0);
+      occNow.fill(0);
+      occPrev.fill(0);
+      bodyCells.fill(0);
+      latentSensorDynamicCell.fill(0);
+      latentGraniteFloor.fill(0);
+      latentNextPieceGrid.fill(0);
+      latentNextShapeTypeToken[0] = 255;
+      bodyCount = 0;
+      bodyMovingCount = 0;
+      bodyIdleMs = 0;
+      /* The observed gravity period survives a reset (it is a learned property); only the chain restarts. */
+      gravityLastStepClockMs = -1;
+      gravityIntervalDirty = true;
+      ownDownPending = false;
+      staticCellCount = 0;
+      previewSignature = 0;
+      previewHoldMs = 0;
+      previewLockedSignature = -1;
+      nextInvariantVisionLabel = '—';
+      metabolicActivePixelCount = 0;
+      prevFreeEnergy = 0;
+    }
+
+    function resetPixelClearDetector() {
+      demoLinesCleared = 0;
+    }
+
+    /** Topmost floating (unsupported) occupied component of at most four cells = the in-flight body at boot. */
+    function seedBodyFromFloatingComponent() {
+      bodyCells.fill(0);
+      supportScratch.fill(0);
+      visitScratch.fill(0);
+      let sp = 0;
+      for (let gx = 0; gx < COLS; gx++) {
+        const c = (ROWS - 1) * COLS + gx;
+        if (occNow[c]) {
+          supportScratch[c] = 1;
+          floodStack[sp++] = c;
+        }
+      }
+      while (sp > 0) {
+        const c = floodStack[--sp];
+        const gx = c % COLS;
+        const gy = (c / COLS) | 0;
+        if (gx > 0 && occNow[c - 1] && !supportScratch[c - 1]) { supportScratch[c - 1] = 1; floodStack[sp++] = c - 1; }
+        if (gx < COLS - 1 && occNow[c + 1] && !supportScratch[c + 1]) { supportScratch[c + 1] = 1; floodStack[sp++] = c + 1; }
+        if (gy > 0 && occNow[c - COLS] && !supportScratch[c - COLS]) { supportScratch[c - COLS] = 1; floodStack[sp++] = c - COLS; }
+        if (gy < ROWS - 1 && occNow[c + COLS] && !supportScratch[c + COLS]) { supportScratch[c + COLS] = 1; floodStack[sp++] = c + COLS; }
+      }
+      let bestRow = 1e9;
+      for (let start = 0; start < LATENT_CELLS; start++) {
+        if (!occNow[start] || supportScratch[start] || visitScratch[start]) continue;
+        compScratch.fill(0);
+        let size = 0;
+        let minRow = 1e9;
+        visitScratch[start] = 1;
+        floodStack[sp++] = start;
+        while (sp > 0) {
+          const c = floodStack[--sp];
+          compScratch[c] = 1;
+          size++;
+          const gx = c % COLS;
+          const gy = (c / COLS) | 0;
+          if (gy < minRow) minRow = gy;
+          if (gx > 0 && occNow[c - 1] && !supportScratch[c - 1] && !visitScratch[c - 1]) { visitScratch[c - 1] = 1; floodStack[sp++] = c - 1; }
+          if (gx < COLS - 1 && occNow[c + 1] && !supportScratch[c + 1] && !visitScratch[c + 1]) { visitScratch[c + 1] = 1; floodStack[sp++] = c + 1; }
+          if (gy > 0 && occNow[c - COLS] && !supportScratch[c - COLS] && !visitScratch[c - COLS]) { visitScratch[c - COLS] = 1; floodStack[sp++] = c - COLS; }
+          if (gy < ROWS - 1 && occNow[c + COLS] && !supportScratch[c + COLS] && !visitScratch[c + COLS]) { visitScratch[c + COLS] = 1; floodStack[sp++] = c + COLS; }
+        }
+        if (size <= 4 && minRow < bestRow) {
+          bestRow = minRow;
+          bodyCells.set(compScratch);
+        }
+      }
+    }
+
+    /** Boot capture: model = first frame, every pixel confirmed, body seeded from the in-flight component. */
+    function seedWorldModel(src) {
+      cellNowMass.fill(0);
+      for (let py = 0; py < CANVAS_H; py++) {
+        const rowBase = py * CANVAS_W;
+        const cellRow = rowCellBase[py];
+        for (let px = 0; px < CANVAS_W; px++) {
+          const pidx = rowBase + px;
+          const i = pidx << 2;
+          const s = src[i] + src[i + 1] + src[i + 2];
+          prevSumPlane[pidx] = s;
+          modelSumPlane[pidx] = s;
+          pixelAgeMs[pidx] = L2_PIXEL_CONFIRM_MS;
+          pixelConfirmed[pidx] = 1;
+          pixelInkHeatMs[pidx] = 0;
+          pixelDynamic[pidx] = 0;
+          if (cellRow >= 0 && s >= L2_MASS_SUM_GATE) {
+            const cx = colCell[px];
+            if (cx >= 0) cellNowMass[cellRow + cx]++;
+          }
+        }
+      }
+      for (let c = 0; c < LATENT_CELLS; c++) {
+        occNow[c] = cellNowMass[c] >= L2_CELL_OCC_QUORUM ? 1 : 0;
+        occPrev[c] = occNow[c];
+      }
+      seedBodyFromFloatingComponent();
+      bodyIdleMs = 0;
+      worldModelSeeded = 1;
+    }
+
+    /* ------------------------------------------------------------------ body tracker */
+    function nearAnyCell(c, mask, radius) {
+      const gx = c % COLS;
+      const gy = (c / COLS) | 0;
+      const y0 = gy - radius < 0 ? 0 : gy - radius;
+      const y1 = gy + radius >= ROWS ? ROWS - 1 : gy + radius;
+      const x0 = gx - radius < 0 ? 0 : gx - radius;
+      const x1 = gx + radius >= COLS ? COLS - 1 : gx + radius;
+      for (let yy = y0; yy <= y1; yy++) {
+        for (let xx = x0; xx <= x1; xx++) {
+          if (mask[yy * COLS + xx]) return true;
+        }
+      }
+      return false;
+    }
+
+    function growBodyFromNewlyOccupied(reachRadius) {
+      let iter = 0;
+      let grew;
+      do {
+        grew = false;
+        for (let c = 0; c < LATENT_CELLS; c++) {
+          if (!newlyOccupied[c] || bodyCells[c]) continue;
+          if (nearAnyCell(c, bodyCells, 1) || nearAnyCell(c, bodyPrevScratch, reachRadius)) {
+            bodyCells[c] = 1;
+            grew = true;
+            bodyChangedFlag = true;
+          }
+        }
+        iter++;
+      } while (grew && iter < 4);
+    }
+
+    /** Median of the last samples -> observed gravity period; re-derives the settle window from it. */
+    function recordGravitySample(intervalMs) {
+      gravitySampleRing[gravitySampleHead] = intervalMs;
+      gravitySampleHead = (gravitySampleHead + 1) % GRAVITY_SAMPLE_WINDOW;
+      if (gravitySampleCount < GRAVITY_SAMPLE_WINDOW) gravitySampleCount++;
+      if (gravitySampleCount < GRAVITY_MIN_SAMPLES) return;
+      const n = gravitySampleCount;
+      for (let i = 0; i < n; i++) gravitySortScratch[i] = gravitySampleRing[i];
+      for (let i = 1; i < n; i++) {
+        const v = gravitySortScratch[i];
+        let j = i - 1;
+        while (j >= 0 && gravitySortScratch[j] > v) {
+          gravitySortScratch[j + 1] = gravitySortScratch[j];
+          j--;
+        }
+        gravitySortScratch[j + 1] = v;
+      }
+      gravityPeriodMs = gravitySortScratch[n >> 1];
+      const settleMs = SETTLE_PERIODS * gravityPeriodMs;
+      pixelConfirmMs = settleMs;
+      bodyCrystallizeMs = settleMs;
+    }
+
+    /**
+     * Classifies how the tracked body moved since the previous frame:
+     * 0 = appeared / no previous body, 1 = pure one-row descent, 2 = pure lateral step, 3 = anything else.
+     */
+    function classifyBodyMotion() {
+      let prevCount = 0;
+      for (let c = 0; c < LATENT_CELLS; c++) prevCount += bodyPrevScratch[c];
+      if (prevCount === 0) return 0;
+      if (prevCount !== bodyCount) return 3;
+      let down = true;
+      let left = true;
+      let right = true;
+      for (let c = 0; c < LATENT_CELLS; c++) {
+        if (!bodyPrevScratch[c]) continue;
+        const gx = c % COLS;
+        if (down && (c + COLS >= LATENT_CELLS || !bodyCells[c + COLS])) down = false;
+        if (left && (gx === 0 || !bodyCells[c - 1])) left = false;
+        if (right && (gx === COLS - 1 || !bodyCells[c + 1])) right = false;
+      }
+      if (down) return 1;
+      return left || right ? 2 : 3;
+    }
+
+    /**
+     * Gravity from pixels: the interval between two consecutive CLEAN descents (no own SOFT_DOWN, no
+     * unclassified body change in between) is one gravity period sample.
+     */
+    function observeGravityFromBody() {
+      const kind = classifyBodyMotion();
+      if (kind === 1) {
+        if (ownDownPending) {
+          /* This descent is attributed to the agent's own SOFT_DOWN: it is not a gravity sample. */
+          ownDownPending = false;
+          gravityIntervalDirty = true;
+        } else {
+          if (gravityLastStepClockMs >= 0 && !gravityIntervalDirty) {
+            recordGravitySample(bodyClockMs - gravityLastStepClockMs);
+          }
+          gravityLastStepClockMs = bodyClockMs;
+          gravityIntervalDirty = false;
+        }
+      } else if (kind === 3) {
+        gravityIntervalDirty = true;
+        ownDownPending = false;
+      } else if (kind === 0) {
+        gravityLastStepClockMs = -1;
+        gravityIntervalDirty = true;
+        ownDownPending = false;
+      }
+    }
+
+    /**
+     * Cell-level kinematic body tracker over pixel-derived occupancy events.
+     * A spawn replaces the body; vacated cells are pruned; newly occupied neighbours are absorbed;
+     * after bodyCrystallizeMs (SETTLE_PERIODS x observed gravity period) without a cell event the body
+     * crystallizes into the granite floor.
+     * Also detects pixel-only line erasures (full row visible, then a ≥ COLS-cell occupancy collapse).
+     * Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
+     */
+    function updateBodyTracker(dt) {
+      let nowTotal = 0;
+      let prevTotal = 0;
+      for (let c = 0; c < LATENT_CELLS; c++) {
+        const o = cellNowMass[c] >= L2_CELL_OCC_QUORUM ? 1 : 0;
+        occNow[c] = o;
+        newlyOccupied[c] = o && !occPrev[c] ? 1 : 0;
+        nowTotal += o;
+        prevTotal += occPrev[c];
+      }
+
+      let prevFullRows = 0;
+      for (let gy = 0; gy < ROWS; gy++) {
+        let cnt = 0;
+        const rb = gy * COLS;
+        for (let gx = 0; gx < COLS; gx++) cnt += occPrev[rb + gx];
+        if (cnt === COLS) prevFullRows++;
+      }
+      if (
+        cognitivePhase === 'passive' &&
+        prevFullRows > 0 &&
+        nowTotal - prevTotal <= -(COLS - L2_CLEAR_SPAWN_SLACK)
+      ) {
+        demoLinesCleared += prevFullRows;
+      }
+
+      bodyPrevScratch.set(bodyCells);
+      bodyChangedFlag = false;
+
+      spawnSeedScratch.fill(0);
+      let spawnSeeds = 0;
+      const spawnLimit = L2_SPAWN_ROWS * COLS;
+      for (let c = 0; c < spawnLimit; c++) {
+        if (newlyOccupied[c] && !nearAnyCell(c, bodyPrevScratch, 2)) {
+          spawnSeedScratch[c] = 1;
+          spawnSeeds++;
+        }
+      }
+
+      if (spawnSeeds >= L2_SPAWN_MIN_CELLS) {
+        bodyCells.set(spawnSeedScratch);
+        bodyPrevScratch.fill(0);
+        bodyChangedFlag = true;
+        growBodyFromNewlyOccupied(1);
+      } else {
+        for (let c = 0; c < LATENT_CELLS; c++) {
+          if (bodyCells[c] && !occNow[c]) {
+            bodyCells[c] = 0;
+            bodyChangedFlag = true;
+          }
+        }
+        growBodyFromNewlyOccupied(2);
+      }
+
+      bodyCount = 0;
+      for (let c = 0; c < LATENT_CELLS; c++) bodyCount += bodyCells[c];
+      bodyClockMs += dt;
+      if (bodyChangedFlag) {
+        observeGravityFromBody();
+        bodyIdleMs = 0;
+      } else {
+        bodyIdleMs += dt;
+      }
+      const crystallized = bodyCount > 0 && bodyIdleMs >= bodyCrystallizeMs;
+      bodyMovingCount = bodyCount > 0 && !crystallized ? bodyCount : 0;
+
+      staticCellCount = 0;
+      for (let c = 0; c < LATENT_CELLS; c++) {
+        const moving = bodyMovingCount > 0 && bodyCells[c] ? 1 : 0;
+        latentSensorDynamicCell[c] = moving;
+        const floor = !moving && cellModelMass[c] >= L2_CELL_OCC_QUORUM ? 1 : 0;
+        latentGraniteFloor[c] = floor;
+        staticCellCount += floor;
+      }
+      occPrev.set(occNow);
+    }
+
+    /* ------------------------------------------------------------------ NEXT preview vision */
+    /**
+     * Monochrome NEXT-zone vision: luminance-mass bounding raster -> per-cell intensity array -> anchored
+     * 4×4 occupancy mask -> template cross-correlation. No hue table, no environment palette.
+     * Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
+     */
+    function ingestNextPreviewVision(dt) {
+      let minX = 1e9;
+      let maxX = -1;
+      let minY = 1e9;
+      let maxY = -1;
+      for (let py = L2_PREVIEW_Y0; py <= L2_PREVIEW_Y1; py++) {
+        const row = py * CANVAS_W;
+        for (let px = L2_PREVIEW_X0; px <= L2_PREVIEW_X1; px++) {
+          if (prevSumPlane[row + px] >= L2_MASS_SUM_GATE) {
+            if (px < minX) minX = px;
+            if (px > maxX) maxX = px;
+            if (py < minY) minY = py;
+            if (py > maxY) maxY = py;
+          }
+        }
+      }
+
+      let bits = 0;
+      let sig = 0;
+      previewCellIntensity.fill(0);
+      if (maxX >= 0) {
+        let wCells = Math.round((maxX - minX + 2) / CELL);
+        let hCells = Math.round((maxY - minY + 2) / CELL);
+        if (wCells < 1) wCells = 1;
+        if (hCells < 1) hCells = 1;
+        if (wCells > 4) wCells = 4;
+        if (hCells > 4) hCells = 4;
+        for (let j = 0; j < hCells; j++) {
+          for (let i = 0; i < wCells; i++) {
+            const cx = minX + i * CELL + 8;
+            const cy = minY + j * CELL + 8;
+            if (cx < 1 || cx >= CANVAS_W - 1 || cy < 1 || cy >= CANVAS_H - 1) continue;
+            let acc = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+              const rb = (cy + dy) * CANVAS_W + cx;
+              acc += prevSumPlane[rb - 1] + prevSumPlane[rb] + prevSumPlane[rb + 1];
+            }
+            previewCellIntensity[j * 4 + i] = (acc / 27) | 0;
+            if (acc / 9 >= L2_MASS_SUM_GATE) bits |= 1 << (j * 4 + i);
+          }
+        }
+        sig = bits | (wCells << 16) | (hCells << 20);
+      }
+
+      if (sig === previewSignature) {
+        previewHoldMs += dt;
+      } else {
+        previewSignature = sig;
+        previewHoldMs = 0;
+      }
+
+      if (sig !== 0 && previewHoldMs >= L2_PREVIEW_LOCK_MS) {
+        if (previewLockedSignature !== sig) {
+          previewLockedSignature = sig;
+          const shapeIdx = classifyOccupancyMask(bits);
+          for (let c = 0; c < 16; c++) latentNextPieceGrid[c] = (bits >> c) & 1;
+          if (shapeIdx >= 0) {
+            latentNextShapeTypeToken[0] = shapeIdx;
+            nextInvariantVisionLabel = TETROMINO_LABELS[shapeIdx];
+          } else {
+            latentNextShapeTypeToken[0] = 255;
+            nextInvariantVisionLabel = '—';
+          }
+        }
+      } else if (sig !== previewLockedSignature) {
+        previewLockedSignature = -1;
+        latentNextPieceGrid.fill(0);
+        latentNextShapeTypeToken[0] = 255;
+        nextInvariantVisionLabel = '—';
+      }
+    }
+
+    /* ------------------------------------------------------------------ unified pixel world model */
+    /**
+     * Single world model (Phase 20.21). Pass 1: time-normalized temporal gate, asymmetric model update
+     * (mass appears -> confirm after L2_PIXEL_CONFIRM_MS; mass vanishes -> immediate release), 10×20 counters.
+     * Body tracker + NEXT vision. Pass 2: monochrome render from the SAME planes the planner reads.
+     * Never writes Layer A bytes to the output.
+     * Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
+     */
+    function advanceWorldModel(curr, dt) {
+      const src = curr.data;
+      frameDtMs = dt;
+      if (!worldModelSeeded) seedWorldModel(src);
+
+      cellNowMass.fill(0);
+      cellModelMass.fill(0);
+      let roiPixels = 0;
+      let roiConfirmed = 0;
+      let roiErrSq = 0;
+
+      for (let py = 0; py < CANVAS_H; py++) {
+        const rowBase = py * CANVAS_W;
+        const cellRow = rowCellBase[py];
+        for (let px = 0; px < CANVAS_W; px++) {
+          const pidx = rowBase + px;
+          const i = pidx << 2;
+          const s = src[i] + src[i + 1] + src[i + 2];
+          let d = s - prevSumPlane[pidx];
+          if (d < 0) d = -d;
+          prevSumPlane[pidx] = s;
+
+          let age = pixelAgeMs[pidx];
+          let confirmed = pixelConfirmed[pidx];
+          if (d >= TEMPORAL_DELTA_SUM) {
+            age = 0;
+            confirmed = 0;
+          } else if (age < L2_PIXEL_AGE_CAP_MS) {
+            age += dt;
+          }
+          pixelAgeMs[pidx] = age;
+
+          const massNow = s >= L2_MASS_SUM_GATE;
+          let ms = modelSumPlane[pidx];
+          if (!massNow && ms >= L2_MASS_SUM_GATE) {
+            ms = s;
+            modelSumPlane[pidx] = s;
+            confirmed = 1;
+          } else if (!confirmed && age >= pixelConfirmMs) {
+            ms = s;
+            modelSumPlane[pidx] = s;
+            confirmed = 1;
+          }
+          pixelConfirmed[pidx] = confirmed;
+          pixelDynamic[pidx] = massNow && !confirmed ? 1 : 0;
+
+          if (cellRow >= 0) {
+            const cx = colCell[px];
+            if (cx >= 0) {
+              const c = cellRow + cx;
+              if (massNow) cellNowMass[c]++;
+              if (ms >= L2_MASS_SUM_GATE) cellModelMass[c]++;
+              const e = s - ms;
+              roiErrSq += e * e;
+              roiPixels++;
+              if (confirmed) roiConfirmed++;
+            }
+          }
+        }
+      }
+
+      updateBodyTracker(dt);
+      ingestNextPreviewVision(dt);
+
+      const bodyLive = bodyMovingCount > 0;
+      const out = diffMapSensorBacking;
+      let activePixels = 0;
+      for (let py = 0; py < CANVAS_H; py++) {
+        const rowBase = py * CANVAS_W;
+        const gradY = l2GradientY[py];
+        const cellRow = rowCellBase[py];
+        const ridgeRowOk = py > 0 && py < CANVAS_H - 1;
+        for (let px = 0; px < CANVAS_W; px++) {
+          const pidx = rowBase + px;
+          const i = pidx << 2;
+
+          let dyn = pixelDynamic[pidx];
+          if (!dyn && bodyLive && cellRow >= 0) {
+            const cx = colCell[px];
+            if (cx >= 0 && latentSensorDynamicCell[cellRow + cx] && prevSumPlane[pidx] >= L2_MASS_SUM_GATE) dyn = 1;
+          }
+          let heat = pixelInkHeatMs[pidx];
+          if (dyn) {
+            heat = L2_INK_COOL_MS;
+            activePixels++;
+          } else if (heat > 0) {
+            heat -= dt;
+            if (heat < 0) heat = 0;
+          }
+          pixelInkHeatMs[pidx] = heat;
+
+          const ms = modelSumPlane[pidx];
+          let isStructure = ms >= L2_MASS_SUM_GATE;
+          if (!isStructure && ridgeRowOk && px > 0 && px < CANVAS_W - 1) {
+            const lap =
+              4 * ms -
+              modelSumPlane[pidx - 1] -
+              modelSumPlane[pidx + 1] -
+              modelSumPlane[pidx - CANVAS_W] -
+              modelSumPlane[pidx + CANVAS_W];
+            isStructure = lap >= L2_RIDGE_SUM_MIN || -lap >= L2_RIDGE_SUM_MIN;
+          }
+
+          let baseR = L2_SPACE_VOID_R;
+          let baseG = L2_SPACE_VOID_G;
+          let baseB = L2_SPACE_VOID_B;
+          if (isStructure) {
+            const toneQ = 224 + ((l2GradientX[px] + gradY) >> 3);
+            baseR = ((L2_GRID_CYBER_R * toneQ) / 255) | 0;
+            baseG = ((L2_GRID_CYBER_G * toneQ) / 255) | 0;
+            baseB = ((L2_GRID_CYBER_B * toneQ) / 255) | 0;
+          }
+
+          if (heat > 0) {
+            const lvl = 1 + ((heat * L2_INK_LEVEL_SCALE) | 0);
+            const hb = lvl * 3;
+            const w = l2AgingInkWeightQ8[lvl];
+            out[i] = baseR + (((l2AgingInkRgb[hb] - baseR) * w) >> 8);
+            out[i + 1] = baseG + (((l2AgingInkRgb[hb + 1] - baseG) * w) >> 8);
+            out[i + 2] = baseB + (((l2AgingInkRgb[hb + 2] - baseB) * w) >> 8);
+          } else {
+            out[i] = baseR;
+            out[i + 1] = baseG;
+            out[i + 2] = baseB;
+          }
+          out[i + 3] = 255;
+        }
+      }
+
+      metabolicActivePixelCount = activePixels;
+      staticConvergencePct = 100 * (1 - activePixels / SENSORY_PIXEL_COUNT);
+      freeEnergy = roiPixels > 0 ? roiErrSq / (roiPixels * 765 * 765) : 0;
+      spatialSurpriseDelta = Math.abs(freeEnergy - prevFreeEnergy);
+      prevFreeEnergy = freeEnergy;
+      spatialMemoryDensityPct = roiPixels > 0 ? (roiConfirmed / roiPixels) * 100 : 0;
+      l2FrameView.dynamicEnergy = activePixels / SENSORY_PIXEL_COUNT;
+      l2FrameView.freeEnergy = freeEnergy;
+      l2FrameView.predictionError = roiErrSq;
+      return l2FrameView;
+    }
+
+    function renderEntropyPreview() {
+      if (cognitivePhase === 'idle') return;
+      entropyPreviewCtx.putImageData(diffMapSensorImage, 0, 0);
+    }
+
+    /* ------------------------------------------------------------------ latent planner (pixel-map driven) */
+    /** Removes full rows (shifting the stack down); returns the number of cleared lines. */
+    function latentCollapseLines(src, dst) {
+      dst.fill(0);
+      let write = ROWS - 1;
+      let lines = 0;
+      for (let gy = ROWS - 1; gy >= 0; gy--) {
+        let full = true;
+        const rb = gy * COLS;
+        for (let gx = 0; gx < COLS; gx++) {
+          if (!src[rb + gx]) {
+            full = false;
+            break;
+          }
+        }
+        if (full) {
+          lines++;
+          continue;
+        }
+        const wb = write * COLS;
+        for (let gx = 0; gx < COLS; gx++) dst[wb + gx] = src[rb + gx];
+        write--;
+      }
+      return lines;
+    }
+
+    /**
+     * Layout free energy (dimensionless), F = S + w·U:
+     *   S = holes / LAYOUT_HOLE_NORM              gravity-sealed voids (disorder); a fixed normaliser, so a
+     *                                             void costs the same on a small and on a tall stack
+     *   U = (sum of heights of occupied cells) / U_full   gravitational potential energy of the stack
+     * Stacking on a tower raises U, settling low lowers it, and erasing a row removes mass and lowers it.
+     * Pure function of the pixel-derived map.
+     * Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
+     */
+    function layoutFreeEnergy(floor) {
+      let heightSum = 0;
+      let holes = 0;
+      for (let gx = 0; gx < COLS; gx++) {
+        let sealed = false;
+        for (let gy = 0; gy < ROWS; gy++) {
+          if (floor[gy * COLS + gx]) {
+            sealed = true;
+            heightSum += ROWS - gy;
+          } else if (sealed) {
+            holes++;
+          }
+        }
+      }
+      return holes / LAYOUT_HOLE_NORM + LAYOUT_ENERGY_WEIGHT * (heightSum / LAYOUT_U_FULL);
+    }
+
+    function latentNextPieceFitsAt(floor, gx0, gy0) {
+      for (let ly = 0; ly < 4; ly++) {
+        for (let lx = 0; lx < 4; lx++) {
+          if (!latentNextPieceGrid[ly * 4 + lx]) continue;
+          const gx = gx0 + lx;
+          const gy = gy0 + ly;
+          if (gx < 0 || gx >= COLS || gy < 0 || gy >= ROWS) return false;
+          if (floor[gy * COLS + gx]) return false;
+        }
+      }
+      return true;
+    }
+
+    function mergeLatentNextPieceAt(floor, gx0, gy0, dst) {
+      dst.set(floor);
+      for (let ly = 0; ly < 4; ly++) {
+        for (let lx = 0; lx < 4; lx++) {
+          if (latentNextPieceGrid[ly * 4 + lx]) dst[(gy0 + ly) * COLS + (gx0 + lx)] = 1;
+        }
+      }
+    }
+
+    /** F_future — best achievable free-energy change when the vision-locked NEXT piece is ghost-placed. */
+    function computeNextPieceFuturePenalty(tier1Floor, tier1FreeEnergy) {
+      if (latentNextShapeTypeToken[0] === 255) return 0;
+      let minF = 0;
+      let found = false;
+      for (let gy0 = 0; gy0 < ROWS; gy0++) {
+        for (let gx0 = 0; gx0 < COLS; gx0++) {
+          if (!latentNextPieceFitsAt(tier1Floor, gx0, gy0)) continue;
+          mergeLatentNextPieceAt(tier1Floor, gx0, gy0, simProbe);
+          planFuturePlacements++;
+          const f = layoutFreeEnergy(simProbe);
+          if (!found || f < minF) {
+            minF = f;
+            found = true;
+          }
+        }
+      }
+      return found ? minF - tier1FreeEnergy : 1;
+    }
+
+    /* ------------------------------------------------------------------ policy-sequence planner */
+    /**
+     * A policy is a sequence of motor commands issued on a motor tick of MOTOR_REFRACTORY_MS. The body is
+     * propagated through time with the OBSERVED gravity (period and phase measured from pixels); only the
+     * terminal outcome of a policy (the stack after the body has landed and full rows have vanished)
+     * carries free energy — hovering over a ledge on the way costs nothing. A body that has not landed
+     * when the horizon ends settles straight down. The horizon is the time-to-contact of the body.
+     * Search = dynamic programming over (pose, tick, first action): no column or placement table.
+     * Reflex mode (low energy / VETO bypass / Granite Fallback) shortens the policy to ONE command now.
+     * Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
+     */
+    const A_IDLE = 0;
+    const A_LEFT = 1;
+    const A_RIGHT = 2;
+    const A_ROTATE = 3;
+    const A_SOFT_DOWN = 4;
+    const PLAN_ACTION_COUNT = 5;
+    const PLAN_ACTION_NAMES = ['', 'LEFT', 'RIGHT', 'ROTATE', 'SOFT_DOWN'];
+    const PLAN_STATE_CAP = 1536;
+    const PLAN_OUTCOME_CAP = 512;
+    const PLAN_HASH_SIZE = 4096;
+    const PLAN_MAX_TICKS = 48;
+    const PLAN_EPS = 1e-9;
+
+    const planX = [new Int8Array(PLAN_STATE_CAP * 4), new Int8Array(PLAN_STATE_CAP * 4)];
+    const planY = [new Int8Array(PLAN_STATE_CAP * 4), new Int8Array(PLAN_STATE_CAP * 4)];
+    const planActs = [new Uint8Array(PLAN_STATE_CAP), new Uint8Array(PLAN_STATE_CAP)];
+    const planFirst = [new Uint8Array(PLAN_STATE_CAP), new Uint8Array(PLAN_STATE_CAP)];
+    const planCount = new Int32Array(2);
+    const planHashUsed = new Uint8Array(PLAN_HASH_SIZE);
+    const planHashKey = new Int32Array(PLAN_HASH_SIZE);
+    const planHashFirst = new Uint8Array(PLAN_HASH_SIZE);
+    const planHashSlot = new Int16Array(PLAN_HASH_SIZE);
+    const planRootX = new Int8Array(4);
+    const planRootY = new Int8Array(4);
+    const planTmpX = new Int8Array(4);
+    const planTmpY = new Int8Array(4);
+    const planTmp2X = new Int8Array(4);
+    const planTmp2Y = new Int8Array(4);
+    const planIdxScratch = new Uint8Array(4);
+    const outX = new Int8Array(PLAN_OUTCOME_CAP * 4);
+    const outY = new Int8Array(PLAN_OUTCOME_CAP * 4);
+    const outKey = new Int32Array(PLAN_OUTCOME_CAP);
+    const outActs = new Uint8Array(PLAN_OUTCOME_CAP);
+    const outFirst = new Uint8Array(PLAN_OUTCOME_CAP);
+    let outCount = 0;
+    const planBestTotal = new Float64Array(PLAN_ACTION_COUNT);
+    const planBestActs = new Uint8Array(PLAN_ACTION_COUNT);
+    const planBestValid = new Uint8Array(PLAN_ACTION_COUNT);
+    let planBodyN = 0;
+    let planTruncated = false;
+    let planTransitions = 0;
+    let planOutcomeEvals = 0;
+    let planFuturePlacements = 0;
+    let planHorizonTicks = 0;
+
+    function poseFits(xs, ys, off, n) {
+      for (let k = 0; k < n; k++) {
+        const x = xs[off + k];
+        const y = ys[off + k];
+        if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return false;
+        if (latentGraniteFloor[y * COLS + x]) return false;
+      }
+      return true;
+    }
+
+    function poseCanDescend(xs, ys, off, n) {
+      for (let k = 0; k < n; k++) {
+        const y = ys[off + k] + 1;
+        if (y >= ROWS || latentGraniteFloor[y * COLS + xs[off + k]]) return false;
+      }
+      return true;
+    }
+
+    /** Motor transition model (a hand-built prior: shifts and a centroid rotation, no wall kicks). */
+    function applyPlanAction(action, sx, sy, off, n, dx, dy) {
+      if (action === A_ROTATE) {
+        let sumX = 0;
+        let sumY = 0;
+        for (let k = 0; k < n; k++) {
+          sumX += sx[off + k];
+          sumY += sy[off + k];
+        }
+        const cx = sumX / n;
+        const cy = sumY / n;
+        for (let k = 0; k < n; k++) {
+          dx[k] = Math.round(cx + (sy[off + k] - cy));
+          dy[k] = Math.round(cy - (sx[off + k] - cx));
+        }
+      } else {
+        const mx = action === A_LEFT ? -1 : action === A_RIGHT ? 1 : 0;
+        const my = action === A_SOFT_DOWN ? 1 : 0;
+        for (let k = 0; k < n; k++) {
+          dx[k] = sx[off + k] + mx;
+          dy[k] = sy[off + k] + my;
+        }
+      }
+      return poseFits(dx, dy, 0, n);
+    }
+
+    /** Order-independent pose key: the (up to four) cell indices, sorted and packed into an int32. */
+    function packPose(xs, ys, n) {
+      for (let k = 0; k < 4; k++) planIdxScratch[k] = k < n ? ys[k] * COLS + xs[k] : 255;
+      for (let i = 1; i < 4; i++) {
+        const v = planIdxScratch[i];
+        let j = i - 1;
+        while (j >= 0 && planIdxScratch[j] > v) {
+          planIdxScratch[j + 1] = planIdxScratch[j];
+          j--;
+        }
+        planIdxScratch[j + 1] = v;
+      }
+      return planIdxScratch[0] | (planIdxScratch[1] << 8) | (planIdxScratch[2] << 16) | (planIdxScratch[3] << 24);
+    }
+
+    function recordOutcome(xs, ys, n, acts, first) {
+      const key = packPose(xs, ys, n);
+      for (let o = 0; o < outCount; o++) {
+        if (outKey[o] === key && outFirst[o] === first) {
+          if (acts < outActs[o]) outActs[o] = acts;
+          return;
+        }
+      }
+      if (outCount >= PLAN_OUTCOME_CAP) {
+        planTruncated = true;
+        return;
+      }
+      const ob = outCount * 4;
+      for (let k = 0; k < n; k++) {
+        outX[ob + k] = xs[k];
+        outY[ob + k] = ys[k];
+      }
+      outKey[outCount] = key;
+      outActs[outCount] = acts;
+      outFirst[outCount] = first;
+      outCount++;
+    }
+
+    function planInsert(layer, xs, ys, n, acts, first) {
+      const key = packPose(xs, ys, n);
+      let h = (Math.imul(key + first * 7919, 0x9e3779b1) >>> 20) & (PLAN_HASH_SIZE - 1);
+      while (planHashUsed[h]) {
+        if (planHashKey[h] === key && planHashFirst[h] === first) {
+          const slot = planHashSlot[h];
+          if (acts < planActs[layer][slot]) planActs[layer][slot] = acts;
+          return;
+        }
+        h = (h + 1) & (PLAN_HASH_SIZE - 1);
+      }
+      const c = planCount[layer];
+      if (c >= PLAN_STATE_CAP) {
+        planTruncated = true;
+        return;
+      }
+      const off = c * 4;
+      for (let k = 0; k < n; k++) {
+        planX[layer][off + k] = xs[k];
+        planY[layer][off + k] = ys[k];
+      }
+      planActs[layer][c] = acts;
+      planFirst[layer][c] = first;
+      planHashUsed[h] = 1;
+      planHashKey[h] = key;
+      planHashFirst[h] = first;
+      planHashSlot[h] = c;
+      planCount[layer] = c + 1;
+    }
+
+    /** Number of gravity steps that have occurred by t ms from now (first one in nextInMs, then every period). */
+    function gravityStepsBy(tMs, nextInMs, periodMs) {
+      return tMs < nextInMs ? 0 : Math.floor((tMs - nextInMs) / periodMs) + 1;
+    }
+
+    function planPolicies(deep, periodMs, nextInMs) {
+      const n = planBodyN;
+      const tau = MOTOR_REFRACTORY_MS;
+      outCount = 0;
+      planTruncated = false;
+
+      for (let k = 0; k < n; k++) {
+        planTmpX[k] = planRootX[k];
+        planTmpY[k] = planRootY[k];
+      }
+      let rows = 0;
+      while (poseCanDescend(planTmpX, planTmpY, 0, n)) {
+        for (let k = 0; k < n; k++) planTmpY[k]++;
+        rows++;
+      }
+      const landMs = rows > 0 ? nextInMs + (rows - 1) * periodMs : 0;
+      let H = Math.ceil(landMs / tau) + 1;
+      if (H < 1) H = 1;
+      if (H > PLAN_MAX_TICKS) H = PLAN_MAX_TICKS;
+      planHorizonTicks = H;
+      const actTickLimit = deep ? H : 0;
+      const maxActs = deep ? 255 : 1;
+
+      let cur = 0;
+      for (let k = 0; k < n; k++) {
+        planX[0][k] = planRootX[k];
+        planY[0][k] = planRootY[k];
+      }
+      planActs[0][0] = 0;
+      planFirst[0][0] = 255;
+      planCount[0] = 1;
+      planCount[1] = 0;
+
+      const tmp2X = planTmp2X;
+      const tmp2Y = planTmp2Y;
+      for (let tick = 0; tick < H; tick++) {
+        const nxt = cur ^ 1;
+        planCount[nxt] = 0;
+        planHashUsed.fill(0);
+        const g = gravityStepsBy((tick + 1) * tau, nextInMs, periodMs) - gravityStepsBy(tick * tau, nextInMs, periodMs);
+        const cnt = planCount[cur];
+        for (let s = 0; s < cnt; s++) {
+          const off = s * 4;
+          const acts = planActs[cur][s];
+          const first0 = planFirst[cur][s];
+          for (let a = 0; a < PLAN_ACTION_COUNT; a++) {
+            if (a !== A_IDLE && (tick > actTickLimit || acts >= maxActs)) continue;
+            planTransitions++;
+            if (a === A_IDLE) {
+              for (let k = 0; k < n; k++) {
+                tmp2X[k] = planX[cur][off + k];
+                tmp2Y[k] = planY[cur][off + k];
+              }
+            } else if (!applyPlanAction(a, planX[cur], planY[cur], off, n, tmp2X, tmp2Y)) {
+              continue;
+            }
+            let landed = false;
+            for (let e = 0; e < g; e++) {
+              if (poseCanDescend(tmp2X, tmp2Y, 0, n)) {
+                for (let k = 0; k < n; k++) tmp2Y[k]++;
+              } else {
+                landed = true;
+                break;
+              }
+            }
+            const first = first0 === 255 ? a : first0;
+            const acts2 = a === A_IDLE ? acts : acts + 1;
+            if (landed || !poseCanDescend(tmp2X, tmp2Y, 0, n)) recordOutcome(tmp2X, tmp2Y, n, acts2, first);
+            else planInsert(nxt, tmp2X, tmp2Y, n, acts2, first);
+          }
+        }
+        cur = nxt;
+      }
+
+      /* Horizon reached: whatever is still in flight settles straight down. */
+      const left = planCount[cur];
+      for (let s = 0; s < left; s++) {
+        const off = s * 4;
+        for (let k = 0; k < n; k++) {
+          tmp2X[k] = planX[cur][off + k];
+          tmp2Y[k] = planY[cur][off + k];
+        }
+        while (poseCanDescend(tmp2X, tmp2Y, 0, n)) {
+          for (let k = 0; k < n; k++) tmp2Y[k]++;
+        }
+        recordOutcome(tmp2X, tmp2Y, n, planActs[cur][s], planFirst[cur][s]);
+      }
+    }
+
+    /**
+     * Terminal free energy of every distinct (outcome, first action); keeps the best (lowest F, then fewest
+     * motor commands) per first action. Returns the inaction reference (pure gravity), or NaN.
+     */
+    function evaluatePlanOutcomes(deep) {
+      for (let a = 0; a < PLAN_ACTION_COUNT; a++) planBestValid[a] = 0;
+      let ref = NaN;
+      for (let o = 0; o < outCount; o++) {
+        const ob = o * 4;
+        simMerged.set(latentGraniteFloor);
+        for (let k = 0; k < planBodyN; k++) simMerged[outY[ob + k] * COLS + outX[ob + k]] = 1;
+        latentCollapseLines(simMerged, simCleared);
+        const fe = layoutFreeEnergy(simCleared);
+        planOutcomeEvals++;
+        let total = fe;
+        if (deep) total += VARIATIONAL_FUTURE_GAMMA * computeNextPieceFuturePenalty(simCleared, fe);
+        const f = outFirst[o];
+        if (f === A_IDLE && outActs[o] === 0) ref = total;
+        if (
+          !planBestValid[f] ||
+          total < planBestTotal[f] - PLAN_EPS ||
+          (total <= planBestTotal[f] + PLAN_EPS && outActs[o] < planBestActs[f])
+        ) {
+          planBestValid[f] = 1;
+          planBestTotal[f] = total;
+          planBestActs[f] = outActs[o];
+        }
+      }
+      return ref;
+    }
+
+    /**
+     * Layer-3 — genuine inhibitory VETO: no override path. allow === false whenever the best acting
+     * policy's terminal free energy (relative to inaction) reaches Theta_t.
+     */
+    function vetoCascade(proposedAction, simulatedFreeEnergy, Theta_t) {
+      vetoResultView.allow = simulatedFreeEnergy < Theta_t;
+      vetoResultView.proposedAction = proposedAction;
+      return vetoResultView;
+    }
+
+    function policyLogSignatureCode(proposed, planningDepth) {
+      return ((proposed.charCodeAt(0) || 0) << 12) | (planningDepth << 4);
+    }
+
+    function maybeLogPolicyDecision(proposed, planningDepth, deltaF) {
+      const sigCode = policyLogSignatureCode(proposed, planningDepth);
+      if (policyLogClockMs < POLICY_LOG_INTERVAL_MS && sigCode === lastPolicyLogSignatureCode) return;
+      policyLogClockMs = 0;
+      lastPolicyLogSignatureCode = sigCode;
+      if (planningDepth >= 3) {
+        log('METABOLISM: Policy-sequence planner active (time-to-contact horizon)...');
+      } else {
+        log('METABOLISM: Reflex mode active (single command)...');
+      }
+      log(`METABOLISM: Policy selected ${proposed} -> predicted dF vs inaction: ${deltaF.toFixed(4)}`);
+    }
+
+    function setIdleChoice(depthLabel, pathLabel) {
+      policyChoiceView.idle = true;
+      policyChoiceView.act = false;
+      policyChoiceView.proposed = '';
+      policyChoiceView.planningDepth = 0;
+      metabolicFrameView.planningDepth = 0;
+      activePlanningDepthLabel = depthLabel;
+      sequentialPathStatusLabel = pathLabel;
+      vetoResultView.allow = false;
+      vetoResultView.proposedAction = '';
+      return policyChoiceView;
+    }
+
+    /**
+     * One planning pass (called once per motor tick). Picks the best ACTING policy (lowest terminal F
+     * relative to inaction, then fewest commands). VETO if that policy is harmful (F >= Theta_t).
+     * Otherwise the first command is issued only when acting beats inaction and is
+     * at least as good as waiting (acting later); a policy that gains nothing is simply not executed.
+     * Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
+     */
+    function chooseAction(Theta_t) {
+      metabolicFrameView.transitions = 0;
+      metabolicFrameView.outcomes = 0;
+      metabolicFrameView.futurePlacements = 0;
+      policyChoiceView.idle = false;
+      policyChoiceView.act = false;
+      planTransitions = 0;
+      planOutcomeEvals = 0;
+      planFuturePlacements = 0;
+
+      if (bodyMovingCount === 0) return setIdleChoice('Idle (no live body)', 'Awaiting Spawn');
+
+      let n = 0;
+      for (let c = 0; c < LATENT_CELLS; c++) {
+        if (!latentSensorDynamicCell[c]) continue;
+        if (n < 4) {
+          planRootX[n] = c % COLS;
+          planRootY[n] = (c / COLS) | 0;
+        }
+        n++;
+      }
+      if (n > 4) return setIdleChoice('Idle (body model inconsistent)', 'Body > 4 cells');
+      planBodyN = n;
+      if (gravityPeriodMs <= 0) return setIdleChoice('Idle (calibrating gravity)', 'Observing gravity');
+      if (!poseFits(planRootX, planRootY, 0, n)) return setIdleChoice('Idle (body overlaps floor)', 'Model mismatch');
+
+      /* Gravity phase: time to the next gravity step, from the last clean descent seen in the pixels. */
+      let nextInMs = gravityPeriodMs;
+      if (gravityLastStepClockMs >= 0) {
+        nextInMs = gravityPeriodMs - ((bodyClockMs - gravityLastStepClockMs) % gravityPeriodMs);
+      }
+
+      /* Granite Fallback: an unconfirmed world model never pays for (or trusts) the deep search. */
+      const graniteFallback = spatialMemoryDensityPct < GRANITE_FALLBACK_MEMORY_PCT;
+      let deep = E_flux >= E_FLUX_DEEP_PLANNING && !graniteFallback;
+      if (vetoKinematicBypassFrames > 0) {
+        deep = false;
+        vetoKinematicBypassFrames--;
+      }
+      activePlanningDepthLabel = deep ? 'Deep (policy sequences)' : graniteFallback ? 'Reflex (Granite Fallback)' : 'Reflex (single command)';
+      sequentialPathStatusLabel = deep ? 'Sequence planner (time-to-contact horizon)' : graniteFallback ? 'Granite Fallback (reflex only)' : 'Reflex Path';
+
+      planPolicies(deep, gravityPeriodMs, nextInMs);
+      const ref = evaluatePlanOutcomes(deep);
+      metabolicFrameView.transitions = planTransitions;
+      metabolicFrameView.outcomes = planOutcomeEvals;
+      metabolicFrameView.futurePlacements = planFuturePlacements;
+      metabolicFrameView.planningDepth = deep ? 3 : 1;
+      policyChoiceView.planningDepth = deep ? 3 : 1;
+      policyChoiceView.Theta_t = Theta_t;
+      if (ref !== ref) return setIdleChoice('Idle (no inaction outcome)', 'Model mismatch');
+
+      let best = -1;
+      for (let a = 1; a < PLAN_ACTION_COUNT; a++) {
+        if (!planBestValid[a]) continue;
+        if (
+          best < 0 ||
+          planBestTotal[a] < planBestTotal[best] - PLAN_EPS ||
+          (planBestTotal[a] <= planBestTotal[best] + PLAN_EPS && planBestActs[a] < planBestActs[best])
+        ) {
+          best = a;
+        }
+      }
+
+      if (best < 0) {
+        /* No motor command is physically possible (blocked everywhere): nothing to veto, nothing to do. */
+        policySimResult.freeEnergy = 0;
+        predictedTerminalFreeEnergy = 0;
+        vetoResultView.allow = true;
+        vetoResultView.proposedAction = '';
+        policyChoiceView.proposed = '';
+        return policyChoiceView;
+      }
+
+      const proposed = PLAN_ACTION_NAMES[best];
+      const deltaF = planBestTotal[best] - ref;
+      policySimResult.freeEnergy = deltaF;
+      predictedTerminalFreeEnergy = deltaF;
+      vetoCascade(proposed, deltaF, Theta_t);
+      policyChoiceView.proposed = proposed;
+
+      if (vetoResultView.allow) {
+        const waitDeltaF = planBestValid[A_IDLE] ? planBestTotal[A_IDLE] - ref : 0;
+        if (deltaF < -PLAN_EPS && deltaF <= waitDeltaF + PLAN_EPS) {
+          policyChoiceView.act = true;
+          maybeLogPolicyDecision(proposed, deep ? 3 : 1, deltaF);
+        }
+      }
+      return policyChoiceView;
+    }
+
+    /* ------------------------------------------------------------------ metabolism */
+    /**
+     * Modeled frame-ops budget: baseline + sensor (dynamic pixels only) + the planner work that was
+     * actually executed this frame (transitions, outcome evaluations, NEXT placements). Every frame that
+     * plans pays for its work, including VETO frames.
+     * Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
+     */
+    function computeFrameMetabolicOps() {
+      return (
+        METABOLIC_BASELINE_OPS +
+        metabolicActivePixelCount * METABOLIC_SENSOR_COST_PER_PIXEL +
+        metabolicFrameView.transitions * METABOLIC_OPS_PER_TRANSITION +
+        metabolicFrameView.outcomes * METABOLIC_OPS_PER_OUTCOME +
+        metabolicFrameView.futurePlacements * METABOLIC_OPS_PER_FUTURE_PLACEMENT
+      );
+    }
+
+    function activeInferenceStep(dt) {
+      const frameOps = computeFrameMetabolicOps();
+      lastFrameMetabolicOps = frameOps;
+      /* Landauer floor of the modeled work (W). Ops are billed per reference frame (same convention as the
+       * E_flux drain below), so power is refresh-rate invariant. */
+      modeledFramePowerW = (frameOps * MODEL_LANDAUER_J_PER_OP) / (METABOLIC_REFERENCE_FRAME_MS * 0.001);
+      /* Drain (ops, dt-normalized) and homeostatic income (linear in dt): both refresh-rate invariant. */
+      const net = dt * METABOLIC_INCOME_PER_MS - frameOps * METABOLIC_EFLUX_NORM * (dt / METABOLIC_REFERENCE_FRAME_MS);
+      E_flux = Math.min(E_MAX, Math.max(0, E_flux + net));
+    }
+
+    /* ------------------------------------------------------------------ gating, metrics, phases */
+    const motorGateView = { allowed: false, now: 0 };
+    function mayActualizeMotor() {
+      const now = performance.now();
+      motorGateView.now = now;
+      motorGateView.allowed = now - lastActionTimestamp >= MOTOR_REFRACTORY_MS;
+      return motorGateView;
+    }
+
+    function cognitivePhaseLabel() {
+      return cognitivePhase === 'autonomous' ? 'Agent NecPU Actuation' : 'Passive Epistemic Curation';
+    }
+
+    function kernelStatusLabel() {
+      if (cognitivePhase === 'autonomous') return 'NecPU Cognitive Core — Active';
+      if (kernelStabilized) return 'Stabilized & Ready';
+      return 'Mapping Invariants...';
+    }
+
+    function pushObserverMetrics(extras) {
+      const m = observerMetricsPayload;
+      m.forceFlush = extras ? !!extras.forceFlush : false;
+      m.cognitivePhase = cognitivePhase === 'idle' ? '—' : cognitivePhaseLabel();
+      m.staticConvergencePct = staticConvergencePct;
+      m.stableTimeMs = stableTimeMs;
+      m.demoLinesCleared = demoLinesCleared;
+      m.kernelStatus = cognitivePhase === 'idle' ? 'Awaiting DEMO' : kernelStatusLabel();
+      m.E_flux = E_flux;
+      m.freeEnergy = freeEnergy;
+      m.dynamicCells = bodyMovingCount;
+      m.staticCells = staticCellCount;
+      m.lastAction = lastAction;
+      m.generationCount = generationCount;
+      m.spatialMemoryDensityPct = spatialMemoryDensityPct;
+      m.spatialSurpriseDelta = spatialSurpriseDelta;
+      m.generationLifetimeMs = generationLifetimeMs;
+      m.prevGenerationLifetimeBaselineMs = prevGenerationLifetimeBaselineMs;
+      m.activePlanningDepthLabel = activePlanningDepthLabel;
+      m.predictedTerminalFreeEnergy = predictedTerminalFreeEnergy;
+      m.nextInvariantVisionLabel = nextInvariantVisionLabel;
+      m.sequentialPathStatusLabel = sequentialPathStatusLabel;
+      m.frameMetabolicOps = lastFrameMetabolicOps;
+      m.modeledFramePowerW = modeledFramePowerW;
+      m.measuredSenseMs = measuredSenseMsEma;
+      m.measuredPlanMs = measuredPlanMsEma;
+      m.observedGravityPeriodMs = gravityPeriodMs;
+      m.gravitySamples = gravitySampleCount;
+      ui.updateMetrics(m);
+    }
+
+    /**
+     * Passive unlock rule — exactly what is checked: STABLE_TIME_TARGET_MS of simulated passive observation
+     * AND DEMO_LINES_REQUIRED pixel-observed line erasures. (No free-energy criterion is evaluated here.)
+     */
+    function evaluatePassiveConvergence(dt) {
+      if (cognitivePhase !== 'passive') return;
+      stableTimeMs += dt;
+      if (
+        !kernelStabilized &&
+        stableTimeMs >= STABLE_TIME_TARGET_MS &&
+        demoLinesCleared >= DEMO_LINES_REQUIRED
+      ) {
+        kernelStabilized = true;
+        ui.setAutonomousAgentEnabled(true);
+        log('Passive DEMO complete: ' + demoLinesCleared + ' line erasures observed from pixels over ' + (stableTimeMs / 1000).toFixed(1) + ' s. Agent NecPU actuation unlocked.');
+      }
+    }
+
+    function runPassiveEpistemicFrame(curr, dt) {
+      const senseT0 = performance.now();
+      advanceWorldModel(curr, dt);
+      renderEntropyPreview();
+      measuredSenseMsEma += MEASURE_EMA_ALPHA * (performance.now() - senseT0 - measuredSenseMsEma);
+      metabolicFrameView.planningDepth = 0;
+      metabolicFrameView.transitions = 0;
+      metabolicFrameView.outcomes = 0;
+      metabolicFrameView.futurePlacements = 0;
+      activeInferenceStep(dt);
+      lastAction = '— (motor suspended)';
+      evaluatePassiveConvergence(dt);
+      pushObserverMetrics(null);
+    }
+
+    function runAutonomousActuationFrame(curr, dt) {
+      const senseT0 = performance.now();
+      advanceWorldModel(curr, dt);
+      renderEntropyPreview();
+      measuredSenseMsEma += MEASURE_EMA_ALPHA * (performance.now() - senseT0 - measuredSenseMsEma);
+      policyLogClockMs += dt;
+      vetoLogClockMs += dt;
+
+      /* Starving contracts the veto threshold (hyper-conservative); full energy relaxes it to 3x. */
+      const baseTheta_t = THETA_T_MIN * (1.0 + 2.0 * E_flux);
+      /* The policy is (re)planned once per motor tick (MOTOR_REFRACTORY_MS). Between ticks the agent only
+       * senses; it pays for planning only when it plans. */
+      const motorGate = mayActualizeMotor();
+      if (!motorGate.allowed) {
+        metabolicFrameView.transitions = 0;
+        metabolicFrameView.outcomes = 0;
+        metabolicFrameView.futurePlacements = 0;
+        metabolicFrameView.planningDepth = 0;
+      } else {
+        const planT0 = performance.now();
+        const choice = chooseAction(baseTheta_t);
+        measuredPlanMsEma += MEASURE_EMA_ALPHA * (performance.now() - planT0 - measuredPlanMsEma);
+
+        if (choice.idle) {
+          lastAction = activePlanningDepthLabel;
+        } else {
+          lastActionTimestamp = motorGate.now;
+          if (!choice.veto.allow) {
+            /* Reachable VETO: the best acting policy is harmful (or none is feasible). Motor suppressed;
+             * the next planning pass skips the deep sequence search. The work already done stays billed. */
+            lastAction = `VETO(${choice.proposed})`;
+            vetoKinematicBypassFrames = 1;
+            if (vetoLogClockMs >= VETO_LOG_INTERVAL_MS) {
+              vetoLogClockMs = 0;
+              log(
+                `VETO: Agent NecPU suppressed ${choice.proposed} — best policy dF=${choice.simState.freeEnergy.toFixed(4)} >= Θ_t=${choice.Theta_t.toFixed(4)}; deep search bypassed next plan`
+              );
+            }
+          } else if (choice.act) {
+            if (markovBlanket.actualizeMotorCommand(choice.proposed)) {
+              lastAction = choice.proposed;
+              /* Own descents must not be mistaken for gravity by the pixel-derived gravity estimator. */
+              if (choice.proposed === 'SOFT_DOWN') ownDownPending = true;
+            }
+          } else {
+            lastAction = '— (hold: no policy beats inaction)';
+          }
+        }
+      }
+
+      if (autonomousMetabolismGuardMs > 0) {
+        autonomousMetabolismGuardMs -= dt;
+      } else {
+        activeInferenceStep(dt);
+      }
+      pushObserverMetrics(null);
+    }
+
+    /**
+     * Unified RAF cognitive slice — invoked once per gameLoop after pixel capture.
+     * dtMs is the clamped simulated-clock delta shared with the environment (refresh-rate invariant).
+     * Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
+     */
+    function runUnifiedCognitiveStep(curr, dtMs) {
+      if (!cognitiveLoopActive || cognitivePhase === 'idle') return;
+      generationLifetimeMs += dtMs;
+      if (cognitivePhase === 'passive') {
+        runPassiveEpistemicFrame(curr, dtMs);
+        return;
+      }
+      if (cognitivePhase === 'autonomous') runAutonomousActuationFrame(curr, dtMs);
+    }
+
+    function onEnvironmentGenerationReset() {
+      generationCount++;
+      prevGenerationLifetimeBaselineMs = generationLifetimeMs;
+      generationLifetimeMs = 0;
+      log(
+        `Epistemic generation ${generationCount} — prior lifetime ${(prevGenerationLifetimeBaselineMs / 1000).toFixed(1)} s; world model retained.`
+      );
+    }
+
+    function handleGameOverCollapse(resetEnvironmentFn) {
+      if (cognitivePhase === 'autonomous') {
+        log('Generation collapse -> Resetting environment for next generation');
+        resetEnvironmentFn();
+        onEnvironmentGenerationReset();
+        return;
+      }
+      log('CRITICAL: Game Over — Kernel Survival Capacity Exceeded. Static grid frozen.');
+      stopCognitiveLoop();
+    }
+
+    function startPassiveDemo() {
+      stopCognitiveLoop();
+      cognitivePhase = 'passive';
+      kernelStabilized = false;
+      stableTimeMs = 0;
+      E_flux = E_MAX;
+      lastActionTimestamp = 0;
+      lastAction = '—';
+      vetoKinematicBypassFrames = 0;
+      resetWorldModel();
+      resetPixelClearDetector();
+      ui.setAutonomousAgentEnabled(false);
+      cognitiveLoopActive = true;
+      log('Stage 1: Agent NecPU passive curation — RAF-unified absorption, motor actualization suspended.');
+      pushObserverMetrics({ forceFlush: true });
+    }
+
+    function startAutonomousAgent() {
+      if (!kernelStabilized) {
+        log('Agent NecPU actuation locked — complete Passive DEMO convergence first.');
+        return false;
+      }
+      if (cognitivePhase === 'autonomous' && cognitiveLoopActive) return true;
+      cognitivePhase = 'autonomous';
+      cognitiveLoopActive = true;
+      E_flux = E_MAX;
+      autonomousMetabolismGuardMs = AUTONOMOUS_METABOLISM_GUARD_MS;
+      lastActionTimestamp = 0;
+      generationLifetimeMs = 0;
+      vetoKinematicBypassFrames = 0;
+      resetWorldModel();
+      log('Stage 2: Agent NecPU actuation — E_flux fully charged; modeled energy metabolism and inhibitory VETO policy unlocked.');
+      pushObserverMetrics({ forceFlush: true });
+      return true;
+    }
+
+    function stopCognitiveLoop() {
+      cognitiveLoopActive = false;
+      if (cognitivePhase !== 'idle') log('Cognitive loop stopped.');
+      cognitivePhase = 'idle';
+      pushObserverMetrics({ forceFlush: true });
+    }
+
+    resetWorldModel();
+
+    return {
+      startPassiveDemo,
+      startAutonomousAgent,
+      stopCognitiveLoop,
+      runUnifiedCognitiveStep,
+      onEnvironmentGenerationReset,
+      handleGameOverCollapse,
+      isCognitionActive() { return cognitiveLoopActive && cognitivePhase !== 'idle'; }
+    };
+  }
+
+  /* ==========================================================================
+   * Observer UI (human-only; not visible to sovereign agent)
+   * ========================================================================== */
+  function createObserverUI() {
+    const metricsEl = document.getElementById('metrics');
+    const logEl = document.getElementById('event-log');
+    const entropyCanvas = document.getElementById('entropy-preview');
+
+    function appendLog(msg) {
+      const line = document.createElement('div');
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logEl.prepend(line);
+      while (logEl.children.length > 40) logEl.removeChild(logEl.lastChild);
+    }
+
+    const agentStartBtn = document.getElementById('btn-agent-start');
+
+    function setAutonomousAgentEnabled(enabled) {
+      agentStartBtn.disabled = !enabled;
+    }
+
+    /** DOM flush cadence in wall-clock milliseconds (refresh-rate invariant). */
+    const METRICS_FLUSH_INTERVAL_MS = 250;
+    let lastMetricsFlushTs = -1e9;
+    let metricsDomReady = false;
+    const metricVal = {};
+
+    function ensureMetricsDom() {
+      if (metricsDomReady) return;
+      metricsEl.innerHTML = `
+        <div class="row"><span>Cognitive Phase</span><span class="val" data-m="cognitivePhase"></span></div>
+        <div class="row"><span>Environment driver</span><span class="val" data-m="environmentDriver"></span></div>
+        <div class="row"><span>Static Pixel Share</span><span class="val" data-m="staticConvergence"></span></div>
+        <div class="row"><span>Passive Observation</span><span class="val" data-m="stableFrames"></span></div>
+        <div class="row"><span>Kernel Status</span><span class="val" data-m="kernelStatus"></span></div>
+        <div class="row"><span>E_flux (normalized)</span><span class="val" data-m="eFlux"></span></div>
+        <div class="row"><span>Frame metabolic ops</span><span class="val" data-m="frameMetabolicOps"></span></div>
+        <div class="row"><span>Landauer-floor power (model, 300 K)</span><span class="val" data-m="modeledFramePowerW"></span></div>
+        <div class="row"><span>Measured CPU sense / plan</span><span class="val" data-m="measuredCpu"></span></div>
+        <div class="row"><span>Observed gravity period</span><span class="val" data-m="observedGravity"></span></div>
+        <div class="row"><span>Variational F (ROI avg)</span><span class="val" data-m="freeEnergy"></span></div>
+        <div class="row"><span>Dynamic / static cells</span><span class="val" data-m="dynamicStatic"></span></div>
+        <div class="row"><span>Last motor signal</span><span class="val" data-m="lastAction"></span></div>
+        <div class="row"><span>Landauer ΔS≥k_B ln 2</span><span class="val" data-m="landauer"></span></div>
+        <div class="row" style="margin-top:6px;padding-top:5px;border-top:1px solid #243049;"><span style="color:var(--muted);letter-spacing:0.06em;">COGNITIVE EVOLUTION</span><span class="val"></span></div>
+        <div class="row"><span>Generation Count</span><span class="val" data-m="generationCount"></span></div>
+        <div class="row"><span>Spatial Memory Density (%)</span><span class="val" data-m="spatialMemoryDensity"></span></div>
+        <div class="row"><span>Spatial Surprise Delta</span><span class="val" data-m="spatialSurpriseDelta"></span></div>
+        <div class="row"><span>Lifetime Baseline Status</span><span class="val" data-m="lifetimeBaseline"></span></div>
+        <div class="row"><span>Active Planning Depth</span><span class="val" data-m="activePlanningDepth"></span></div>
+        <div class="row"><span>Predicted Terminal Free Energy</span><span class="val" data-m="predictedTerminalF"></span></div>
+        <div class="row"><span>Next Invariant Vision</span><span class="val" data-m="nextInvariantVision"></span></div>
+        <div class="row"><span>Sequential Path Status</span><span class="val" data-m="sequentialPathStatus"></span></div>
+      `;
+      const nodes = metricsEl.querySelectorAll('[data-m]');
+      for (let i = 0; i < nodes.length; i++) {
+        metricVal[nodes[i].getAttribute('data-m')] = nodes[i];
+      }
+      metricsDomReady = true;
+    }
+
+    function flushMetricsDom(m) {
+      metricVal.cognitivePhase.textContent = m.cognitivePhase ?? '—';
+      metricVal.staticConvergence.textContent =
+        m.staticConvergencePct !== undefined ? `${m.staticConvergencePct.toFixed(1)}%` : '—';
+      metricVal.stableFrames.textContent = `${((m.stableTimeMs ?? 0) / 1000).toFixed(1)} s / ${((m.stableTimeTargetMs ?? 10000) / 1000).toFixed(1)} s | Pix-Clears: ${m.demoLinesCleared ?? 0}/${m.demoLinesRequired ?? 10}`;
+      metricVal.kernelStatus.textContent = m.kernelStatus ?? '—';
+      metricVal.eFlux.textContent = m.E_flux !== undefined ? m.E_flux.toFixed(4) : '—';
+      metricVal.frameMetabolicOps.textContent =
+        m.frameMetabolicOps !== undefined ? String(m.frameMetabolicOps) : '0';
+      metricVal.modeledFramePowerW.textContent =
+        m.modeledFramePowerW !== undefined ? `${m.modeledFramePowerW.toExponential(3)} W` : '0.000e+0 W';
+      metricVal.measuredCpu.textContent = `${(m.measuredSenseMs ?? 0).toFixed(2)} / ${(m.measuredPlanMs ?? 0).toFixed(2)} ms`;
+      metricVal.observedGravity.textContent =
+        m.observedGravityPeriodMs > 0
+          ? `${m.observedGravityPeriodMs.toFixed(0)} ms (n=${m.gravitySamples})`
+          : `measuring… (n=${m.gravitySamples ?? 0})`;
+      metricVal.freeEnergy.textContent = m.freeEnergy !== undefined ? m.freeEnergy.toFixed(4) : '—';
+      metricVal.dynamicStatic.textContent = `${m.dynamicCells ?? '—'} / ${m.staticCells ?? '—'}`;
+      metricVal.lastAction.textContent = m.lastAction ?? '—';
+      metricVal.landauer.textContent = m.landauer ? `${m.landauer.toExponential(3)} J/K` : '—';
+      metricVal.generationCount.textContent = String(m.generationCount ?? 0);
+      metricVal.spatialMemoryDensity.textContent = m.spatialMemoryDensityPct !== undefined ? m.spatialMemoryDensityPct.toFixed(1) : '0.0';
+      metricVal.spatialSurpriseDelta.textContent = m.spatialSurpriseDelta !== undefined ? m.spatialSurpriseDelta.toFixed(6) : '0.000000';
+      metricVal.lifetimeBaseline.textContent = `${((m.generationLifetimeMs ?? 0) / 1000).toFixed(1)} s / baseline ${((m.prevGenerationLifetimeBaselineMs ?? 0) / 1000).toFixed(1)} s`;
+      metricVal.activePlanningDepth.textContent = m.activePlanningDepthLabel ?? 'Reflex (single command)';
+      metricVal.predictedTerminalF.textContent = m.predictedTerminalFreeEnergy !== undefined ? m.predictedTerminalFreeEnergy.toFixed(4) : '—';
+      metricVal.nextInvariantVision.textContent = m.nextInvariantVisionLabel ?? '—';
+      metricVal.sequentialPathStatus.textContent = m.sequentialPathStatusLabel ?? '—';
+    }
+
+    /** Observer-only label: who steers the pieces (set by the orchestrator, never read by the agent). */
+    function setEnvironmentDriver(label) {
+      ensureMetricsDom();
+      metricVal.environmentDriver.textContent = label;
+    }
+
+    function updateMetrics(m) {
+      ensureMetricsDom();
+      const now = performance.now();
+      if (!m.forceFlush && now - lastMetricsFlushTs < METRICS_FLUSH_INTERVAL_MS) return;
+      lastMetricsFlushTs = now;
+      flushMetricsDom(m);
+    }
+
+    appendLog('Phase 20.21 — Agent NecPU unified spatio-temporal kernel — begin with Passive DEMO.');
+    setAutonomousAgentEnabled(false);
+    updateMetrics({
+      forceFlush: true,
+      cognitivePhase: '—',
+      kernelStatus: 'Awaiting DEMO',
+      lastAction: '—'
+    });
+
+    return { metricsEl, appendLog, updateMetrics, entropyCanvas, setAutonomousAgentEnabled, setEnvironmentDriver };
+  }
+
+  /* ==========================================================================
+   * Main wiring — strict separation: agent never receives environment handles.
+   * The orchestrator (not Layer C) owns the demo-mode switch of the environment.
+   * ========================================================================== */
+  const canvas = document.getElementById('environment-canvas');
+  const ui = createObserverUI();
+  let necpu = null;
+  const environment = createGameGridEnvironment(canvas, () => {
+    if (necpu) {
+      necpu.handleGameOverCollapse(() => {
+        environment.reset();
+      });
+      if (!necpu.isCognitionActive()) applyEnvironmentDriver('none');
+    }
+  });
+
+  /* Single place that switches the environment's demo heuristic, and tells the human observer who is steering. */
+  const ENV_DRIVER_LABELS = {
+    none: 'None — gravity only',
+    demo: 'Layer A demo heuristic (agent only observes)',
+    agent: 'Agent NecPU (demo heuristic OFF)'
+  };
+  function applyEnvironmentDriver(kind) {
+    environment.setPassiveMode(kind === 'demo');
+    ui.setEnvironmentDriver(ENV_DRIVER_LABELS[kind]);
+  }
+  applyEnvironmentDriver('none');
+
+  const markovBlanket = createMarkovBlanket(canvas, environment);
+  necpu = createNecPUCore(markovBlanket, ui);
+
+  if (!markovBlanket.isOperational()) {
+    ui.appendLog(`LAYER B FAULT: ${markovBlanket.faultReason()} — sensory readback offline; cognition cannot start.`);
+  }
+
+  environment.start();
+
+  let rafId = 0;
+  let lastTs = 0;
+  function gameLoop(ts) {
+    if (!lastTs) lastTs = ts;
+    const dt = Math.min(50, ts - lastTs);
+    lastTs = ts;
+    environment.update(dt);
+    environment.render();
+    const sensoryFrame = markovBlanket.captureFrame();
+    if (sensoryFrame) necpu.runUnifiedCognitiveStep(sensoryFrame, dt);
+    rafId = requestAnimationFrame(gameLoop);
+  }
+  rafId = requestAnimationFrame(gameLoop);
+
+  function layerBReady() {
+    if (markovBlanket.isOperational()) return true;
+    ui.appendLog(`LAYER B FAULT: ${markovBlanket.faultReason()} — action refused.`);
+    return false;
+  }
+
+  document.getElementById('btn-demo-start').addEventListener('click', () => {
+    if (!layerBReady()) return;
+    environment.resume();
+    applyEnvironmentDriver('demo');
+    necpu.startPassiveDemo();
+  });
+  document.getElementById('btn-agent-start').addEventListener('click', () => {
+    if (!layerBReady()) return;
+    environment.resume();
+    if (necpu.startAutonomousAgent()) applyEnvironmentDriver('agent');
+  });
+  document.getElementById('btn-agent-stop').addEventListener('click', () => {
+    necpu.stopCognitiveLoop();
+    applyEnvironmentDriver('none');
+  });
+  document.getElementById('btn-env-reset').addEventListener('click', () => {
+    environment.reset();
+    ui.appendLog('Game grid environment reset.');
+  });
+
+  canvas.addEventListener('click', () => environment.focusEnvironment());
+})();
+  </script>
+</body>
+</html>
