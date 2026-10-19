@@ -7,8 +7,6 @@ CONTACT: doundoua@gmail.com
 COPYRIGHT: Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
 
 ================================================================================
-TECHNICAL SPECIFICATION
-================================================================================
 
 ## 1. Core Vision & Philosophy
 Modern deep learning architectures, including Large Language Models (LLMs) and End-to-End (E2E) imitation systems, treat computational compute and electrical energy as passive, extrinsic resources. Consequently, these models lack intrinsic awareness of their own physical boundaries, resource depletion, or operational limits, remaining sophisticated statistical mappers rather than autonomous entities.
@@ -114,8 +112,7 @@ CONTACT: doundoua@gmail.com
 COPYRIGHT: Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see LICENSE.
 
 ================================================================================
-ТЕХНИЧЕСКИЙ МАНИФЕСТ
-================================================================================
+
 
 ## 1. Концепция и Философия Архитектуры
 Современные архитектуры глубокого обучения, включая большие языковые модели (LLM) и сквозные (E2E) системы имитационного обучения, рассматривают вычислительные мощности и электрическую энергию как пассивные, внешние ресурсы. Как следствие, у этих моделей отсутствует внутреннее осознание собственных физических границ, истощения ресурсов или операционных лимитов; они остаются сложными статистическими преобразователями, а не автономными сущностями.
