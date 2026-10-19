@@ -133,6 +133,7 @@ COPYRIGHT: Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 
 ### 3.1 Вариационная Свободная Энергия и Математическая Формализация Термодинамического Коллапса
 В рамках принципа свободной энергии общая вариационная свободная энергия $\mathcal{F}$ ограничивает удивление (surprise) агента при заданных сенсорных входах $y$ и внутренних состояниях $m$:
 
+$$\mathcal{F}(y, m) = \text{Complexity} - \text{Accuracy}$$
 $$\mathcal{F}(y, m) = \text{Complexity} - \text{Accuracy}$$ 
 *Где:*
 * *$\mathcal{F}$ — общая вариационная свободная энергия.*
