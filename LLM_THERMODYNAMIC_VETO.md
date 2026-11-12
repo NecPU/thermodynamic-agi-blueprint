@@ -2,7 +2,7 @@
 
 **Author:** Vakhtang Doundoua (NecPU)  
 **Contact:** doundoua@gmail.com  
-**Repository & Live Simulator:** [https://necpu.github.io/thermodynamic-agi-blueprint/](https://necpu.github.io/thermodynamic-agi-blueprint/)  
+**Base Architecture & Core VETO Simulator:** [https://necpu.github.io/thermodynamic-agi-blueprint/](https://necpu.github.io/thermodynamic-agi-blueprint/)  
 **Timestamp:** November 2026  
 
 ---
@@ -89,7 +89,7 @@ Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see
 
 **Автор:** Вахтанг Дундуа (NecPU)  
 **Контакты:** doundoua@gmail.com  
-**Репозиторий и интерактивный симулятор:** [https://necpu.github.io/thermodynamic-agi-blueprint/](https://necpu.github.io/thermodynamic-agi-blueprint/)  
+**Базовая архитектура и симулятор ядра VETO:** [https://necpu.github.io/thermodynamic-agi-blueprint/](https://necpu.github.io/thermodynamic-agi-blueprint/)  
 **Временная метка:** Ноябрь 2026 г.  
 
 ---
