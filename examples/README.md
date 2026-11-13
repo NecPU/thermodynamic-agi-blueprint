@@ -3,7 +3,7 @@
 **Author:** Vakhtang Doundoua (NecPU)  
 **Contact:** doundoua@gmail.com  
 **Repository:** https://github.com/NecPU/thermodynamic-agi-blueprint  
-**Cite all versions:** https://doi.org
+**DOI:** https://10.5281/zenodo.23262980
 
 ---
 
@@ -87,7 +87,7 @@ Copyright © 2026 Vakhtang Doundoua (NecPU). Licensed under CC BY-NC 4.0 — see
 **Автор:** Вахтанг Дундуа (NecPU)  
 **Контакты:** doundoua@gmail.com  
 **Репозиторий:** https://github.com/NecPU/thermodynamic-agi-blueprint  
-**Цитировать все версии:** https://doi.org
+**DOI:** https://10.5281/zenodo.23262980
 
 ---
 
